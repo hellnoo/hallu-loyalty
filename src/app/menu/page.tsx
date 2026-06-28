@@ -59,7 +59,7 @@ function generatePlaceholder(item: MenuItem): string {
     <rect width="400" height="200" fill="url(#glow)"/>
     <text x="200" y="92" text-anchor="middle" font-size="54" opacity="0.9">${icon}</text>
     <text x="200" y="138" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="rgba(255,255,255,0.88)">${safeName}</text>
-    <text x="200" y="178" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="rgba(212,184,150,0.45)" letter-spacing="5">HALL-U</text>
+    <text x="200" y="178" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="rgba(212,184,150,0.45)" letter-spacing="5">HALLU</text>
   </svg>`
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)
 }
@@ -119,7 +119,7 @@ const SPARKLE_PARTICLES = Array.from({ length: 14 }, (_, i) => ({
 function ChatbotWidget({ items }: { items: MenuItem[] }) {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([
-    { role: 'assistant', content: 'Halo Kak! ☕ Aku barista AI Hall-U. Mau rekomendasi menu? Tanya aja, atau pilih cepat di bawah 👇' }
+    { role: 'assistant', content: 'Halo Kak! ☕ Aku barista AI Hallu. Mau rekomendasi menu? Tanya aja, atau pilih cepat di bawah 👇' }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -222,7 +222,7 @@ function ChatbotWidget({ items }: { items: MenuItem[] }) {
               <div className="px-4 pb-2 flex gap-2 overflow-x-auto scrollbar-hide">
                 {quickPrompts.map(q => (
                   <button key={q} onClick={() => send(q)}
-                    className="flex-shrink-0 text-xs text-h-red border border-h-red/30 hover:bg-h-red/10 px-3 py-1.5 rounded-full transition-colors whitespace-nowrap font-bold">
+                    className="flex-shrink-0 text-xs text-h-cream border border-h-red/30 hover:bg-h-red/10 px-3 py-1.5 rounded-full transition-colors whitespace-nowrap font-bold">
                     {q}
                   </button>
                 ))}
@@ -666,7 +666,7 @@ function ItemCard({
         <div className="absolute inset-0 bg-gradient-to-t from-h-card via-h-card/10 to-transparent" />
         {/* Category color accent line */}
         <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: atm.accent, opacity: 0.7 }} />
-        <div className="absolute bottom-2.5 right-3 bg-black/60 backdrop-blur-sm text-h-red font-black text-sm px-2.5 py-1 rounded-lg">
+        <div className="absolute bottom-2.5 right-3 bg-black/60 backdrop-blur-sm text-h-cream font-black text-sm px-2.5 py-1 rounded-lg">
           {formatRp(item.price)}
         </div>
         {/* Showcase hint */}
@@ -898,7 +898,7 @@ function MenuContent() {
   if (restoring) return (
     <div className="min-h-screen bg-h-bg flex items-center justify-center">
       <div className="text-center">
-        <div className="font-sans font-black text-white tracking-widest text-xl uppercase mb-2">HALL-U</div>
+        <div className="font-sans font-black text-white tracking-widest text-xl uppercase mb-2">HALLU</div>
         <div className="text-h-muted text-xs animate-pulse">Memuat...</div>
       </div>
     </div>
@@ -926,18 +926,18 @@ function MenuContent() {
               <span className="text-5xl">🔔</span>
             </div>
             <h1 className="font-sans text-2xl font-black text-white uppercase tracking-wider mb-1">Pesanan Siap!</h1>
-            <p className="text-h-red text-sm font-bold">{tableName}</p>
+            <p className="text-h-cream text-sm font-bold">{tableName}</p>
             <p className="text-white/70 text-sm mt-3 max-w-xs leading-relaxed">Silakan ke kasir untuk ambil pesananmu dan konfirmasi pembayaran.</p>
           </>
         ) : isDone ? (
           <>
             <div className="w-20 h-20 rounded-full border-2 border-h-red flex items-center justify-center mb-5">
-              <svg className="w-10 h-10 text-h-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <svg className="w-10 h-10 text-h-cream" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
             <h1 className="font-sans text-2xl font-black text-white uppercase tracking-wider mb-1">Selesai!</h1>
-            <p className="text-h-muted text-xs mt-3 max-w-xs">Terima kasih sudah mampir ke Hall-U ☕</p>
+            <p className="text-h-muted text-xs mt-3 max-w-xs">Terima kasih sudah mampir ke Hallu ☕</p>
             {/* Rating */}
             {!rated ? (
               <div className="mt-8 bg-h-card border border-h-border rounded-2xl px-8 py-6 text-center max-w-xs w-full">
@@ -980,7 +980,7 @@ function MenuContent() {
               <span className="text-4xl animate-spin" style={{ animationDuration: '3s' }}>⏳</span>
             </div>
             <h1 className="font-sans text-2xl font-black text-white uppercase tracking-wider mb-1">Pesanan Diterima!</h1>
-            <p className="text-h-red text-sm font-semibold">{tableName}</p>
+            <p className="text-h-cream text-sm font-semibold">{tableName}</p>
             <p className="text-h-muted text-xs mt-3 max-w-xs leading-relaxed">Pesananmu sedang diproses. Halaman ini otomatis update saat pesanan siap — tetap buka ya!</p>
           </>
         )}
@@ -1025,13 +1025,13 @@ function MenuContent() {
       <header className={`bg-h-dark border-b border-h-border sticky z-40 ${orderId && !submitted ? 'top-[42px]' : 'top-0'}`}>
         <div className="max-w-[480px] mx-auto px-5 py-3.5 flex items-center justify-between">
           <div>
-            <div className="font-sans text-lg font-black text-white tracking-widest uppercase leading-none">HALL-U</div>
+            <div className="font-sans text-lg font-black text-white tracking-widest uppercase leading-none">HALLU</div>
             <div className="flex items-center gap-2 mt-0.5">
-              <div className="text-h-red text-[0.5rem] tracking-[3px] uppercase font-semibold">Coffee &amp; Sociality</div>
+              <div className="text-h-cream text-[0.5rem] tracking-[3px] uppercase font-semibold">Coffee &amp; Sociality</div>
               {storeSettings && (() => {
                 const open = calcIsOpen(storeSettings)
                 return (
-                  <span className={`text-[0.5rem] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider ${open ? 'bg-green-500/20 text-green-400' : 'bg-h-red/20 text-h-red'}`}>
+                  <span className={`text-[0.5rem] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider ${open ? 'bg-green-500/20 text-green-400' : 'bg-h-red/20 text-h-cream'}`}>
                     {open ? '● Buka' : '● Tutup'}
                   </span>
                 )
@@ -1044,7 +1044,7 @@ function MenuContent() {
                 Buka {storeSettings.open_time}
               </div>
             )}
-            <div className="border border-h-red text-h-red rounded px-3 py-1 text-xs font-bold tracking-wider uppercase">
+            <div className="border border-h-red text-h-cream rounded px-3 py-1 text-xs font-bold tracking-wider uppercase">
               {tableName}
             </div>
           </div>
@@ -1054,7 +1054,7 @@ function MenuContent() {
           <div className="max-w-[480px] mx-auto flex overflow-x-auto scrollbar-hide border-t border-h-border/50 px-2">
             {Object.keys(grouped).map(cat => (
               <button key={cat} onClick={() => scrollToCategory(cat)}
-                className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${activeCategory === cat ? 'text-h-red border-h-red' : 'text-h-muted border-transparent hover:text-white'}`}>
+                className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${activeCategory === cat ? 'text-h-cream border-h-red' : 'text-h-muted border-transparent hover:text-white'}`}>
                 <span>{CAT_ICONS[cat]}</span>{cat}
               </button>
             ))}
@@ -1140,7 +1140,7 @@ function MenuContent() {
                 <div key={item.id} className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm text-white truncate">{item.name}</div>
-                    <div className="text-h-red text-xs mt-0.5">{formatRp(item.price * cart[item.id])}</div>
+                    <div className="text-h-cream text-xs mt-0.5">{formatRp(item.price * cart[item.id])}</div>
                   </div>
                   <div className="flex items-center gap-2.5 ml-4">
                     <button onClick={() => removeItem(item.id)} className="w-7 h-7 rounded-full border border-h-border flex items-center justify-center text-white font-bold">−</button>
@@ -1153,7 +1153,7 @@ function MenuContent() {
             {/* ── AI Recommendations ── */}
             {(aiRecsLoading || aiRecs.length > 0) && (
               <div className="px-5 py-3 border-t border-h-border bg-gradient-to-br from-h-red/5 to-transparent">
-                <div className="text-[10px] uppercase tracking-widest font-black text-h-red mb-2 flex items-center gap-1.5">
+                <div className="text-[10px] uppercase tracking-widest font-black text-h-cream mb-2 flex items-center gap-1.5">
                   ✨ Mungkin Cocok
                   {aiRecsLoading && <span className="text-h-muted animate-pulse">memilih...</span>}
                 </div>
@@ -1170,7 +1170,7 @@ function MenuContent() {
                           <div className="flex-1 min-w-0">
                             <div className="font-bold text-white text-sm truncate">{item.name}</div>
                             <div className="text-h-muted text-[11px] leading-snug line-clamp-2 italic">"{rec.reason}"</div>
-                            <div className="text-h-red text-xs font-black mt-0.5">{formatRp(item.price)}</div>
+                            <div className="text-h-cream text-xs font-black mt-0.5">{formatRp(item.price)}</div>
                           </div>
                           <button onClick={() => addItem(item.id)}
                             className="w-9 h-9 rounded-full bg-h-red hover:bg-h-red-d flex items-center justify-center text-white font-bold text-lg leading-none transition-all active:scale-90 flex-shrink-0">+</button>
@@ -1183,7 +1183,7 @@ function MenuContent() {
             )}
 
             <div className="px-5 pt-3 pb-2 border-t border-h-border">
-              <label className="text-xs text-h-muted block mb-1.5">Nama Pemesan <span className="text-h-red">*</span></label>
+              <label className="text-xs text-h-muted block mb-1.5">Nama Pemesan <span className="text-h-cream">*</span></label>
               <input
                 value={customerName} onChange={e => setCustomerName(e.target.value)}
                 placeholder="Contoh: Andi"
@@ -1195,7 +1195,7 @@ function MenuContent() {
                 placeholder="Contoh: 08123456789"
                 className="w-full bg-h-card border border-h-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-h-red transition-colors text-white placeholder-h-muted mb-3"
               />
-              <label className="text-xs text-h-muted block mb-1.5">Metode Bayar <span className="text-h-red">*</span></label>
+              <label className="text-xs text-h-muted block mb-1.5">Metode Bayar <span className="text-h-cream">*</span></label>
               <div className="flex gap-2 mb-3">
                 {([['tunai', '💵 Tunai'], ['qris', '⬛ QRIS']] as const).map(([val, label]) => (
                   <button key={val} type="button" onClick={() => setPayMethod(val)}
@@ -1217,7 +1217,7 @@ function MenuContent() {
                 <span className="text-h-muted text-sm">Total</span>
                 <span className="text-xl font-black text-white">{formatRp(totalPrice)}</span>
               </div>
-              {submitError && <p className="text-h-red text-xs mb-3 text-center">{submitError}</p>}
+              {submitError && <p className="text-red-400 text-xs mb-3 text-center">{submitError}</p>}
               {/* Block order baru kalau masih ada order aktif */}
               {orderId && !['done', 'cancelled'].includes(orderStatus) ? (
                 <div className="bg-h-card border border-h-border rounded-xl p-4 text-center">

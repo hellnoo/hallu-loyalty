@@ -119,7 +119,7 @@ function buildDailyReport(orders: Order[], date: string, shifts: Shift[] = []): 
   })
 
   const lines = [
-    `📊 *LAPORAN HARIAN HALL-U*`,
+    `📊 *LAPORAN HARIAN HALLU*`,
     `📅 ${tanggal}`,
     ``,
     `💰 *Total Pendapatan: ${formatRp(revenue)}*`,
@@ -137,7 +137,7 @@ function buildDailyReport(orders: Order[], date: string, shifts: Shift[] = []): 
     avgRating ? `` : '',
     avgRating ? `⭐ Rata-rata Rating: ${avgRating} (dari ${ratedOrders.length} ulasan)` : '',
     ``,
-    `_Laporan otomatis dari Hall-U POS_ 🚀`,
+    `_Laporan otomatis dari Hallu POS_ 🚀`,
   ].filter(l => l !== undefined)
 
   return lines.join('\n')
@@ -169,7 +169,7 @@ function waLink(phone: string, msg: string) {
 function msgSiap(order: Order) {
   const meja = order.table_number > 0 ? `Meja ${order.table_number}` : 'Walk-in'
   const bayar = order.payment_method === 'qris' ? 'QRIS' : order.payment_method === 'transfer' ? 'Transfer' : 'Tunai'
-  return `Halo ${order.customer_name || 'Kak'}! 👋\n\nPesananmu di *Hall-U Coffee & Sociality* sudah siap diambil. 🔔\n\n🪑 ${meja}\n💳 Pembayaran: ${bayar}\n\nSilakan ke kasir ya! ☕`
+  return `Halo ${order.customer_name || 'Kak'}! 👋\n\nPesananmu di *Hallu Coffee & Sociality* sudah siap diambil. 🔔\n\n🪑 ${meja}\n💳 Pembayaran: ${bayar}\n\nSilakan ke kasir ya! ☕`
 }
 
 function msgStruk(order: Order) {
@@ -189,7 +189,7 @@ function msgStruk(order: Order) {
   const sep = '━━━━━━━━━━━━━━━'
 
   return [
-    `*HALL-U COFFEE & SOCIALITY*`,
+    `*HALLU COFFEE & SOCIALITY*`,
     `_Ternate, Indonesia_`,
     sep,
     `🧾 No. Order: *${noOrder}*`,
@@ -204,9 +204,9 @@ function msgStruk(order: Order) {
     `💳 Bayar: ${bayar} ✓ LUNAS`,
     sep,
     `Terima kasih sudah mampir! ☕`,
-    `Sampai jumpa lagi di Hall-U 🤎`,
+    `Sampai jumpa lagi di Hallu 🤎`,
     ``,
-    `_Struk digital — Hall-U POS_`,
+    `_Struk digital — Hallu POS_`,
   ].join('\n')
 }
 
@@ -311,7 +311,7 @@ function OrderCard({ order, onDone, onCancel, onReady, onPreparing }: { order: O
         </div>
         <div className="text-right">
           <div className="text-xs text-h-muted">{formatTime(order.created_at)}</div>
-          {payOpt && <div className="text-xs text-h-red font-bold mt-0.5">{payOpt.icon} {payOpt.label}</div>}
+          {payOpt && <div className="text-xs text-h-cream font-bold mt-0.5">{payOpt.icon} {payOpt.label}</div>}
         </div>
       </div>
       <div className="px-4 py-3 space-y-1.5 border-b border-h-border">
@@ -492,7 +492,7 @@ function ManualOrderForm({ onSubmitted, isOnline }: { onSubmitted: () => void; i
                 <div key={item.id} className="px-4 py-3 flex items-center justify-between">
                   <div>
                     <div className="text-sm text-white font-medium">{item.name}</div>
-                    <div className="text-xs text-h-red font-bold">{formatRp(item.price)}</div>
+                    <div className="text-xs text-h-cream font-bold">{formatRp(item.price)}</div>
                   </div>
                   <div className="flex items-center gap-2">
                     {cart[item.id] > 0 && (
@@ -539,7 +539,7 @@ function ManualOrderForm({ onSubmitted, isOnline }: { onSubmitted: () => void; i
               ))}
             </div>
           </div>
-          {error && <p className="text-h-red text-xs">{error}</p>}
+          {error && <p className="text-red-400 text-xs">{error}</p>}
           <button onClick={handleSubmit} disabled={submitting}
             className="w-full bg-h-red hover:bg-h-red-d disabled:opacity-60 text-white py-3.5 rounded-xl font-black text-sm uppercase tracking-wider transition-colors">
             {submitting ? 'Menyimpan...' : 'Proses Order'}
@@ -659,7 +659,7 @@ export default function KasirPage() {
 
   useEffect(() => {
     const count = newOrders.length
-    document.title = count > 0 ? `(${count}) Order Baru | Hall-U Kasir` : 'Hall-U Kasir'
+    document.title = count > 0 ? `(${count}) Order Baru | Hallu Kasir` : 'Hallu Kasir'
   }, [newOrders])
 
   // Fix: reload orders saat tab kembali aktif (Realtime kadang disconnect saat tab lama tidak aktif)
@@ -986,10 +986,10 @@ export default function KasirPage() {
     <div className="min-h-screen bg-h-bg flex items-center justify-center p-6">
       <div className="bg-h-card border border-h-border rounded-2xl p-8 w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="font-sans text-2xl font-black text-white tracking-widest uppercase">HALL-U</div>
+          <div className="font-sans text-2xl font-black text-white tracking-widest uppercase">HALLU</div>
           <div className="flex items-center gap-2 justify-center mt-1">
             <div className="h-px w-6 bg-h-red" />
-            <div className="text-h-red text-[0.5rem] tracking-[3px] uppercase font-semibold">Dashboard Kasir</div>
+            <div className="text-h-cream text-[0.5rem] tracking-[3px] uppercase font-semibold">Dashboard Kasir</div>
             <div className="h-px w-6 bg-h-red" />
           </div>
         </div>
@@ -999,7 +999,7 @@ export default function KasirPage() {
             <input type="password" value={pw} onChange={e => { setPw(e.target.value); setPwError('') }}
               className="w-full bg-h-dark border border-h-border rounded-xl px-4 py-3 focus:outline-none focus:border-h-red transition-colors text-sm text-white placeholder-h-muted"
               placeholder="Masukkan password kasir" autoFocus />
-            {pwError && <p className="text-h-red text-xs mt-1">{pwError}</p>}
+            {pwError && <p className="text-red-400 text-xs mt-1">{pwError}</p>}
           </div>
           <button type="submit" className="w-full bg-h-red hover:bg-h-red-d text-white py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-colors">Masuk</button>
         </form>
@@ -1042,8 +1042,8 @@ export default function KasirPage() {
       <header className="bg-h-dark border-b border-h-border">
         <div className="max-w-4xl mx-auto px-5 py-4 flex items-center justify-between">
           <div>
-            <div className="font-sans text-xl font-black text-white tracking-widest uppercase">HALL-U</div>
-            <div className="text-h-red text-[0.55rem] tracking-[3px] uppercase font-semibold mt-0.5">Dashboard Kasir</div>
+            <div className="font-sans text-xl font-black text-white tracking-widest uppercase">HALLU</div>
+            <div className="text-h-cream text-[0.55rem] tracking-[3px] uppercase font-semibold mt-0.5">Dashboard Kasir</div>
           </div>
           <div className="flex items-center gap-3 flex-wrap justify-end">
             {/* Active Shift badge */}
@@ -1067,7 +1067,7 @@ export default function KasirPage() {
               title={isOnline ? (pendingCount > 0 ? `${pendingCount} order menunggu sync — klik untuk sync sekarang` : 'Terhubung ke server') : 'Offline — order disimpan lokal, auto-sync saat online'}
               className={`text-xs px-2.5 py-1 rounded-full font-bold transition-colors flex items-center gap-1.5 ${
                 !isOnline
-                  ? 'bg-h-red/15 text-h-red border border-h-red/40 animate-pulse'
+                  ? 'bg-h-red/15 text-h-cream border border-h-red/40 animate-pulse'
                   : pendingCount > 0
                     ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/40 hover:bg-yellow-500/25 cursor-pointer'
                     : 'bg-green-500/15 text-green-400 border border-green-500/30'
@@ -1086,7 +1086,7 @@ export default function KasirPage() {
               {wakeLockActive ? '🔆 Layar Aktif' : '💤 Layar Bisa Mati'}
             </span>
             <button onClick={openCloseModal}
-              className="bg-h-red/10 hover:bg-h-red/20 border border-h-red/40 text-h-red px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors">
+              className="bg-h-red/10 hover:bg-h-red/20 border border-h-red/40 text-h-cream px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors">
               Tutup Kasir
             </button>
             <button onClick={() => { localStorage.removeItem('hallu-kasir'); setAuthed(false) }}
@@ -1101,7 +1101,7 @@ export default function KasirPage() {
         <div className="max-w-4xl mx-auto flex min-w-max">
           {TABS.map(({ key, label }) => (
             <button key={key} onClick={() => { setTab(key); if (key === 'history' || key === 'rekap') loadDone(rekapDate) }}
-              className={`px-5 py-3.5 text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 ${tab === key ? 'text-h-red border-h-red' : 'text-h-muted border-transparent hover:text-white'}`}>
+              className={`px-5 py-3.5 text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 ${tab === key ? 'text-h-cream border-h-red' : 'text-h-muted border-transparent hover:text-white'}`}>
               {label}
             </button>
           ))}
@@ -1118,7 +1118,7 @@ export default function KasirPage() {
             <div className="text-center pt-20">
               <div className="text-5xl mb-4">☕</div>
               <div className="text-h-muted text-sm">Belum ada pesanan baru</div>
-              <button onClick={() => setTab('manual')} className="mt-4 text-h-red text-xs font-bold hover:underline">+ Input Manual</button>
+              <button onClick={() => setTab('manual')} className="mt-4 text-h-cream text-xs font-bold hover:underline">+ Input Manual</button>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -1248,7 +1248,7 @@ export default function KasirPage() {
               <div className="overflow-y-auto flex-1 p-5">
                 <div className="bg-white text-black rounded-lg p-5 font-mono text-xs leading-relaxed shadow-lg">
                   <div className="text-center mb-2">
-                    <div className="font-black text-sm tracking-wider">HALL-U</div>
+                    <div className="font-black text-sm tracking-wider">HALLU</div>
                     <div className="text-[9px] tracking-widest text-gray-500">COFFEE &amp; SOCIALITY</div>
                     <div className="text-[9px] text-gray-400">Ternate, Indonesia</div>
                   </div>
@@ -1421,7 +1421,7 @@ export default function KasirPage() {
                         {topItems.map((item, i) => (
                           <div key={item.name} className="px-4 py-2.5 flex justify-between items-center border-b border-h-border last:border-0">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs text-h-red font-black w-4">#{i+1}</span>
+                              <span className="text-xs text-h-cream font-black w-4">#{i+1}</span>
                               <span className="text-sm text-white">{item.name}</span>
                             </div>
                             <span className="text-xs text-h-muted font-bold">{item.qty}×</span>
@@ -1437,18 +1437,18 @@ export default function KasirPage() {
                 {/* AI Smart Report */}
                 {closeReportOrders.length > 0 && !aiReport && (
                   <button onClick={generateAiReport} disabled={aiReportLoading}
-                    className="w-full flex items-center justify-center gap-2 border border-h-red/40 bg-h-red/10 hover:bg-h-red/20 disabled:opacity-60 text-h-red py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors">
+                    className="w-full flex items-center justify-center gap-2 border border-h-red/40 bg-h-red/10 hover:bg-h-red/20 disabled:opacity-60 text-h-cream py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors">
                     {aiReportLoading ? '🧠 AI lagi nyusun insight...' : '✨ Generate Smart Report (AI)'}
                   </button>
                 )}
                 {aiReportError && (
-                  <div className="text-h-red text-xs bg-h-red/10 border border-h-red/30 rounded-lg px-3 py-2">
+                  <div className="text-red-400 text-xs bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">
                     {aiReportError}
                   </div>
                 )}
                 {aiReport && (
                   <div className="bg-h-dark border border-h-red/30 rounded-xl p-4 max-h-60 overflow-y-auto">
-                    <div className="text-[10px] uppercase tracking-widest font-black text-h-red mb-2">✨ AI Insight (akan dikirim)</div>
+                    <div className="text-[10px] uppercase tracking-widest font-black text-h-cream mb-2">✨ AI Insight (akan dikirim)</div>
                     <pre className="text-xs text-white/90 whitespace-pre-wrap font-sans leading-relaxed">{aiReport}</pre>
                     <button onClick={() => setAiReport(null)} className="text-[10px] text-h-muted hover:text-white mt-2 uppercase tracking-wider font-bold">
                       ↺ Pakai format biasa
@@ -1557,7 +1557,7 @@ function HandoverModal({ activeShift, onClose, onHandover, onEndOnly, loading }:
               👤 Ada yang Lanjut
             </button>
             <button onClick={() => setMode('endOnly')}
-              className={`py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors ${mode === 'endOnly' ? 'bg-h-red/15 border border-h-red/40 text-h-red' : 'bg-h-dark border border-h-border text-h-muted'}`}>
+              className={`py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors ${mode === 'endOnly' ? 'bg-h-red/15 border border-h-red/40 text-h-cream' : 'bg-h-dark border border-h-border text-h-muted'}`}>
               ⛔ Tutup Aja
             </button>
           </div>

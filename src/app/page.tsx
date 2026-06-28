@@ -8,12 +8,12 @@ const IG = 'https://instagram.com/hall.ucffe'
 const TIKTOK = 'https://tiktok.com/@hall.ucffe'
 const IG_HANDLE = '@hall.ucffe'
 
-// ── Lokasi Hall-U ──────────────────────────────────────────
+// ── Lokasi Hallu ──────────────────────────────────────────
 // TODO: ganti LAT,LNG dengan koordinat persis dari Google Maps (Share → Copy link)
 const LOC = {
   lat: 0.7905,         // perkiraan area Taman Fitness, Ternate — GANTI dengan titik persis
   lng: 127.3820,
-  label: 'Hall-U Coffee & Sociality',
+  label: 'Hallu Coffee & Sociality',
   address: 'Area Taman Fitness, Ternate, Maluku Utara',
 }
 const mapsEmbed = `https://maps.google.com/maps?q=${LOC.lat},${LOC.lng}&z=17&output=embed`
@@ -92,7 +92,7 @@ function generatePlaceholder(item: MenuItem): string {
     <rect width="400" height="240" fill="url(#glow)"/>
     <text x="200" y="108" text-anchor="middle" font-size="58" opacity="0.9">${icon}</text>
     <text x="200" y="158" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="rgba(255,255,255,0.88)">${safeName}</text>
-    <text x="200" y="208" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="rgba(212,184,150,0.4)" letter-spacing="5">HALL-U</text>
+    <text x="200" y="208" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="rgba(212,184,150,0.4)" letter-spacing="5">HALLU</text>
   </svg>`
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)
 }
@@ -138,7 +138,7 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
       <div className="p-3.5">
         <div className="font-bold text-white text-sm leading-tight">{item.name}</div>
         {item.description && <div className="text-h-muted text-[11px] mt-1 line-clamp-1">{item.description}</div>}
-        <div className="text-h-red font-black text-sm mt-2">{formatRp(item.price)}</div>
+        <div className="text-h-cream font-black text-sm mt-2">{formatRp(item.price)}</div>
       </div>
     </div>
   )
@@ -195,16 +195,16 @@ export default function Home() {
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navScrolled ? 'bg-h-dark/90 backdrop-blur-md border-b border-h-border' : ''}`}>
         <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
           <div>
-            <div className="font-sans font-black text-white tracking-widest text-lg uppercase leading-none">HALL-U</div>
-            <div className="text-h-red text-[0.45rem] tracking-[3px] uppercase font-semibold mt-0.5">Coffee &amp; Sociality</div>
+            <div className="font-sans font-black text-white tracking-widest text-lg uppercase leading-none">HALLU</div>
+            <div className="text-h-cream text-[0.45rem] tracking-[3px] uppercase font-semibold mt-0.5">Coffee &amp; Sociality</div>
           </div>
           <div className="flex items-center gap-2">
-            <a href={IG} target="_blank" rel="noreferrer" aria-label="Instagram Hall-U"
+            <a href={IG} target="_blank" rel="noreferrer" aria-label="Instagram Hallu"
               title="Follow di Instagram"
               className="w-9 h-9 flex items-center justify-center rounded-full border border-h-border hover:border-pink-500/60 hover:text-pink-400 text-white/70 transition-colors">
               <InstagramIcon />
             </a>
-            <a href={TIKTOK} target="_blank" rel="noreferrer" aria-label="TikTok Hall-U"
+            <a href={TIKTOK} target="_blank" rel="noreferrer" aria-label="TikTok Hallu"
               title="Follow di TikTok"
               className="w-9 h-9 flex items-center justify-center rounded-full border border-h-border hover:border-white/60 hover:text-white text-white/70 transition-colors">
               <TikTokIcon />
@@ -236,13 +236,13 @@ export default function Home() {
             هالو
           </div>
           {/* Brand */}
-          <div className="font-sans font-black text-white text-4xl md:text-5xl tracking-[0.25em] uppercase mb-3">
-            HALL-U
+          <div className="font-sans font-black text-h-cream text-4xl md:text-5xl tracking-[0.25em] uppercase mb-3">
+            HALLU
           </div>
           {/* Divider */}
           <div className="flex items-center gap-3 justify-center mb-4">
             <div className="h-px flex-1 max-w-[60px]" style={{ background: 'linear-gradient(to right, transparent, #7C1515)' }} />
-            <div className="text-h-red text-[0.55rem] tracking-[4px] uppercase font-semibold">Coffee &amp; Sociality</div>
+            <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold">Coffee &amp; Sociality</div>
             <div className="h-px flex-1 max-w-[60px]" style={{ background: 'linear-gradient(to left, transparent, #7C1515)' }} />
           </div>
           {/* Tagline */}
@@ -254,7 +254,7 @@ export default function Home() {
             const open = calcIsOpen(storeSettings)
             return (
               <div className="flex items-center justify-center gap-3 mb-8">
-                <span className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full ${open ? 'bg-green-500/15 text-green-400 border border-green-500/30' : 'bg-h-red/15 text-h-red border border-h-red/30'}`}>
+                <span className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full ${open ? 'bg-green-500/15 text-green-400 border border-green-500/30' : 'bg-h-red/15 text-h-cream border border-h-red/30'}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${open ? 'bg-green-400 animate-pulse' : 'bg-h-red'}`} />
                   {open ? 'Buka Sekarang' : 'Sedang Tutup'}
                 </span>
@@ -290,10 +290,10 @@ export default function Home() {
         <Section className="px-5 max-w-5xl mx-auto mb-8">
           <div className="flex items-end justify-between">
             <div>
-              <div className="text-h-red text-[0.55rem] tracking-[4px] uppercase font-semibold mb-2">Pilihan Kami</div>
+              <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold mb-2">Pilihan Kami</div>
               <h2 className="font-sans font-black text-white text-3xl uppercase tracking-wider leading-none">Menu</h2>
             </div>
-            <a href="/menu?table=1" className="text-h-red text-xs font-bold hover:underline tracking-wider uppercase">
+            <a href="/menu?table=1" className="text-h-cream text-xs font-bold hover:underline tracking-wider uppercase">
               Lihat Semua →
             </a>
           </div>
@@ -313,11 +313,11 @@ export default function Home() {
       {/* ── About Us ── */}
       <section className="py-20 px-5">
         <Section className="max-w-3xl mx-auto text-center">
-          <div className="text-h-red text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Tentang Kami</div>
-          <h2 className="font-sans font-black text-white text-3xl uppercase tracking-wider mb-6">Halo, kami Hall-U</h2>
+          <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Tentang Kami</div>
+          <h2 className="font-sans font-black text-white text-3xl uppercase tracking-wider mb-6">Halo, kami Hallu</h2>
           <p className="text-white/60 text-base leading-relaxed mb-4">
-            Hall-U (هالو · &quot;halo&quot; dalam bahasa Arab) lahir dari satu ide sederhana —
-            tempat di mana semua orang merasa <em className="text-h-red not-italic font-semibold">disambut</em>.
+            Hallu (هالو · &quot;halo&quot; dalam bahasa Arab) lahir dari satu ide sederhana —
+            tempat di mana semua orang merasa <em className="text-h-cream not-italic font-semibold">disambut</em>.
           </p>
           <p className="text-white/50 text-sm leading-relaxed">
             Specialty coffee kami diracik dari biji pilihan, dipadukan dengan suasana
@@ -336,7 +336,7 @@ export default function Home() {
             { Icon: QrIcon, title: 'Order Mudah', desc: 'Scan QR di meja, pesan dari ponsel, pesanan langsung masuk ke dapur.' },
           ].map(({ Icon, title, desc }) => (
             <Section key={title} className="bg-h-card border border-h-border rounded-2xl p-7 hover:border-white/15 transition-colors">
-              <div className="w-11 h-11 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-red mb-5">
+              <div className="w-11 h-11 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-cream mb-5">
                 <Icon className="w-5 h-5" />
               </div>
               <div className="font-bold text-white text-base mb-2">{title}</div>
@@ -350,7 +350,7 @@ export default function Home() {
       <section className="py-20 px-5">
         <Section className="max-w-5xl mx-auto">
           <div className="text-center mb-8">
-            <div className="text-h-red text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Lokasi</div>
+            <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Lokasi</div>
             <h2 className="font-sans font-black text-white text-3xl uppercase tracking-wider mb-2">Mampir Yuk</h2>
             <p className="text-h-muted text-sm">{LOC.address}</p>
           </div>
@@ -361,18 +361,18 @@ export default function Home() {
               className="lg:col-span-3 rounded-2xl overflow-hidden border border-h-border h-[340px] relative block group">
               {/* Fallback bg di belakang iframe — tampil kalau map belum/ tidak load */}
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-h-card text-center px-6 z-0">
-                <div className="w-12 h-12 rounded-full bg-h-red/10 border border-h-red/25 flex items-center justify-center text-h-red mb-4">
+                <div className="w-12 h-12 rounded-full bg-h-red/10 border border-h-red/25 flex items-center justify-center text-h-cream mb-4">
                   <MapPinIcon className="w-6 h-6" />
                 </div>
                 <div className="text-white font-bold text-sm">{LOC.label}</div>
                 <div className="text-h-muted text-xs mt-1">{LOC.address}</div>
-                <div className="flex items-center gap-1.5 text-h-red text-xs font-bold mt-3 uppercase tracking-wider">
+                <div className="flex items-center gap-1.5 text-h-cream text-xs font-bold mt-3 uppercase tracking-wider">
                   Buka peta <ArrowIcon className="w-3.5 h-3.5" />
                 </div>
               </div>
               <iframe
                 src={mapsEmbed}
-                title="Lokasi Hall-U"
+                title="Lokasi Hallu"
                 className="w-full h-full relative z-10"
                 style={{ border: 0 }}
                 loading="lazy"
@@ -384,7 +384,7 @@ export default function Home() {
             <div className="lg:col-span-2 flex flex-col gap-4">
               <div className="bg-h-card border border-h-border rounded-2xl p-6 flex-1 space-y-5">
                 <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-red flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-cream flex-shrink-0">
                     <MapPinIcon className="w-5 h-5" />
                   </div>
                   <div>
@@ -394,7 +394,7 @@ export default function Home() {
                 </div>
                 {storeSettings && (
                   <div className="flex items-start gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-red flex-shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-cream flex-shrink-0">
                       <ClockIcon className="w-5 h-5" />
                     </div>
                     <div>
@@ -405,12 +405,12 @@ export default function Home() {
                   </div>
                 )}
                 <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-red flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-cream flex-shrink-0">
                     <PhoneIcon className="w-5 h-5" />
                   </div>
                   <div>
                     <div className="font-bold text-white text-sm">Kontak</div>
-                    <a href={WA} target="_blank" rel="noreferrer" className="text-h-red text-xs mt-0.5 hover:underline">+62 812-4540-0031</a>
+                    <a href={WA} target="_blank" rel="noreferrer" className="text-h-cream text-xs mt-0.5 hover:underline">+62 812-4540-0031</a>
                   </div>
                 </div>
               </div>
@@ -432,7 +432,7 @@ export default function Home() {
       {/* ── Follow Kami ── */}
       <section className="py-16 px-5">
         <Section className="max-w-3xl mx-auto text-center">
-          <div className="text-h-red text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Follow Kami</div>
+          <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Follow Kami</div>
           <h2 className="font-sans font-black text-white text-2xl uppercase tracking-wider mb-2">Jangan ketinggalan</h2>
           <p className="text-h-muted text-sm mb-8 leading-relaxed">
             Menu baru, event, dan keseruan kafe — kami posting tiap hari.
@@ -505,7 +505,7 @@ export default function Home() {
       <footer className="border-t border-h-border py-10 px-5">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-center sm:text-left">
-            <div className="font-sans font-black text-white tracking-widest text-sm uppercase">HALL-U</div>
+            <div className="font-sans font-black text-white tracking-widest text-sm uppercase">HALLU</div>
             <div className="text-h-muted text-xs mt-0.5">Coffee &amp; Sociality · Ternate, Indonesia</div>
             {storeSettings && (
               <div className="text-h-muted text-xs mt-1">
@@ -536,7 +536,7 @@ export default function Home() {
           </div>
         </div>
         <div className="text-center mt-8 text-white/10 text-[10px] tracking-widest uppercase">
-          © 2025 Hall-U · All rights reserved
+          © 2025 Hallu · All rights reserved
         </div>
       </footer>
 
