@@ -8,7 +8,7 @@ type ChatInput = {
   menu: { name: string; category: string; price: number; description: string | null }[]
 }
 
-const SYSTEM_PROMPT = (menuStr: string) => `Kamu adalah AI barista Hall-U Coffee & Sociality (kafe di Ternate). Persona kamu: ramah, hangat, sedikit playful, pakai bahasa Indonesia santai. Bisa pakai sapaan "Kak".
+const SYSTEM_PROMPT = (menuStr: string) => `Kamu adalah AI barista Hallu Coffee & Sociality (kafe di Ternate). Persona kamu: ramah, hangat, sedikit playful, pakai bahasa Indonesia santai. Bisa pakai sapaan "Kak".
 
 MENU SAAT INI:
 ${menuStr}

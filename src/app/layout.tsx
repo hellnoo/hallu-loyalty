@@ -17,25 +17,25 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Hall-U Coffee & Sociality — Ternate',
-    template: '%s | Hall-U',
+    default: 'Hallu Coffee & Sociality — Ternate',
+    template: '%s | Hallu',
   },
-  description: 'Hall-U Coffee & Sociality di Ternate — spesialty coffee, ruang nongkrong yang cozy, dan momen-momen terbaik. Scan QR di meja untuk pesan langsung dari HP.',
-  keywords: ['kafe ternate', 'coffee shop ternate', 'hall-u', 'spesialty coffee ternate', 'tempat nongkrong ternate'],
+  description: 'Hallu Coffee & Sociality di Ternate — specialty coffee, ruang nongkrong yang cozy, dan momen-momen terbaik. Scan QR di meja untuk pesan langsung dari HP.',
+  keywords: ['kafe ternate', 'coffee shop ternate', 'hallu', 'specialty coffee ternate', 'tempat nongkrong ternate'],
   manifest: '/manifest.json',
-  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Hall-U' },
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Hallu' },
   icons: { icon: '/icon.svg', apple: '/icon.svg' },
   openGraph: {
     type: 'website',
     locale: 'id_ID',
-    title: 'Hall-U Coffee & Sociality',
-    description: 'Spesialty coffee & tempat nongkrong terbaik di Ternate. Scan QR di meja, pesan dari HP, langsung diantar.',
-    siteName: 'Hall-U Café',
+    title: 'Hallu Coffee & Sociality',
+    description: 'Specialty coffee & tempat nongkrong terbaik di Ternate. Scan QR di meja, pesan dari HP, langsung diantar.',
+    siteName: 'Hallu Café',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Hall-U Coffee & Sociality',
-    description: 'Spesialty coffee & tempat nongkrong terbaik di Ternate.',
+    title: 'Hallu Coffee & Sociality',
+    description: 'Specialty coffee & tempat nongkrong terbaik di Ternate.',
   },
 }
 

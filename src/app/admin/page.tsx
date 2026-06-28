@@ -13,7 +13,7 @@ function margin(price: number, hpp: number) {
 function marginColor(m: number) {
   if (m >= 60) return 'text-green-400'
   if (m >= 40) return 'text-yellow-400'
-  return 'text-h-red'
+  return 'text-red-400'
 }
 
 type FormData = Omit<MenuItem, 'id' | 'created_at' | 'image_url' | 'model_3d_url' | 'model_3d_task_id'>
@@ -338,10 +338,10 @@ export default function AdminPage() {
     <div className="min-h-screen bg-h-bg flex items-center justify-center p-6">
       <div className="bg-h-card border border-h-border rounded-2xl p-8 w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="font-sans text-2xl font-black text-white tracking-widest uppercase">HALL-U</div>
+          <div className="font-sans text-2xl font-black text-white tracking-widest uppercase">HALLU</div>
           <div className="flex items-center gap-2 justify-center mt-1">
             <div className="h-px w-6 bg-h-red" />
-            <div className="text-h-red text-[0.5rem] tracking-[3px] uppercase font-semibold">Admin Panel</div>
+            <div className="text-h-cream text-[0.5rem] tracking-[3px] uppercase font-semibold">Admin Panel</div>
             <div className="h-px w-6 bg-h-red" />
           </div>
         </div>
@@ -351,7 +351,7 @@ export default function AdminPage() {
             <input type="password" value={pw} onChange={e => { setPw(e.target.value); setPwError('') }}
               className="w-full bg-h-dark border border-h-border rounded-xl px-4 py-3 focus:outline-none focus:border-h-red transition-colors text-sm text-white placeholder-h-muted"
               placeholder="Masukkan password admin" autoFocus />
-            {pwError && <p className="text-h-red text-xs mt-1">{pwError}</p>}
+            {pwError && <p className="text-red-400 text-xs mt-1">{pwError}</p>}
           </div>
           <button type="submit" className="w-full bg-h-red hover:bg-h-red-d text-white py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-colors">
             Masuk
@@ -366,8 +366,8 @@ export default function AdminPage() {
       <header className="bg-h-dark border-b border-h-border">
         <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
           <div>
-            <div className="font-sans text-xl font-black text-white tracking-widest uppercase">HALL-U</div>
-            <div className="text-h-red text-[0.55rem] tracking-[3px] uppercase font-semibold mt-0.5">Admin Panel</div>
+            <div className="font-sans text-xl font-black text-white tracking-widest uppercase">HALLU</div>
+            <div className="text-h-cream text-[0.55rem] tracking-[3px] uppercase font-semibold mt-0.5">Admin Panel</div>
           </div>
           <div className="flex items-center gap-4">
             <a href="/admin/qr" className="text-h-muted hover:text-white text-sm transition-colors">QR Generator</a>
@@ -385,7 +385,7 @@ export default function AdminPage() {
         <div className="max-w-5xl mx-auto flex">
           {([['menu', 'Kelola Menu'], ['hpp', 'HPP & Margin'], ['analitik', 'Analitik'], ['pengaturan', 'Pengaturan']] as const).map(([key, label]) => (
             <button key={key} onClick={() => setTab(key)}
-              className={`px-6 py-3.5 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 ${tab === key ? 'text-h-red border-h-red' : 'text-h-muted border-transparent hover:text-white'}`}>
+              className={`px-6 py-3.5 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 ${tab === key ? 'text-h-cream border-h-red' : 'text-h-muted border-transparent hover:text-white'}`}>
               {label}
             </button>
           ))}
@@ -434,7 +434,7 @@ export default function AdminPage() {
                                 ) : (
                                   <div className="w-12 h-12 rounded-lg border border-dashed border-h-border flex items-center justify-center text-h-muted text-lg">📷</div>
                                 )}
-                                <label className={`cursor-pointer text-xs font-bold px-2.5 py-1.5 rounded-lg border transition-colors whitespace-nowrap ${uploadingId === item.id ? 'border-h-border text-h-muted' : 'border-h-border text-h-muted hover:border-h-red hover:text-h-red'}`}>
+                                <label className={`cursor-pointer text-xs font-bold px-2.5 py-1.5 rounded-lg border transition-colors whitespace-nowrap ${uploadingId === item.id ? 'border-h-border text-h-muted' : 'border-h-border text-h-muted hover:border-h-red hover:text-h-cream'}`}>
                                   <input type="file" accept="image/*" className="hidden" disabled={uploadingId === item.id}
                                     onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(item.id, f); e.target.value = '' }} />
                                   {uploadingId === item.id ? '⏳' : item.image_url ? 'Ganti' : 'Upload'}
@@ -458,34 +458,34 @@ export default function AdminPage() {
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-xs text-green-400 font-bold">✓ 3D</span>
                                   <button onClick={() => remove3DModel(item)} title="Hapus model 3D"
-                                    className="text-xs text-h-muted hover:text-h-red">×</button>
+                                    className="text-xs text-h-muted hover:text-h-cream">×</button>
                                 </div>
                               ) : isGenerating ? (
                                 <div className="text-[10px]">
-                                  <div className="text-h-red font-bold">{meshy.status}</div>
+                                  <div className="text-h-cream font-bold">{meshy.status}</div>
                                   <div className="w-16 h-1 bg-h-border rounded mt-1 overflow-hidden">
                                     <div className="h-full bg-h-red transition-all" style={{ width: `${meshy.progress}%` }} />
                                   </div>
                                 </div>
                               ) : meshy?.status === 'FAILED' ? (
                                 <button onClick={() => generate3DModel(item)} title={meshy.error || 'Gagal, coba lagi'}
-                                  className="text-[10px] text-h-red hover:underline font-bold">↻ Retry</button>
+                                  className="text-[10px] text-h-cream hover:underline font-bold">↻ Retry</button>
                               ) : (
                                 <button onClick={() => generate3DModel(item)} disabled={!item.image_url}
-                                  className="text-[10px] font-bold uppercase tracking-wider border border-h-red/40 text-h-red hover:bg-h-red/10 disabled:opacity-40 disabled:cursor-not-allowed px-2 py-1 rounded">
+                                  className="text-[10px] font-bold uppercase tracking-wider border border-h-red/40 text-h-cream hover:bg-h-red/10 disabled:opacity-40 disabled:cursor-not-allowed px-2 py-1 rounded">
                                   ✨ Gen 3D
                                 </button>
                               )}
                             </td>
                             <td className="px-4 py-3.5">
                               <button onClick={() => toggleAvailable(item)}
-                                className={`text-xs font-bold px-3 py-1 rounded-full transition-colors uppercase tracking-wide ${item.available ? 'bg-h-red/20 text-h-red hover:bg-h-red/30' : 'bg-h-border text-h-muted hover:bg-h-border/80'}`}>
+                                className={`text-xs font-bold px-3 py-1 rounded-full transition-colors uppercase tracking-wide ${item.available ? 'bg-h-red/20 text-h-cream hover:bg-h-red/30' : 'bg-h-border text-h-muted hover:bg-h-border/80'}`}>
                                 {item.available ? 'Tersedia' : 'Habis'}
                               </button>
                             </td>
                             <td className="px-4 py-3.5">
                               <div className="flex items-center gap-3">
-                                <button onClick={() => openEdit(item)} className="text-xs text-h-red hover:text-h-red-d font-bold uppercase">Edit</button>
+                                <button onClick={() => openEdit(item)} className="text-xs text-h-cream hover:text-h-cream-d font-bold uppercase">Edit</button>
                                 {confirmDeleteId === item.id ? (
                                   <div className="flex items-center gap-2">
                                     <button onClick={() => handleDelete(item.id)} className="text-xs text-white bg-h-red hover:bg-h-red-d px-2 py-1 rounded font-bold uppercase">Yakin</button>
@@ -523,7 +523,7 @@ export default function AdminPage() {
                 {[
                   { label: 'Margin ≥ 60%', value: hppStats.filter(i => (i.margin ?? 0) >= 60).length, color: 'text-green-400' },
                   { label: 'Margin 40–59%', value: hppStats.filter(i => { const m = i.margin ?? 0; return m >= 40 && m < 60 }).length, color: 'text-yellow-400' },
-                  { label: 'Margin < 40%', value: hppStats.filter(i => i.margin !== null && (i.margin ?? 0) < 40).length, color: 'text-h-red' },
+                  { label: 'Margin < 40%', value: hppStats.filter(i => i.margin !== null && (i.margin ?? 0) < 40).length, color: 'text-red-400' },
                 ].map(s => (
                   <div key={s.label} className="bg-h-card border border-h-border rounded-2xl p-4">
                     <div className={`text-2xl font-black ${s.color}`}>{s.value}</div>
@@ -575,7 +575,7 @@ export default function AdminPage() {
                 </table>
               </div>
             </div>
-            <p className="text-xs text-h-muted">* Isi HPP per item lewat tab <button onClick={() => { setTab('menu') }} className="text-h-red hover:underline">Kelola Menu → Edit</button></p>
+            <p className="text-xs text-h-muted">* Isi HPP per item lewat tab <button onClick={() => { setTab('menu') }} className="text-h-cream hover:underline">Kelola Menu → Edit</button></p>
           </div>
         )}
 
@@ -680,7 +680,7 @@ export default function AdminPage() {
                             />
                           </div>
                           <div className="text-[9px] text-h-muted text-center">{d.label}</div>
-                          {d.count > 0 && <div className="text-[9px] text-h-red font-bold">{d.count}×</div>}
+                          {d.count > 0 && <div className="text-[9px] text-h-cream font-bold">{d.count}×</div>}
                         </div>
                       ))}
                     </div>
@@ -725,7 +725,7 @@ export default function AdminPage() {
                             <div key={item.name}>
                               <div className="flex justify-between items-center mb-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-h-red font-black w-4">#{i+1}</span>
+                                  <span className="text-[10px] text-h-cream font-black w-4">#{i+1}</span>
                                   <span className="text-xs text-white font-semibold">{item.name}</span>
                                 </div>
                                 <div className="text-right">
@@ -772,7 +772,7 @@ export default function AdminPage() {
                       </div>
                       {!aiInsightsLoading && (
                         <button onClick={generateAiInsights}
-                          className="text-xs font-bold bg-h-red/10 hover:bg-h-red/20 border border-h-red/40 text-h-red px-3.5 py-1.5 rounded-lg transition-colors uppercase tracking-wider">
+                          className="text-xs font-bold bg-h-red/10 hover:bg-h-red/20 border border-h-red/40 text-h-cream px-3.5 py-1.5 rounded-lg transition-colors uppercase tracking-wider">
                           {aiInsights ? '↻ Refresh' : '✨ Analisis'}
                         </button>
                       )}
@@ -781,7 +781,7 @@ export default function AdminPage() {
                       <div className="text-center text-h-muted text-sm py-8 animate-pulse">🧠 AI sedang menganalisis menu kamu...</div>
                     )}
                     {aiInsightsError && (
-                      <div className="text-h-red text-xs bg-h-red/10 border border-h-red/30 rounded-lg px-3 py-2">{aiInsightsError}</div>
+                      <div className="text-red-400 text-xs bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">{aiInsightsError}</div>
                     )}
                     {aiInsights && (
                       <div className="bg-h-dark border border-h-border rounded-xl p-4 max-h-96 overflow-y-auto">
@@ -811,7 +811,7 @@ export default function AdminPage() {
                             const total = o.items.reduce((s, i) => s + i.price * i.qty, 0)
                             const statusColors: Record<string, string> = {
                               new: 'text-white', preparing: 'text-yellow-400',
-                              ready: 'text-green-400', done: 'text-h-muted', cancelled: 'text-h-red',
+                              ready: 'text-green-400', done: 'text-h-muted', cancelled: 'text-red-400',
                             }
                             return (
                               <tr key={o.id} className="hover:bg-h-dark/40 transition-colors">
@@ -858,14 +858,14 @@ export default function AdminPage() {
               <div className={`flex items-center justify-between px-5 py-4 rounded-2xl border ${open ? 'bg-green-500/10 border-green-500/30' : 'bg-h-red/10 border-h-red/30'}`}>
                 <div>
                   <div className="text-xs text-h-muted uppercase tracking-widest font-bold mb-1">Status Sekarang</div>
-                  <div className={`text-xl font-black ${open ? 'text-green-400' : 'text-h-red'}`}>
+                  <div className={`text-xl font-black ${open ? 'text-green-400' : 'text-h-cream'}`}>
                     {open ? '🟢 Buka' : '🔴 Tutup'}
                   </div>
                   {!settings.is_manually_closed && (
                     <div className="text-xs text-h-muted mt-1">{settings.open_time} – {settings.close_time} · {settings.open_days}</div>
                   )}
                   {settings.is_manually_closed && (
-                    <div className="text-xs text-h-red mt-1">Ditutup manual oleh admin</div>
+                    <div className="text-xs text-h-cream mt-1">Ditutup manual oleh admin</div>
                   )}
                 </div>
                 <div className={`text-5xl ${open ? 'animate-bounce' : ''}`} style={{ animationDuration: '2s' }}>
@@ -950,13 +950,13 @@ export default function AdminPage() {
                   </button>
                 </div>
                 {cleanupResult && (
-                  <div className={`text-xs font-bold px-3 py-2 rounded-lg ${cleanupResult.startsWith('✅') ? 'bg-green-500/10 text-green-400' : 'bg-h-red/10 text-h-red'}`}>
+                  <div className={`text-xs font-bold px-3 py-2 rounded-lg ${cleanupResult.startsWith('✅') ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
                     {cleanupResult}
                   </div>
                 )}
                 <div className="text-xs text-h-muted border-t border-h-border pt-3">
                   💡 <strong>Rekomendasi:</strong> 60 hari — cukup untuk audit 2 bulan, tidak membebani database.<br />
-                  Untuk hapus otomatis tiap malam, aktifkan <code className="text-h-red">pg_cron</code> di Supabase Extensions lalu jalankan SQL di bawah.
+                  Untuk hapus otomatis tiap malam, aktifkan <code className="text-h-cream">pg_cron</code> di Supabase Extensions lalu jalankan SQL di bawah.
                 </div>
               </div>
             </div>
@@ -984,7 +984,7 @@ export default function AdminPage() {
                   <label className="text-xs text-h-muted font-bold uppercase tracking-wide">Deskripsi</label>
                   <button type="button" onClick={generateAiDescription}
                     disabled={!form.name.trim() || aiDescLoading}
-                    className="text-[10px] font-bold uppercase tracking-wider text-h-red hover:text-white disabled:opacity-40 disabled:cursor-not-allowed border border-h-red/40 hover:border-h-red px-2 py-0.5 rounded-md transition-colors">
+                    className="text-[10px] font-bold uppercase tracking-wider text-h-cream hover:text-white disabled:opacity-40 disabled:cursor-not-allowed border border-h-red/40 hover:border-h-red px-2 py-0.5 rounded-md transition-colors">
                     {aiDescLoading ? 'AI nulis...' : '✨ Auto-Generate'}
                   </button>
                 </div>
@@ -1023,7 +1023,7 @@ export default function AdminPage() {
                       const total = comps.reduce((s, c) => s + (c.biaya || 0), 0)
                       setForm(f => ({ ...f, hpp_components: comps, hpp: total }))
                     }}
-                    className="text-xs text-h-red hover:text-white font-bold border border-h-red/40 hover:border-h-red px-2.5 py-1 rounded-lg transition-colors">
+                    className="text-xs text-h-cream hover:text-white font-bold border border-h-red/40 hover:border-h-red px-2.5 py-1 rounded-lg transition-colors">
                     + Komponen
                   </button>
                 </div>
@@ -1059,7 +1059,7 @@ export default function AdminPage() {
                         const total = comps.reduce((s, c) => s + (c.biaya || 0), 0)
                         setForm(f => ({ ...f, hpp_components: comps, hpp: total }))
                       }}
-                      className="text-h-muted hover:text-h-red text-lg leading-none flex-shrink-0 transition-colors">×</button>
+                      className="text-h-muted hover:text-h-cream text-lg leading-none flex-shrink-0 transition-colors">×</button>
                   </div>
                 ))}
                 {(form.hpp_components || []).length > 0 && (
@@ -1078,7 +1078,7 @@ export default function AdminPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-green-400 font-bold flex-1 truncate">✓ {editing.model_3d_url}</span>
                       <button type="button" onClick={() => remove3DModel(editing)}
-                        className="text-xs text-h-red hover:underline">Hapus</button>
+                        className="text-xs text-h-cream hover:underline">Hapus</button>
                     </div>
                   ) : (
                     <>
@@ -1088,7 +1088,7 @@ export default function AdminPage() {
                           className="flex-1 bg-h-card border border-h-border rounded-lg px-3 py-2 text-xs text-white placeholder-h-muted focus:outline-none focus:border-h-red" />
                         <button type="button" onClick={() => saveManualGlb(editing)}
                           disabled={!manualGlbUrl.trim()}
-                          className="text-xs text-h-red border border-h-red/40 hover:bg-h-red/10 disabled:opacity-40 px-3 py-2 rounded-lg font-bold uppercase tracking-wide">
+                          className="text-xs text-h-cream border border-h-red/40 hover:bg-h-red/10 disabled:opacity-40 px-3 py-2 rounded-lg font-bold uppercase tracking-wide">
                           Simpan
                         </button>
                       </div>

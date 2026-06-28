@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
     })
 
-    const prompt = `Kamu adalah business analyst untuk Hall-U Coffee & Sociality (kafe di Ternate). Buat laporan harian gaya WhatsApp yang ENAK DIBACA owner, dengan emoji dan insight tajam. Format Markdown WhatsApp (*tebal*, _miring_).
+    const prompt = `Kamu adalah business analyst untuk Hallu Coffee & Sociality (kafe di Ternate). Buat laporan harian gaya WhatsApp yang ENAK DIBACA owner, dengan emoji dan insight tajam. Format Markdown WhatsApp (*tebal*, _miring_).
 
 DATA HARI INI (${tanggal}):
 - Revenue: Rp ${data.todayRevenue.toLocaleString('id-ID')}
@@ -43,7 +43,7 @@ PERBANDINGAN:
 - Rata-rata 7 hari: Rp ${(data.weekAvgRevenue || 0).toLocaleString('id-ID')}
 
 INSTRUKSI:
-1. Mulai dengan judul: 📊 *Laporan Hall-U — ${tanggal}*
+1. Mulai dengan judul: 📊 *Laporan Hallu — ${tanggal}*
 2. Beri ringkasan revenue + perbandingan vs kemarin & rata-rata mingguan (% naik/turun)
 3. Sebut top 3 item dengan emoji yang sesuai
 4. Beri 2-3 INSIGHT cerdas (bukan cuma sebut angka, tapi pattern atau kesimpulan)

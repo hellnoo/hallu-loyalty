@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
           .join('\n')
       : ''
 
-    const prompt = `Kamu adalah barista expert di Hall-U Coffee & Sociality (Ternate). Customer sedang di keranjang dan kamu harus rekomendasi 2-3 ITEM TAMBAHAN yang COCOK & MENGGIURKAN.
+    const prompt = `Kamu adalah barista expert di Hallu Coffee & Sociality (Ternate). Customer sedang di keranjang dan kamu harus rekomendasi 2-3 ITEM TAMBAHAN yang COCOK & MENGGIURKAN.
 
 KERANJANG SAAT INI:
 ${data.cart.map(c => `- ${c.name} x${c.qty} (${c.category}, Rp ${c.price.toLocaleString('id-ID')})`).join('\n')}
