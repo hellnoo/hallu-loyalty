@@ -8,6 +8,18 @@ const IG = 'https://instagram.com/hall.ucffe'
 const TIKTOK = 'https://tiktok.com/@hall.ucffe'
 const IG_HANDLE = '@hall.ucffe'
 
+// ── Lokasi Hall-U ──────────────────────────────────────────
+// TODO: ganti LAT,LNG dengan koordinat persis dari Google Maps (Share → Copy link)
+const LOC = {
+  lat: 0.7905,         // perkiraan area Taman Fitness, Ternate — GANTI dengan titik persis
+  lng: 127.3820,
+  label: 'Hall-U Coffee & Sociality',
+  address: 'Area Taman Fitness, Ternate, Maluku Utara',
+}
+const mapsEmbed = `https://maps.google.com/maps?q=${LOC.lat},${LOC.lng}&z=17&output=embed`
+const mapsDirections = `https://www.google.com/maps/dir/?api=1&destination=${LOC.lat},${LOC.lng}`
+const mapsView = `https://www.google.com/maps/search/?api=1&query=${LOC.lat},${LOC.lng}`
+
 // Social SVG icons
 const InstagramIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={`${className} fill-current`}>
@@ -299,6 +311,79 @@ export default function Home() {
             </Section>
           ))}
         </div>
+      </section>
+
+      {/* ── Lokasi ── */}
+      <section className="py-20 px-5">
+        <Section className="max-w-5xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="text-h-red text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Lokasi</div>
+            <h2 className="font-sans font-black text-white text-3xl uppercase tracking-wider mb-2">Mampir Yuk</h2>
+            <p className="text-h-muted text-sm">{LOC.address}</p>
+          </div>
+
+          <div className="grid lg:grid-cols-5 gap-6">
+            {/* Map embed */}
+            <a href={mapsView} target="_blank" rel="noreferrer"
+              className="lg:col-span-3 rounded-2xl overflow-hidden border border-h-border h-[340px] relative block group">
+              {/* Fallback bg di belakang iframe — tampil kalau map belum/ tidak load */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-h-card text-center px-6 z-0">
+                <div className="text-4xl mb-3">🗺️</div>
+                <div className="text-white font-bold text-sm">{LOC.label}</div>
+                <div className="text-h-muted text-xs mt-1">{LOC.address}</div>
+                <div className="text-h-red text-xs font-bold mt-3 uppercase tracking-wider">Tap untuk buka peta →</div>
+              </div>
+              <iframe
+                src={mapsEmbed}
+                title="Lokasi Hall-U"
+                className="w-full h-full relative z-10"
+                style={{ border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </a>
+
+            {/* Info & actions */}
+            <div className="lg:col-span-2 flex flex-col gap-4">
+              <div className="bg-h-card border border-h-border rounded-2xl p-6 flex-1">
+                <div className="flex items-start gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-xl bg-h-red/15 flex items-center justify-center flex-shrink-0">📍</div>
+                  <div>
+                    <div className="font-bold text-white text-sm">{LOC.label}</div>
+                    <div className="text-h-muted text-xs mt-0.5 leading-relaxed">{LOC.address}</div>
+                  </div>
+                </div>
+                {storeSettings && (
+                  <div className="flex items-start gap-3 mb-5">
+                    <div className="w-10 h-10 rounded-xl bg-h-red/15 flex items-center justify-center flex-shrink-0">🕐</div>
+                    <div>
+                      <div className="font-bold text-white text-sm">Jam Buka</div>
+                      <div className="text-h-muted text-xs mt-0.5">{storeSettings.open_days}</div>
+                      <div className="text-h-muted text-xs">{storeSettings.open_time}–{storeSettings.close_time} WIT</div>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-h-red/15 flex items-center justify-center flex-shrink-0">📞</div>
+                  <div>
+                    <div className="font-bold text-white text-sm">Kontak</div>
+                    <a href={WA} target="_blank" rel="noreferrer" className="text-h-red text-xs mt-0.5 hover:underline">+62 812-4540-0031</a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Directions button */}
+              <a href={mapsDirections} target="_blank" rel="noreferrer"
+                className="flex items-center justify-center gap-2 bg-h-red hover:bg-h-red-d text-white px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-colors">
+                🧭 Petunjuk Arah
+              </a>
+              <a href={mapsView} target="_blank" rel="noreferrer"
+                className="flex items-center justify-center gap-2 border border-h-border hover:border-white/30 text-white/70 hover:text-white px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-colors">
+                Buka di Google Maps →
+              </a>
+            </div>
+          </div>
+        </Section>
       </section>
 
       {/* ── Follow Kami ── */}
