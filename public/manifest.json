@@ -1,10 +1,10 @@
 {
-  "name": "Hall-U Coffee & Sociality",
-  "short_name": "Hall-U",
-  "description": "QR Menu & Order Hall-U Café",
+  "name": "Hallu Coffee & Sociality",
+  "short_name": "Hallu",
+  "description": "QR Menu & Order — Hallu Café, Ternate",
   "start_url": "/menu",
   "display": "standalone",
-  "background_color": "#0E0E0F",
+  "background_color": "#0c0a09",
   "theme_color": "#7C1515",
   "orientation": "portrait",
   "icons": [
