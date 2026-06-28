@@ -37,6 +37,37 @@ const WhatsAppIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
   </svg>
 )
 
+// ── Line icons (stroke-based, konsisten) ───────────────────
+type IconProps = { className?: string }
+const Stroke = ({ className = 'w-5 h-5', children }: IconProps & { children: React.ReactNode }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}
+    strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
+)
+const CoffeeIcon = ({ className }: IconProps) => (
+  <Stroke className={className}><path d="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z" /><path d="M6 2v2M10 2v2M14 2v2" /></Stroke>
+)
+const UsersIcon = ({ className }: IconProps) => (
+  <Stroke className={className}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></Stroke>
+)
+const QrIcon = ({ className }: IconProps) => (
+  <Stroke className={className}><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><path d="M14 14h3v3M21 14v.01M14 21h.01M17 21h4v-4" /></Stroke>
+)
+const MapPinIcon = ({ className }: IconProps) => (
+  <Stroke className={className}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></Stroke>
+)
+const ClockIcon = ({ className }: IconProps) => (
+  <Stroke className={className}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></Stroke>
+)
+const PhoneIcon = ({ className }: IconProps) => (
+  <Stroke className={className}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" /></Stroke>
+)
+const NavigationIcon = ({ className }: IconProps) => (
+  <Stroke className={className}><polygon points="3 11 22 2 13 21 11 13 3 11" /></Stroke>
+)
+const ArrowIcon = ({ className = 'w-4 h-4' }: IconProps) => (
+  <Stroke className={className}><path d="M5 12h14M13 6l6 6-6 6" /></Stroke>
+)
+
 function formatRp(n: number) { return 'Rp ' + n.toLocaleString('id-ID') }
 
 const CAT_ICONS: Record<string, string> = {
@@ -191,8 +222,8 @@ export default function Home() {
       <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden">
         {/* Background glow */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-[600px] h-[600px] rounded-full animate-hero-glow"
-            style={{ background: 'radial-gradient(circle, rgba(124,21,21,0.6) 0%, rgba(124,21,21,0.2) 40%, transparent 70%)' }} />
+          <div className="w-[520px] h-[520px] rounded-full animate-hero-glow"
+            style={{ background: 'radial-gradient(circle, rgba(124,21,21,0.42) 0%, rgba(124,21,21,0.12) 45%, transparent 70%)' }} />
         </div>
         {/* Grain overlay */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
@@ -215,8 +246,8 @@ export default function Home() {
             <div className="h-px flex-1 max-w-[60px]" style={{ background: 'linear-gradient(to left, transparent, #7C1515)' }} />
           </div>
           {/* Tagline */}
-          <p className="text-white/40 text-sm leading-relaxed max-w-xs mx-auto mt-3 mb-6">
-            Spesialty coffee, ruang nongkrong, dan momen-momen<br />terbaik di Ternate. ☕
+          <p className="text-white/45 text-sm leading-relaxed max-w-sm mx-auto mt-3 mb-6">
+            Specialty coffee dan ruang sosial untuk menemani momen terbaikmu di Ternate.
           </p>
           {/* Jam operasional */}
           {storeSettings && (() => {
@@ -236,12 +267,12 @@ export default function Home() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href="/menu?table=1"
-              className="flex items-center justify-center gap-2 bg-h-red hover:bg-h-red-d text-white px-8 py-3.5 rounded-full font-black text-sm uppercase tracking-widest transition-colors">
-              ☕ Lihat Menu
+              className="flex items-center justify-center gap-2 bg-h-red hover:bg-h-red-d text-white px-8 py-3.5 rounded-full font-bold text-sm uppercase tracking-[0.15em] transition-colors">
+              <CoffeeIcon className="w-4 h-4" /> Lihat Menu
             </a>
             <a href={WA} target="_blank" rel="noreferrer"
-              className="flex items-center justify-center gap-2 border border-h-border hover:border-white/30 text-white/70 hover:text-white px-8 py-3.5 rounded-full font-bold text-sm uppercase tracking-widest transition-colors">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-green-400"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              className="flex items-center justify-center gap-2 border border-h-border hover:border-white/30 text-white/70 hover:text-white px-8 py-3.5 rounded-full font-bold text-sm uppercase tracking-[0.15em] transition-colors">
+              <WhatsAppIcon className="w-4 h-4 text-green-400" />
               Order via WA
             </a>
           </div>
@@ -289,25 +320,27 @@ export default function Home() {
             tempat di mana semua orang merasa <em className="text-h-red not-italic font-semibold">disambut</em>.
           </p>
           <p className="text-white/50 text-sm leading-relaxed">
-            Spesialty coffee diracik dari biji pilihan, dipasangkan dengan suasana
-            yang cozy buat ngobrol, kerja, atau sekadar me-time. Kami percaya kopi
-            yang enak itu lebih dari rasa — itu soal momen.
+            Specialty coffee kami diracik dari biji pilihan, dipadukan dengan suasana
+            yang hangat untuk ngobrol, bekerja, atau sekadar menikmati waktu sendiri.
+            Bagi kami, secangkir kopi yang baik adalah tentang momen — bukan sekadar rasa.
           </p>
         </Section>
       </section>
 
       {/* ── Vibes ── */}
       <section className="py-20 px-5">
-        <div className="max-w-5xl mx-auto grid sm:grid-cols-3 gap-6">
+        <div className="max-w-5xl mx-auto grid sm:grid-cols-3 gap-5">
           {[
-            { icon: '☕', title: 'Specialty Coffee', desc: 'Dari biji pilihan, diseduh dengan teknik yang tepat untuk setiap cangkir.' },
-            { icon: '🤝', title: 'Ruang Sosial', desc: 'Tempat nongkrong, diskusi, dan kerja bareng di suasana yang nyaman.' },
-            { icon: '📱', title: 'Order Mudah', desc: 'Scan QR di meja, pesan dari HP, pesanan langsung masuk ke dapur.' },
-          ].map((v, i) => (
-            <Section key={v.title} className="bg-h-card border border-h-border rounded-2xl p-6">
-              <div className="text-3xl mb-4">{v.icon}</div>
-              <div className="font-bold text-white text-base mb-2">{v.title}</div>
-              <div className="text-h-muted text-sm leading-relaxed">{v.desc}</div>
+            { Icon: CoffeeIcon, title: 'Specialty Coffee', desc: 'Dari biji pilihan, diseduh dengan teknik yang tepat untuk setiap cangkir.' },
+            { Icon: UsersIcon, title: 'Ruang Sosial', desc: 'Tempat nongkrong, diskusi, dan bekerja dalam suasana yang nyaman.' },
+            { Icon: QrIcon, title: 'Order Mudah', desc: 'Scan QR di meja, pesan dari ponsel, pesanan langsung masuk ke dapur.' },
+          ].map(({ Icon, title, desc }) => (
+            <Section key={title} className="bg-h-card border border-h-border rounded-2xl p-7 hover:border-white/15 transition-colors">
+              <div className="w-11 h-11 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-red mb-5">
+                <Icon className="w-5 h-5" />
+              </div>
+              <div className="font-bold text-white text-base mb-2">{title}</div>
+              <div className="text-h-muted text-sm leading-relaxed">{desc}</div>
             </Section>
           ))}
         </div>
@@ -328,10 +361,14 @@ export default function Home() {
               className="lg:col-span-3 rounded-2xl overflow-hidden border border-h-border h-[340px] relative block group">
               {/* Fallback bg di belakang iframe — tampil kalau map belum/ tidak load */}
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-h-card text-center px-6 z-0">
-                <div className="text-4xl mb-3">🗺️</div>
+                <div className="w-12 h-12 rounded-full bg-h-red/10 border border-h-red/25 flex items-center justify-center text-h-red mb-4">
+                  <MapPinIcon className="w-6 h-6" />
+                </div>
                 <div className="text-white font-bold text-sm">{LOC.label}</div>
                 <div className="text-h-muted text-xs mt-1">{LOC.address}</div>
-                <div className="text-h-red text-xs font-bold mt-3 uppercase tracking-wider">Tap untuk buka peta →</div>
+                <div className="flex items-center gap-1.5 text-h-red text-xs font-bold mt-3 uppercase tracking-wider">
+                  Buka peta <ArrowIcon className="w-3.5 h-3.5" />
+                </div>
               </div>
               <iframe
                 src={mapsEmbed}
@@ -345,17 +382,21 @@ export default function Home() {
 
             {/* Info & actions */}
             <div className="lg:col-span-2 flex flex-col gap-4">
-              <div className="bg-h-card border border-h-border rounded-2xl p-6 flex-1">
-                <div className="flex items-start gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-h-red/15 flex items-center justify-center flex-shrink-0">📍</div>
+              <div className="bg-h-card border border-h-border rounded-2xl p-6 flex-1 space-y-5">
+                <div className="flex items-start gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-red flex-shrink-0">
+                    <MapPinIcon className="w-5 h-5" />
+                  </div>
                   <div>
                     <div className="font-bold text-white text-sm">{LOC.label}</div>
                     <div className="text-h-muted text-xs mt-0.5 leading-relaxed">{LOC.address}</div>
                   </div>
                 </div>
                 {storeSettings && (
-                  <div className="flex items-start gap-3 mb-5">
-                    <div className="w-10 h-10 rounded-xl bg-h-red/15 flex items-center justify-center flex-shrink-0">🕐</div>
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-red flex-shrink-0">
+                      <ClockIcon className="w-5 h-5" />
+                    </div>
                     <div>
                       <div className="font-bold text-white text-sm">Jam Buka</div>
                       <div className="text-h-muted text-xs mt-0.5">{storeSettings.open_days}</div>
@@ -363,8 +404,10 @@ export default function Home() {
                     </div>
                   </div>
                 )}
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-h-red/15 flex items-center justify-center flex-shrink-0">📞</div>
+                <div className="flex items-start gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-red flex-shrink-0">
+                    <PhoneIcon className="w-5 h-5" />
+                  </div>
                   <div>
                     <div className="font-bold text-white text-sm">Kontak</div>
                     <a href={WA} target="_blank" rel="noreferrer" className="text-h-red text-xs mt-0.5 hover:underline">+62 812-4540-0031</a>
@@ -374,12 +417,12 @@ export default function Home() {
 
               {/* Directions button */}
               <a href={mapsDirections} target="_blank" rel="noreferrer"
-                className="flex items-center justify-center gap-2 bg-h-red hover:bg-h-red-d text-white px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-colors">
-                🧭 Petunjuk Arah
+                className="flex items-center justify-center gap-2 bg-h-red hover:bg-h-red-d text-white px-6 py-4 rounded-2xl font-bold text-sm uppercase tracking-[0.15em] transition-colors">
+                <NavigationIcon className="w-4 h-4" /> Petunjuk Arah
               </a>
               <a href={mapsView} target="_blank" rel="noreferrer"
-                className="flex items-center justify-center gap-2 border border-h-border hover:border-white/30 text-white/70 hover:text-white px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-colors">
-                Buka di Google Maps →
+                className="flex items-center justify-center gap-2 border border-h-border hover:border-white/30 text-white/70 hover:text-white px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-[0.12em] transition-colors">
+                Buka di Google Maps <ArrowIcon className="w-3.5 h-3.5" />
               </a>
             </div>
           </div>
@@ -407,8 +450,8 @@ export default function Home() {
                 <div className="text-left flex-1">
                   <div className="text-[10px] uppercase tracking-widest text-white/70 font-bold">Instagram</div>
                   <div className="font-black text-white text-base">{IG_HANDLE}</div>
-                  <div className="text-xs text-white/70 mt-0.5">Tap untuk follow →</div>
                 </div>
+                <ArrowIcon className="w-5 h-5 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
               </div>
             </a>
 
@@ -426,8 +469,8 @@ export default function Home() {
                 <div className="text-left flex-1">
                   <div className="text-[10px] uppercase tracking-widest text-white/70 font-bold">TikTok</div>
                   <div className="font-black text-white text-base">{IG_HANDLE}</div>
-                  <div className="text-xs text-white/70 mt-0.5">Tap untuk follow →</div>
                 </div>
+                <ArrowIcon className="w-5 h-5 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
               </div>
             </a>
           </div>
@@ -445,11 +488,11 @@ export default function Home() {
               <div className="font-serif text-5xl mb-3" style={{ color: '#D4B896', fontFamily: 'var(--font-playfair)' }}>هالو</div>
               <h3 className="font-sans font-black text-white text-xl uppercase tracking-wider mb-2">Ada yang bisa kami bantu?</h3>
               <p className="text-h-muted text-sm mb-8 leading-relaxed">
-                Reservasi, pertanyaan menu, atau sekadar mau say hi —<br />kami siap di WhatsApp.
+                Reservasi tempat, pertanyaan menu, atau sekadar menyapa —<br />kami siap membantu lewat WhatsApp.
               </p>
               <a href={WA} target="_blank" rel="noreferrer"
-                className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest transition-colors">
-                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-full font-bold text-sm uppercase tracking-[0.15em] transition-colors">
+                <WhatsAppIcon className="w-5 h-5" />
                 Chat WhatsApp
               </a>
               <div className="mt-6 text-h-muted text-xs">+62 812-4540-0031</div>
