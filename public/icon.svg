@@ -1,12 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#7C1515"/>
-  <rect width="512" height="512" rx="96" fill="url(#glow)"/>
   <defs>
-    <radialGradient id="glow" cx="50%" cy="40%" r="55%">
-      <stop offset="0%" stop-color="#A02020" stop-opacity="0.7"/>
-      <stop offset="100%" stop-color="transparent"/>
+    <radialGradient id="bg" cx="50%" cy="38%" r="72%">
+      <stop offset="0%" stop-color="#8E1A1A"/>
+      <stop offset="60%" stop-color="#7C1515"/>
+      <stop offset="100%" stop-color="#5E0F0F"/>
     </radialGradient>
   </defs>
-  <text x="256" y="260" text-anchor="middle" font-family="serif" font-size="160" font-weight="900" fill="#D4B896" opacity="0.95">هالو</text>
-  <text x="256" y="350" text-anchor="middle" font-family="sans-serif" font-size="72" font-weight="900" fill="#D4B896" letter-spacing="12" opacity="0.85">HALLU</text>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- Arabic هالو -->
+  <text x="256" y="250" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="170" font-weight="700" fill="#E0C6A0">هالو</text>
+  <!-- HALLU wordmark -->
+  <text x="256" y="350" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="86" font-weight="700" fill="#E0C6A0" letter-spacing="6">HALLU</text>
+  <!-- Tagline -->
+  <text x="256" y="392" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="600" fill="#D4B896" letter-spacing="9" opacity="0.85">COFFEE &amp; SOCIALITY</text>
 </svg>
