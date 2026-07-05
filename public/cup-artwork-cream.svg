@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 520" font-family="Georgia, 'Times New Roman', serif">
+  <!-- HALLU cup print — CREAM (untuk cup maroon / gelap). Background transparan. -->
+  <text x="210" y="150" text-anchor="middle" font-size="118" fill="#D4B896">هالو</text>
+  <text x="210" y="270" text-anchor="middle" font-size="92" letter-spacing="10" fill="#D4B896">HALLU</text>
+  <line x1="90" y1="300" x2="330" y2="300" stroke="#D4B896" stroke-width="3"/>
+  <text x="210" y="332" text-anchor="middle" font-size="22" letter-spacing="10" fill="#D4B896" font-family="Helvetica, Arial, sans-serif">COFFEE &amp; SOCIALITY</text>
+  <text x="210" y="430" text-anchor="middle" font-size="26" letter-spacing="3" fill="#D4B896" font-family="Helvetica, Arial, sans-serif">@hall.ucffe</text>
+  <text x="210" y="464" text-anchor="middle" font-size="18" letter-spacing="9" fill="#D4B896" font-family="Helvetica, Arial, sans-serif" opacity="0.75">TERNATE</text>
+</svg>
