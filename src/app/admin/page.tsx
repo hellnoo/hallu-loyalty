@@ -106,6 +106,10 @@ export default function AdminPage() {
   const [tab, setTab] = useState<AdminTab>('menu')
   const [orders, setOrders] = useState<OrderRow[]>([])
   const [ordersLoading, setOrdersLoading] = useState(false)
+  const [monthValue, setMonthValue] = useState(() => new Date().toISOString().slice(0, 7)) // YYYY-MM
+  const [monthOrders, setMonthOrders] = useState<OrderRow[]>([])
+  const [monthPrevOrders, setMonthPrevOrders] = useState<OrderRow[]>([])
+  const [monthLoading, setMonthLoading] = useState(false)
   const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS)
   const [settingsSaving, setSettingsSaving] = useState(false)
   const [settingsSaved, setSettingsSaved] = useState(false)
@@ -128,6 +132,7 @@ export default function AdminPage() {
   useEffect(() => { if (localStorage.getItem('hallu-admin') === 'ok') setAuthed(true) }, [])
   useEffect(() => { if (authed) { loadItems(); loadSettings() } }, [authed]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (authed && tab === 'analitik' && orders.length === 0) loadOrders() }, [authed, tab]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (authed && tab === 'analitik') loadMonth(monthValue) }, [authed, tab, monthValue]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadSettings = async () => {
     const { data } = await supabase.from('store_settings').select('*').eq('id', 1).single()
@@ -203,6 +208,25 @@ export default function AdminPage() {
     const { data } = await supabase.from('orders').select('*').gte('created_at', since).order('created_at', { ascending: false })
     if (data) setOrders(data as OrderRow[])
     setOrdersLoading(false)
+  }
+
+  // Rekap bulanan — batas hari "business day" jam 05:00 (konsisten dengan kasir)
+  const loadMonth = async (ym: string) => {
+    setMonthLoading(true)
+    const [y, m] = ym.split('-').map(Number)
+    const start = new Date(y, m - 1, 1, 5, 0, 0, 0)      // tgl 1 jam 05:00
+    const end = new Date(y, m, 1, 5, 0, 0, 0)            // bulan depan tgl 1 jam 05:00
+    const prevStart = new Date(y, m - 2, 1, 5, 0, 0, 0)  // bulan lalu tgl 1 jam 05:00
+    const [cur, prev] = await Promise.all([
+      supabase.from('orders').select('*').eq('status', 'done')
+        .gte('created_at', start.toISOString()).lt('created_at', end.toISOString())
+        .order('created_at', { ascending: true }),
+      supabase.from('orders').select('*').eq('status', 'done')
+        .gte('created_at', prevStart.toISOString()).lt('created_at', start.toISOString()),
+    ])
+    setMonthOrders((cur.data as OrderRow[]) || [])
+    setMonthPrevOrders((prev.data as OrderRow[]) || [])
+    setMonthLoading(false)
   }
 
   const loadItems = async () => {
@@ -640,6 +664,115 @@ export default function AdminPage() {
                   </button>
                 </div>
               </div>
+
+              {/* ── Rekap Bulanan ── */}
+              {(() => {
+                const sumRev = (arr: OrderRow[]) => arr.reduce((s, o) => s + o.items.reduce((a, i) => a + i.price * i.qty, 0), 0)
+                const mRev = sumRev(monthOrders)
+                const mPrevRev = sumRev(monthPrevOrders)
+                const mCount = monthOrders.length
+                // hari operasional = jumlah tanggal unik (business day, cutoff 05:00)
+                const bizDay = (iso: string) => { const d = new Date(iso); if (d.getHours() < 5) d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10) }
+                const activeDays = new Set(monthOrders.map(o => bizDay(o.created_at))).size
+                const avgPerDay = activeDays ? Math.round(mRev / activeDays) : 0
+                const avgPerTrx = mCount ? Math.round(mRev / mCount) : 0
+                const growth = mPrevRev > 0 ? Math.round(((mRev - mPrevRev) / mPrevRev) * 100) : null
+                // per metode
+                const byMethod: Record<string, number> = {}
+                monthOrders.forEach(o => { const m = o.payment_method || 'lainnya'; byMethod[m] = (byMethod[m] || 0) + o.items.reduce((a, i) => a + i.price * i.qty, 0) })
+                const methodLabels: Record<string, string> = { tunai: '💵 Tunai', qris: '⬛ QRIS', transfer: '🏦 Transfer', lainnya: '💳 Lainnya' }
+                // top items
+                const itemMap: Record<string, { name: string; qty: number; revenue: number }> = {}
+                monthOrders.forEach(o => o.items.forEach(i => { if (!itemMap[i.name]) itemMap[i.name] = { name: i.name, qty: 0, revenue: 0 }; itemMap[i.name].qty += i.qty; itemMap[i.name].revenue += i.price * i.qty }))
+                const topItems = Object.values(itemMap).sort((a, b) => b.qty - a.qty).slice(0, 5)
+                const monthLabel = new Date(monthValue + '-02').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+
+                return (
+                  <div className="bg-h-card border border-h-border rounded-2xl p-5 space-y-5">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xs font-black text-h-muted uppercase tracking-widest">Rekap Bulanan</h2>
+                        <div className="text-white font-bold text-sm mt-0.5">{monthLabel}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input type="month" value={monthValue} max={new Date().toISOString().slice(0, 7)}
+                          onChange={e => setMonthValue(e.target.value)}
+                          className="bg-h-dark border border-h-border rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-h-red" />
+                        <button onClick={() => exportCsv(monthOrders)} disabled={monthOrders.length === 0}
+                          className="text-xs font-bold bg-h-red hover:bg-h-red-d disabled:opacity-40 text-white px-3.5 py-1.5 rounded-lg transition-colors uppercase tracking-wider whitespace-nowrap">
+                          ⬇ CSV
+                        </button>
+                      </div>
+                    </div>
+
+                    {monthLoading ? (
+                      <div className="text-center text-h-muted text-sm py-10 animate-pulse">Memuat rekap {monthLabel}...</div>
+                    ) : mCount === 0 ? (
+                      <div className="text-center text-h-muted text-sm py-10">Belum ada transaksi selesai di {monthLabel}</div>
+                    ) : (
+                      <>
+                        {/* KPI bulanan */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          <div className="bg-h-dark border border-h-border rounded-xl p-4">
+                            <div className="text-xs text-h-muted mb-1">Total Pendapatan</div>
+                            <div className="text-lg font-black text-white leading-tight">{formatRp(mRev)}</div>
+                            {growth !== null && (
+                              <div className={`text-xs font-bold mt-1 ${growth >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {growth >= 0 ? '▲' : '▼'} {Math.abs(growth)}% vs bln lalu
+                              </div>
+                            )}
+                          </div>
+                          <div className="bg-h-dark border border-h-border rounded-xl p-4">
+                            <div className="text-xs text-h-muted mb-1">Transaksi</div>
+                            <div className="text-lg font-black text-white leading-tight">{mCount}</div>
+                            <div className="text-xs text-h-muted mt-1">{activeDays} hari operasi</div>
+                          </div>
+                          <div className="bg-h-dark border border-h-border rounded-xl p-4">
+                            <div className="text-xs text-h-muted mb-1">Rata-rata / Hari</div>
+                            <div className="text-lg font-black text-white leading-tight">{formatRp(avgPerDay)}</div>
+                          </div>
+                          <div className="bg-h-dark border border-h-border rounded-xl p-4">
+                            <div className="text-xs text-h-muted mb-1">Rata-rata / Transaksi</div>
+                            <div className="text-lg font-black text-white leading-tight">{formatRp(avgPerTrx)}</div>
+                          </div>
+                        </div>
+
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          {/* Per metode */}
+                          <div>
+                            <div className="text-[10px] uppercase tracking-widest font-bold text-h-muted mb-2">Per Metode Bayar</div>
+                            <div className="space-y-1.5">
+                              {Object.entries(byMethod).sort(([, a], [, b]) => b - a).map(([m, v]) => (
+                                <div key={m} className="flex items-center justify-between bg-h-dark border border-h-border rounded-lg px-3 py-2">
+                                  <span className="text-xs text-white">{methodLabels[m] || m}</span>
+                                  <div className="text-right">
+                                    <span className="text-xs font-bold text-white">{formatRp(v)}</span>
+                                    <span className="text-[10px] text-h-muted ml-1.5">{Math.round(v / mRev * 100)}%</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          {/* Top item bulan ini */}
+                          <div>
+                            <div className="text-[10px] uppercase tracking-widest font-bold text-h-muted mb-2">Top Item Bulan Ini</div>
+                            <div className="space-y-1.5">
+                              {topItems.map((item, i) => (
+                                <div key={item.name} className="flex items-center justify-between bg-h-dark border border-h-border rounded-lg px-3 py-2">
+                                  <span className="text-xs text-white flex items-center gap-2">
+                                    <span className="text-h-cream font-black w-4">#{i + 1}</span>{item.name}
+                                  </span>
+                                  <span className="text-xs text-h-muted font-bold">{item.qty}×</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              })()}
 
               {ordersLoading ? (
                 <div className="text-center text-h-muted text-sm py-16">Memuat data analitik...</div>
