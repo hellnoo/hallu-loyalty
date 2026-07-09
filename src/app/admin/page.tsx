@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import type { MenuItem, HppComponent, StoreSettings } from '@/types'
 
 const CATEGORIES = ['Kopi', 'Non-Kopi', 'Makanan', 'Lainnya'] as const
+const OWNER_WA = '6281245400031'
 function formatRp(n: number) { return 'Rp ' + n.toLocaleString('id-ID') }
 function margin(price: number, hpp: number) {
   if (!hpp || !price) return null
@@ -115,6 +116,8 @@ export default function AdminPage() {
   const [settingsSaved, setSettingsSaved] = useState(false)
   const [cleanupDays, setCleanupDays] = useState(60)
   const [cleanupResult, setCleanupResult] = useState<string | null>(null)
+  const [backupReady, setBackupReady] = useState(false)
+  const [preparingBackup, setPreparingBackup] = useState(false)
   const [cleaning, setCleaning] = useState(false)
   const [aiDescLoading, setAiDescLoading] = useState(false)
   const [aiInsights, setAiInsights] = useState<string | null>(null)
@@ -180,7 +183,56 @@ export default function AdminPage() {
     } finally { setAiInsightsLoading(false) }
   }
 
+  // Step 1: Backup dulu — download CSV lengkap + kirim ringkasan ke WA owner
+  const prepareBackup = async () => {
+    setPreparingBackup(true); setCleanupResult(null)
+    const cutoff = new Date(Date.now() - cleanupDays * 24 * 60 * 60 * 1000).toISOString()
+    const { data } = await supabase.from('orders').select('*')
+      .in('status', ['done', 'cancelled'])
+      .lt('created_at', cutoff)
+      .order('created_at', { ascending: true })
+    const rows = (data as OrderRow[]) || []
+    setPreparingBackup(false)
+    if (rows.length === 0) {
+      setCleanupResult(`ℹ️ Tidak ada data lebih dari ${cleanupDays} hari untuk diarsip.`)
+      return
+    }
+    // Download CSV lengkap (backup detail)
+    exportCsv(rows)
+    // Ringkasan per bulan untuk WA owner
+    const byMonth: Record<string, { rev: number; count: number }> = {}
+    let totalRev = 0
+    rows.forEach(o => {
+      const ym = o.created_at.slice(0, 7)
+      const rev = o.items.reduce((a, i) => a + i.price * i.qty, 0)
+      totalRev += rev
+      if (!byMonth[ym]) byMonth[ym] = { rev: 0, count: 0 }
+      byMonth[ym].rev += rev; byMonth[ym].count++
+    })
+    const waText = [
+      '🗄️ *ARSIP DATA HALLU (sebelum dihapus)*',
+      `Order sebelum: ${new Date(cutoff).toLocaleDateString('id-ID')}`,
+      `Total: *${rows.length} order · ${formatRp(totalRev)}*`,
+      '',
+      '*Ringkasan per bulan:*',
+      ...Object.entries(byMonth).sort().map(([ym, v]) =>
+        `${new Date(ym + '-02').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}: ${formatRp(v.rev)} (${v.count} order)`),
+      '',
+      '📎 File CSV lengkap sudah terdownload di perangkat admin — mohon *simpan / forward file CSV ini* sebagai backup.',
+      '',
+      '_Setelah backup diterima, data mentah baru akan dihapus dari sistem._',
+    ].join('\n')
+    window.open(`https://wa.me/${OWNER_WA}?text=${encodeURIComponent(waText)}`, '_blank')
+    setBackupReady(true)
+    setCleanupResult(`✅ Backup siap: ${rows.length} order. CSV terdownload + ringkasan dikirim ke WA owner. Tombol Hapus sekarang aktif.`)
+  }
+
+  // Step 2: Hapus — hanya boleh setelah backup
   const handleCleanup = async () => {
+    if (!backupReady) {
+      setCleanupResult('⚠️ Backup ke WA owner dulu sebelum menghapus.')
+      return
+    }
     setCleaning(true); setCleanupResult(null)
     const cutoff = new Date(Date.now() - cleanupDays * 24 * 60 * 60 * 1000).toISOString()
     const { count, error } = await supabase.from('orders')
@@ -188,9 +240,9 @@ export default function AdminPage() {
       .in('status', ['done', 'cancelled'])
       .lt('created_at', cutoff)
     setCleaning(false)
-    if (error) setCleanupResult('❌ Gagal: ' + error.message)
-    else setCleanupResult(`✅ ${count ?? 0} order dihapus (>${cleanupDays} hari)`)
-    // reload orders kalau sedang di tab analitik
+    if (error) { setCleanupResult('❌ Gagal: ' + error.message); return }
+    setCleanupResult(`✅ ${count ?? 0} order dihapus (>${cleanupDays} hari). Backup sudah ada di WA owner.`)
+    setBackupReady(false)
     setOrders([])
   }
 
@@ -1062,34 +1114,42 @@ export default function AdminPage() {
 
               <p className="text-xs text-h-muted">* Status buka/tutup tampil otomatis di halaman menu dan landing page.</p>
 
-              {/* Manajemen data */}
+              {/* Manajemen data — backup dulu baru boleh hapus */}
               <div className="bg-h-card border border-h-border rounded-2xl p-5 space-y-4">
                 <div>
                   <div className="text-sm font-black text-white mb-0.5">Bersihkan Data Lama</div>
-                  <div className="text-xs text-h-muted">Hapus order selesai/dibatalkan yang sudah lebih dari N hari. Data diekspor dulu via CSV sebelum hapus ya.</div>
+                  <div className="text-xs text-h-muted">Order lama <strong className="text-white">wajib di-backup ke WA owner dulu</strong> sebelum bisa dihapus. Tombol Hapus terkunci sampai backup selesai.</div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number" min={30} max={365} value={cleanupDays}
-                      onChange={e => setCleanupDays(parseInt(e.target.value) || 60)}
-                      className="w-20 bg-h-dark border border-h-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-h-red transition-colors text-center"
-                    />
-                    <span className="text-sm text-h-muted">hari</span>
-                  </div>
-                  <button onClick={handleCleanup} disabled={cleaning}
-                    className="flex-1 bg-h-border hover:bg-white/10 disabled:opacity-60 text-white py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors">
-                    {cleaning ? 'Menghapus...' : `Hapus Order >${cleanupDays} Hari`}
-                  </button>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-h-muted">Arsip & hapus order lebih dari</span>
+                  <input
+                    type="number" min={30} max={730} value={cleanupDays}
+                    onChange={e => { setCleanupDays(parseInt(e.target.value) || 60); setBackupReady(false) }}
+                    className="w-20 bg-h-dark border border-h-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-h-red transition-colors text-center"
+                  />
+                  <span className="text-xs text-h-muted">hari</span>
                 </div>
+
+                {/* Step 1 */}
+                <button onClick={prepareBackup} disabled={preparingBackup}
+                  className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-colors">
+                  {preparingBackup ? 'Menyiapkan backup...' : '1 · Backup ke WA Owner (CSV + ringkasan)'}
+                </button>
+
+                {/* Step 2 */}
+                <button onClick={handleCleanup} disabled={cleaning || !backupReady}
+                  className={`w-full py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-colors ${backupReady ? 'bg-h-red hover:bg-h-red-d text-white' : 'bg-h-border text-h-muted cursor-not-allowed'}`}>
+                  {cleaning ? 'Menghapus...' : backupReady ? `2 · Hapus Sekarang (${'>'}${cleanupDays} hari)` : '2 · Hapus (backup dulu 🔒)'}
+                </button>
+
                 {cleanupResult && (
-                  <div className={`text-xs font-bold px-3 py-2 rounded-lg ${cleanupResult.startsWith('✅') ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                  <div className={`text-xs font-bold px-3 py-2 rounded-lg ${cleanupResult.startsWith('✅') ? 'bg-green-500/10 text-green-400' : cleanupResult.startsWith('⚠️') || cleanupResult.startsWith('❌') ? 'bg-red-500/10 text-red-400' : 'bg-h-dark text-h-muted'}`}>
                     {cleanupResult}
                   </div>
                 )}
-                <div className="text-xs text-h-muted border-t border-h-border pt-3">
-                  💡 <strong>Rekomendasi:</strong> 60 hari — cukup untuk audit 2 bulan, tidak membebani database.<br />
-                  Untuk hapus otomatis tiap malam, aktifkan <code className="text-h-cream">pg_cron</code> di Supabase Extensions lalu jalankan SQL di bawah.
+                <div className="text-xs text-h-muted border-t border-h-border pt-3 leading-relaxed">
+                  💡 Sebenarnya DB masih sangat lega (muat 3-5 tahun) — hapus data <strong className="text-white">tidak wajib</strong>. Kalau tetap mau bersih-bersih, backup ke WA owner memastikan rekap historis aman. CSV yang terdownload = arsip lengkap, forward file-nya ke owner via WA.
                 </div>
               </div>
             </div>
