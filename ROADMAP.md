@@ -1,0 +1,179 @@
+# HALLU — Roadmap Eksekusi
+
+> Dokumen ini hasil penalaran mendalam (Fable 5) supaya eksekusi bisa dikerjakan
+> model yang lebih hemat (Opus 4.8) tanpa mikir ulang. **Cara pakai:** buka sesi
+> baru, bilang: _"Baca ROADMAP.md, kerjakan Item N sampai selesai: build, commit,
+> push ke remote hallu-loyalty branch main."_ Satu item per sesi. Coret item yang
+> selesai (ganti ⬜ jadi ✅).
+
+**Konteks tetap:** Next.js 15 App Router · Supabase (project "hallu loyalty",
+tabel: menu_items, orders, store_settings, shifts, push_subscriptions) · Tailwind
+token: h-bg/h-dark/h-card/h-border/h-red(maroon #7C1515)/h-cream(#D4B896)/h-muted ·
+Brand: HALLU, maroon+cream · push ke remote `hallu-loyalty` (BUKAN `sapulidi`).
+Rekap harian pakai business-day cutoff jam 05:00 — pertahankan di fitur baru.
+
+---
+
+## Item 0 ⬜ — Pecah file raksasa (KERJAKAN PERTAMA — menghemat kuota semua sesi berikutnya)
+
+**Kenapa:** kasir/page.tsx 1.612 baris, admin/page.tsx 1.324, menu/page.tsx 1.267.
+Tiap sesi edit harus baca file penuh = boros token. Setelah dipecah, sesi Opus cuma
+baca komponen yang relevan.
+
+**Prompt untuk Opus:**
+> Refactor tanpa mengubah perilaku sama sekali. Pecah `src/app/kasir/page.tsx`,
+> `src/app/admin/page.tsx`, `src/app/menu/page.tsx` menjadi komponen di
+> `src/components/kasir/`, `src/components/admin/`, `src/components/menu/`.
+> Pindahkan juga helper bersama (formatRp, business-day, calcIsOpen, ikon SVG,
+> CAT_ATM, generatePlaceholder) ke `src/lib/format.ts`, `src/lib/business-day.ts`,
+> `src/lib/store-hours.ts`, `src/components/icons.tsx`. Satu sumber kebenaran —
+> hapus duplikat calcIsOpen/isStoreOpen (3 kopi identik). Per file target < 400
+> baris. Jalankan `node_modules/.bin/next build` harus sukses. JANGAN ubah logika,
+> style, atau teks apapun.
+
+---
+
+## FASE 1 — Operasional harian (dampak paling terasa)
+
+### Item 1 ⬜ — Varian menu: ukuran, es, gula, topping
+**Kenapa:** kafe nyata butuh "less sugar / no ice / large". Sekarang customer nulis
+di catatan → rawan salah baca barista. Ini gap operasional terbesar.
+
+**Desain (sudah diputuskan, jangan diubah):**
+- SQL: `alter table menu_items add column if not exists variants jsonb default '[]'::jsonb;`
+  Bentuk: `[{ "name":"Ukuran", "required":true, "choices":[{"label":"Regular","delta":0},{"label":"Large","delta":5000}] }, { "name":"Gula", "required":false, "choices":[{"label":"Normal","delta":0},{"label":"Less Sugar","delta":0}] }]`
+- Item order di `orders.items` ditambah field opsional `opts: string[]` (contoh
+  `["Large","Less Sugar"]`) dan `price` yang tersimpan = harga final per unit
+  (base + total delta). Kasir & struk WA menampilkan opts di bawah nama item.
+- Menu customer: kalau item punya variants, tombol [+] membuka bottom-sheet pilih
+  varian (required harus dipilih) lalu tambah ke cart. Cart key bukan lagi `id`
+  tapi `id + JSON opts` supaya varian beda = baris beda.
+- Admin form: editor varian (tambah grup, tambah pilihan, delta harga) di bawah
+  editor HPP, pola UI-nya samakan dengan HPP components editor yang sudah ada.
+
+**Prompt untuk Opus:**
+> Baca ROADMAP.md Item 1. Implement persis desain tersebut. Sentuh:
+> src/types/index.ts (MenuItem.variants, OrderItem.opts), halaman/komponen menu
+> (bottom-sheet varian + cart per kombinasi), kasir (tampilkan opts di OrderCard,
+> struk WA msgStruk, modal struk), admin (editor varian di form item). Tambahkan
+> SQL-nya ke supabase-setup.sql (idempotent) dan tulis di ringkasan akhir supaya
+> owner run 1 baris ALTER TABLE di Supabase. Build harus sukses.
+
+### Item 2 ⬜ — Pencarian & filter cepat di menu customer
+**Prompt untuk Opus:**
+> Di halaman menu customer, tambah search bar sticky di bawah tab kategori:
+> filter client-side by nama/deskripsi (case-insensitive), plus chip filter cepat
+> "≤ 20rb", "Dingin", "Panas" (match kata di nama/deskripsi). Kosongkan search →
+> tampilan normal. Styling ikuti token h-* yang ada. Tanpa library baru.
+
+### Item 3 ⬜ — Tombol "Panggil Pelayan"
+**Desain:** tabel baru `waiter_calls (id uuid pk default gen_random_uuid(),
+table_number int, created_at timestamptz default now(), resolved boolean default false)`
++ realtime publication + RLS policy sama pola tabel lain. Tombol kecil 🛎 di header
+menu customer (cooldown 60 detik via localStorage). Kasir: subscribe realtime INSERT
+→ banner kuning "Meja N memanggil" + bunyi playNewOrderSound, tombol "Selesai"
+set resolved=true.
+
+**Prompt untuk Opus:**
+> Baca ROADMAP.md Item 3, implement persis. Tambah SQL idempotent ke
+> supabase-setup.sql dan cantumkan CREATE TABLE-nya di ringkasan akhir untuk
+> dijalankan owner di Supabase SQL Editor.
+
+### Item 4 ⬜ — Koordinat Google Maps yang benar (BUTUH DATA OWNER)
+Di `src/app/page.tsx` const `LOC` masih perkiraan. **Owner:** buka Google Maps,
+tekan-tahan di titik persis Hallu (Taman Fitness), copy koordinat, kasih ke sesi
+Opus: _"ganti LOC.lat/lng di src/app/page.tsx jadi X, Y"_. 1 menit selesai.
+
+---
+
+## FASE 2 — Loyalty member (repo-nya aja bernama hallu-loyalty 😄)
+
+### Item 5 ⬜ — Poin member berbasis no. HP
+**Desain (final):**
+- SQL: `create table if not exists members (phone text primary key, name text,
+  points int not null default 0, visits int not null default 0,
+  created_at timestamptz default now());` + trigger postgres: saat `orders.status`
+  berubah menjadi 'done' dan `phone` tidak null → upsert member, `points +=
+  floor(total/10000)` (1 poin per Rp 10.000), `visits += 1`. Trigger di DB supaya
+  tidak tergantung client. Total dihitung dari jsonb items di dalam fungsi trigger.
+- Menu customer: setelah isi no. HP di cart, tampilkan "⭐ Poin kamu: N" (fetch by
+  phone). Di layar "Selesai": tampilkan poin baru.
+- Kasir: tab/section "Member" — cari by no HP, lihat poin, tombol "Tukar poin"
+  (kurangi manual, catat di kolom baru `orders.note` order aktif atau langsung
+  update points). Aturan tukar: 100 poin = potongan Rp 10.000 (kasir kurangi
+  harga manual di kasir, sistem cuma memotong poin).
+- Admin Analitik: card "Top Member" (nama/HP, visits, points).
+
+**Prompt untuk Opus:**
+> Baca ROADMAP.md Item 5, implement persis desain, termasuk fungsi+trigger
+> postgres di supabase-setup.sql (idempotent, `create or replace function` +
+> `drop trigger if exists`). Cantumkan SQL lengkap di ringkasan akhir.
+
+---
+
+## FASE 3 — Landing & tampilan "hidup"
+
+### Item 6 ⬜ — Menu Unggulan (featured)
+SQL: `alter table menu_items add column if not exists featured boolean default false;`
+Admin: toggle ⭐ per item di tabel Kelola Menu. Landing: section "Menu" menampilkan
+featured dulu (fallback: 12 pertama seperti sekarang kalau belum ada featured).
+
+### Item 7 ⬜ — Bukti sosial: rating asli di landing
+Landing tambah section kecil setelah "Tentang Kami": rata-rata bintang + jumlah
+ulasan, dihitung dari `orders.rating` (query aggregate client-side). Tampilkan
+hanya kalau ada ≥ 5 ulasan dan rata-rata ≥ 4.0 (jangan pajang kalau jelek 😄).
+
+### Item 8 ⬜ — Promo banner
+SQL: `alter table store_settings add column if not exists promo_text text;`
+Admin Pengaturan: input teks promo (kosong = nonaktif). Menu customer + landing:
+strip banner tipis maroon di atas ("🎉 {promo_text}") kalau terisi.
+
+**Prompt untuk Opus (gabung 6+7+8 satu sesi):**
+> Baca ROADMAP.md Item 6, 7, 8 — implement ketiganya, SQL idempotent ke
+> supabase-setup.sql, cantumkan ALTER TABLE di ringkasan akhir.
+
+---
+
+## FASE 4 — Keamanan & keandalan (tidak terlihat tapi penting)
+
+### Item 9 ⬜ — ⚠️ Hardening RLS (risiko nyata, kerjakan sebelum ramai)
+**Masalah:** policy sekarang `for all using (true)` di semua tabel — anon key itu
+publik (ada di bundle JS), artinya siapapun yang paham teknis bisa UPDATE/DELETE
+menu, harga, settings langsung ke DB tanpa password.
+
+**Desain:**
+- Tambah env `SUPABASE_SERVICE_ROLE_KEY` (Vercel) — JANGAN pernah diekspos ke client.
+- Buat `src/lib/supabase-admin.ts` (service client, server-only) + API routes
+  `/api/admin-db/*` yang cek header `x-admin-password` == ADMIN_PASSWORD (atau
+  KASIR_PASSWORD untuk operasi kasir) sebelum mutasi.
+- Pindahkan mutasi admin (menu CRUD, settings, cleanup) & kasir (update status
+  order, shifts) ke routes tsb; front-end simpan password di localStorage yang
+  sudah ada dan kirim sebagai header.
+- Ganti policy: menu_items/store_settings → anon SELECT only; orders → anon
+  INSERT+SELECT, UPDATE hanya kolom rating (pakai policy `with check`); shifts &
+  waiter_calls & members → SELECT only (mutasi via server).
+- Update supabase-setup.sql dengan policy baru (drop policy lama hallu_all_*).
+
+**Catatan effort:** ini item paling besar (menyentuh banyak call). Boleh dipecah
+2 sesi: (a) infrastruktur routes + admin, (b) kasir + policies final.
+
+### Item 10 ⬜ — Unit test logika bisnis
+Vitest minimal: `calcIsOpen`/jendela lewat tengah malam, `getBusinessDayBounds`,
+perhitungan poin member, formatRp. Tambah script `"test": "vitest run"` dan jalankan
+di sesi mana pun sebelum push. Mencegah regresi kayak bug "Tutup 24 jam" kemarin.
+
+---
+
+## PARKIR (nanti kalau makin ramai — jangan dikerjakan dulu)
+- Kitchen Display System (tablet dapur terpisah)
+- Expense tracker + P&L bulanan penuh
+- Printer thermal Bluetooth (butuh hardware dulu)
+- WA broadcast promo / auto-review Google Maps
+- Inventory & stok bahan baku (auto-deduct dari HPP components)
+
+---
+
+## Urutan yang saya sarankan
+`0 → 1 → 5 → 6+7+8 → 2 → 3 → 9 → 10` — Item 0 dulu (hemat kuota), lalu varian
+(operasional), lalu loyalty (retensi), lalu landing (marketing), sisanya menyusul.
+Item 4 (koordinat) kapan saja — cuma 1 menit begitu owner kirim koordinat.
