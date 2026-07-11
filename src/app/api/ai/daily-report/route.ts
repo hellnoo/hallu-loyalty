@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { anthropic, MODEL, isAiEnabled, extractText, aiErrorDetails } from '@/lib/anthropic'
+import { aiComplete, aiEnabled, aiErrorDetails } from '@/lib/ai'
 
 export const runtime = 'nodejs'
 
@@ -18,7 +18,7 @@ type ReportInput = {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isAiEnabled() || !anthropic) {
+  if (!aiEnabled()) {
     return NextResponse.json({ error: aiErrorDetails() }, { status: 503 })
   }
 
@@ -53,13 +53,8 @@ INSTRUKSI:
 
 Output langsung pesan WA-nya saja, tanpa preamble.`
 
-    const msg = await anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 800,
-      messages: [{ role: 'user', content: prompt }],
-    })
-
-    return NextResponse.json({ report: extractText(msg) })
+    const report = await aiComplete({ prompt, maxTokens: 800 })
+    return NextResponse.json({ report })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'AI error'
     return NextResponse.json({ error: message }, { status: 500 })

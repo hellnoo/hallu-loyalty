@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { anthropic, MODEL, isAiEnabled, extractText, aiErrorDetails } from '@/lib/anthropic'
+import { aiComplete, aiEnabled, aiErrorDetails } from '@/lib/ai'
 
 export const runtime = 'nodejs'
 
@@ -27,7 +27,7 @@ Contoh gaya:
 `
 
 export async function POST(req: NextRequest) {
-  if (!isAiEnabled() || !anthropic) {
+  if (!aiEnabled()) {
     return NextResponse.json({ error: aiErrorDetails() }, { status: 503 })
   }
   try {
@@ -36,14 +36,12 @@ export async function POST(req: NextRequest) {
       `- ${m.name} (${m.category}, Rp ${m.price.toLocaleString('id-ID')})${m.description ? ` — ${m.description}` : ''}`
     ).join('\n')
 
-    const msg = await anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 400,
+    const reply = await aiComplete({
       system: SYSTEM_PROMPT(menuStr),
       messages: data.messages.slice(-10), // limit conversation history
+      maxTokens: 400,
     })
-
-    return NextResponse.json({ reply: extractText(msg) })
+    return NextResponse.json({ reply })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'AI error'
     return NextResponse.json({ error: message }, { status: 500 })

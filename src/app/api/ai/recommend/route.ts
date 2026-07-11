@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { anthropic, MODEL, isAiEnabled, extractText, aiErrorDetails } from '@/lib/anthropic'
+import { aiComplete, aiEnabled, aiErrorDetails } from '@/lib/ai'
 
 export const runtime = 'nodejs'
 
@@ -11,7 +11,7 @@ type RecommendInput = {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isAiEnabled() || !anthropic) {
+  if (!aiEnabled()) {
     return NextResponse.json({ error: aiErrorDetails() }, { status: 503 })
   }
   try {
@@ -55,13 +55,8 @@ TUGAS:
   ]
 }`
 
-    const msg = await anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 500,
-      messages: [{ role: 'user', content: prompt }],
-    })
-
-    const text = extractText(msg).replace(/```json|```/g, '').trim()
+    const raw = await aiComplete({ prompt, maxTokens: 500 })
+    const text = raw.replace(/```json|```/g, '').trim()
     let parsed
     try { parsed = JSON.parse(text) }
     catch { return NextResponse.json({ recommendations: [], raw: text }) }
