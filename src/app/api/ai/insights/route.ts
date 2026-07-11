@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { anthropic, MODEL, isAiEnabled, extractText, aiErrorDetails } from '@/lib/anthropic'
+import { aiComplete, aiEnabled, aiErrorDetails } from '@/lib/ai'
 
 export const runtime = 'nodejs'
 
@@ -16,7 +16,7 @@ type InsightsInput = {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isAiEnabled() || !anthropic) {
+  if (!aiEnabled()) {
     return NextResponse.json({ error: aiErrorDetails() }, { status: 503 })
   }
   try {
@@ -44,13 +44,8 @@ OUTPUT format Markdown WhatsApp (*tebal*):
 
 Output langsung analisisnya, tanpa preamble.`
 
-    const msg = await anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 1000,
-      messages: [{ role: 'user', content: prompt }],
-    })
-
-    return NextResponse.json({ insights: extractText(msg) })
+    const insights = await aiComplete({ prompt, maxTokens: 1000 })
+    return NextResponse.json({ insights })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'AI error'
     return NextResponse.json({ error: message }, { status: 500 })

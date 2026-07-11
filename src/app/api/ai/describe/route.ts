@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { anthropic, MODEL, isAiEnabled, extractText, aiErrorDetails } from '@/lib/anthropic'
+import { aiComplete, aiEnabled, aiErrorDetails } from '@/lib/ai'
 
 export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
-  if (!isAiEnabled() || !anthropic) {
+  if (!aiEnabled()) {
     return NextResponse.json({ error: aiErrorDetails() }, { status: 503 })
   }
   try {
@@ -30,13 +30,8 @@ ATURAN:
 
 Contoh: "Espresso kuat berpadu susu segar, creamy dan harum, cocok teman pagi yang santai."`
 
-    const msg = await anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 120,
-      messages: [{ role: 'user', content: prompt }],
-    })
-
-    return NextResponse.json({ description: extractText(msg).replace(/^["']|["']$/g, '') })
+    const description = await aiComplete({ prompt, maxTokens: 120 })
+    return NextResponse.json({ description: description.replace(/^["']|["']$/g, '') })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'AI error'
     return NextResponse.json({ error: message }, { status: 500 })
