@@ -3,104 +3,13 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { MenuItem, HppComponent, StoreSettings } from '@/types'
+import { formatRp } from '@/lib/format'
+import { isStoreOpen } from '@/lib/store-hours'
+import { margin, marginColor, BLANK, compressImage, Toggle, DEFAULT_SETTINGS, exportCsv } from '@/components/admin/helpers'
+import type { FormData, AdminTab, OrderRow } from '@/components/admin/helpers'
 
 const CATEGORIES = ['Kopi', 'Non-Kopi', 'Makanan', 'Lainnya'] as const
 const OWNER_WA = '6281245400031'
-function formatRp(n: number) { return 'Rp ' + n.toLocaleString('id-ID') }
-function margin(price: number, hpp: number) {
-  if (!hpp || !price) return null
-  return Math.round((price - hpp) / price * 100)
-}
-function marginColor(m: number) {
-  if (m >= 60) return 'text-green-400'
-  if (m >= 40) return 'text-yellow-400'
-  return 'text-red-400'
-}
-
-type FormData = Omit<MenuItem, 'id' | 'created_at' | 'image_url' | 'model_3d_url' | 'model_3d_task_id'>
-const BLANK: FormData = { name: '', description: '', price: 0, hpp: 0, hpp_components: [], category: 'Kopi', available: true }
-
-// Compress & resize gambar sebelum upload (max 900px, JPEG 82%)
-async function compressImage(file: File, maxPx = 900, quality = 0.82): Promise<Blob> {
-  return new Promise(resolve => {
-    const img = new Image()
-    const url = URL.createObjectURL(file)
-    img.onload = () => {
-      URL.revokeObjectURL(url)
-      const ratio = Math.min(1, maxPx / Math.max(img.width, img.height))
-      const canvas = document.createElement('canvas')
-      canvas.width = Math.round(img.width * ratio)
-      canvas.height = Math.round(img.height * ratio)
-      canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
-      canvas.toBlob(blob => resolve(blob!), 'image/jpeg', quality)
-    }
-    img.src = url
-  })
-}
-
-function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <button type="button" onClick={() => onChange(!value)}
-      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${value ? 'bg-h-red' : 'bg-h-border'}`}>
-      <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-all ${value ? 'left-[22px]' : 'left-0.5'}`} />
-    </button>
-  )
-}
-
-type AdminTab = 'menu' | 'hpp' | 'analitik' | 'pengaturan'
-
-const DEFAULT_SETTINGS: StoreSettings = { id: 1, open_time: '08:00', close_time: '22:00', open_days: 'Senin – Minggu', is_manually_closed: false }
-
-function isStoreOpen(s: StoreSettings): boolean {
-  if (s.is_manually_closed) return false
-  const now = new Date()
-  const cur = now.getHours() * 60 + now.getMinutes()
-  const [oh, om] = s.open_time.split(':').map(Number)
-  const [ch, cm] = s.close_time.split(':').map(Number)
-  const openM = oh * 60 + om, closeM = ch * 60 + cm
-  if (openM === closeM) return true                       // 24 jam
-  if (closeM > openM) return cur >= openM && cur < closeM // tutup di hari yang sama
-  return cur >= openM || cur < closeM                     // tutup lewat tengah malam
-}
-
-// ── Analytics types ──────────────────────────────────────────
-type OrderRow = {
-  id: string
-  table_number: number
-  items: { id: string; name: string; price: number; qty: number }[]
-  status: string
-  customer_name: string | null
-  payment_method: string | null
-  rating: number | null
-  created_at: string
-}
-
-function exportCsv(orders: OrderRow[]) {
-  const rows = [
-    ['ID', 'Tanggal', 'Meja', 'Customer', 'Item', 'Total', 'Status', 'Bayar', 'Rating'],
-    ...orders.map(o => {
-      const total = o.items.reduce((s, i) => s + i.price * i.qty, 0)
-      const itemList = o.items.map(i => `${i.name}x${i.qty}`).join(' | ')
-      return [
-        o.id.slice(0, 8),
-        new Date(o.created_at).toLocaleString('id-ID'),
-        o.table_number,
-        o.customer_name || '-',
-        itemList,
-        total,
-        o.status,
-        o.payment_method || '-',
-        o.rating || '-',
-      ]
-    })
-  ]
-  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
-  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a'); a.href = url
-  a.download = `hallu-rekap-${new Date().toISOString().slice(0, 10)}.csv`
-  a.click(); URL.revokeObjectURL(url)
-}
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false)

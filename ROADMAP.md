@@ -14,7 +14,17 @@ Rekap harian pakai business-day cutoff jam 05:00 — pertahankan di fitur baru.
 
 ---
 
-## Item 0 ⬜ — Pecah file raksasa (KERJAKAN PERTAMA — menghemat kuota semua sesi berikutnya)
+## Item 0 ✅ — Pecah file raksasa (SELESAI)
+
+**Hasil:** helper bersama dipindah ke `src/lib/format.ts`, `src/lib/store-hours.ts`
+(dedupe 3x calcIsOpen/isStoreOpen), `src/lib/business-day.ts`, `src/components/icons.tsx`.
+Menu dipecah ke `src/components/menu/` (atmosphere, ChatbotWidget, ShowcaseModal,
+ItemCard) → page.tsx 1267→566. Kasir ke `src/components/kasir/` (helpers, components)
+→ page.tsx 1612→943. Admin helper ke `src/components/admin/helpers.tsx` → 1324→1233
+(komponen AdminPage sengaja tidak dipecah — terlalu berisiko, banyak shared state).
+Build + tsc lolos, bundle size identik, 4 halaman verified 200 tanpa error.
+
+<details><summary>Prompt asli (arsip)</summary>
 
 **Kenapa:** kasir/page.tsx 1.612 baris, admin/page.tsx 1.324, menu/page.tsx 1.267.
 Tiap sesi edit harus baca file penuh = boros token. Setelah dipecah, sesi Opus cuma
@@ -30,6 +40,8 @@ baca komponen yang relevan.
 > hapus duplikat calcIsOpen/isStoreOpen (3 kopi identik). Per file target < 400
 > baris. Jalankan `node_modules/.bin/next build` harus sukses. JANGAN ubah logika,
 > style, atau teks apapun.
+
+</details>
 
 ---
 
