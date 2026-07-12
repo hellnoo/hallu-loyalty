@@ -326,12 +326,15 @@ export default function AdminPage() {
     <div className="min-h-screen bg-h-bg flex items-center justify-center p-6">
       <div className="bg-h-card border border-h-border rounded-2xl p-8 w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="font-sans text-2xl font-black text-white tracking-widest uppercase">HALLU</div>
+          <a href="/" title="Kembali ke beranda" className="inline-block">
+            <div className="font-sans text-2xl font-black text-white tracking-widest uppercase hover:text-h-cream transition-colors">HALLU</div>
+          </a>
           <div className="flex items-center gap-2 justify-center mt-1">
             <div className="h-px w-6 bg-h-red" />
             <div className="text-h-cream text-[0.5rem] tracking-[3px] uppercase font-semibold">Admin Panel</div>
             <div className="h-px w-6 bg-h-red" />
           </div>
+          <a href="/" className="text-h-muted hover:text-white text-xs mt-3 inline-block transition-colors">← Kembali ke beranda</a>
         </div>
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
@@ -353,11 +356,12 @@ export default function AdminPage() {
     <div className="min-h-screen bg-h-bg">
       <header className="bg-h-dark border-b border-h-border">
         <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
-          <div>
-            <div className="font-sans text-xl font-black text-white tracking-widest uppercase">HALLU</div>
+          <a href="/" title="Kembali ke beranda" className="group">
+            <div className="font-sans text-xl font-black text-white tracking-widest uppercase group-hover:text-h-cream transition-colors">HALLU</div>
             <div className="text-h-cream text-[0.55rem] tracking-[3px] uppercase font-semibold mt-0.5">Admin Panel</div>
-          </div>
+          </a>
           <div className="flex items-center gap-4">
+            <a href="/" className="text-h-muted hover:text-white text-sm transition-colors">Beranda</a>
             <a href="/admin/qr" className="text-h-muted hover:text-white text-sm transition-colors">QR Generator</a>
             <a href="/kasir" className="text-h-muted hover:text-white text-sm transition-colors">Kasir</a>
             <button onClick={() => { localStorage.removeItem('hallu-admin'); setAuthed(false) }}

@@ -451,12 +451,15 @@ export default function KasirPage() {
     <div className="min-h-screen bg-h-bg flex items-center justify-center p-6">
       <div className="bg-h-card border border-h-border rounded-2xl p-8 w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="font-sans text-2xl font-black text-white tracking-widest uppercase">HALLU</div>
+          <a href="/" title="Kembali ke beranda" className="inline-block">
+            <div className="font-sans text-2xl font-black text-white tracking-widest uppercase hover:text-h-cream transition-colors">HALLU</div>
+          </a>
           <div className="flex items-center gap-2 justify-center mt-1">
             <div className="h-px w-6 bg-h-red" />
             <div className="text-h-cream text-[0.5rem] tracking-[3px] uppercase font-semibold">Dashboard Kasir</div>
             <div className="h-px w-6 bg-h-red" />
           </div>
+          <a href="/" className="text-h-muted hover:text-white text-xs mt-3 inline-block transition-colors">← Kembali ke beranda</a>
         </div>
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
@@ -506,10 +509,10 @@ export default function KasirPage() {
       )}
       <header className="bg-h-dark border-b border-h-border">
         <div className="max-w-4xl mx-auto px-5 py-4 flex items-center justify-between">
-          <div>
-            <div className="font-sans text-xl font-black text-white tracking-widest uppercase">HALLU</div>
+          <a href="/" title="Kembali ke beranda" className="group">
+            <div className="font-sans text-xl font-black text-white tracking-widest uppercase group-hover:text-h-cream transition-colors">HALLU</div>
             <div className="text-h-cream text-[0.55rem] tracking-[3px] uppercase font-semibold mt-0.5">Dashboard Kasir</div>
-          </div>
+          </a>
           <div className="flex items-center gap-3 flex-wrap justify-end">
             {/* Active Shift badge */}
             {activeShift && (
