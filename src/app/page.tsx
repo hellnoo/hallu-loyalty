@@ -15,12 +15,12 @@ const TIKTOK = 'https://tiktok.com/@hall.ucffe'
 const IG_HANDLE = '@hall.ucffe'
 
 // ── Lokasi Hallu ──────────────────────────────────────────
-// TODO: ganti LAT,LNG dengan koordinat persis dari Google Maps (Share → Copy link)
+// Titik Taman Fitness Sunyie Parade / Cafe Taman Fitness (Google Maps, plus code Q9VP+C69)
 const LOC = {
-  lat: 0.7905,         // perkiraan area Taman Fitness, Ternate — GANTI dengan titik persis
-  lng: 127.3820,
+  lat: 0.7935511,
+  lng: 127.3855782,
   label: 'Hallu Coffee & Sociality',
-  address: 'Area Taman Fitness, Ternate, Maluku Utara',
+  address: 'Taman Fitness Sunyie Parade, Ternate, Maluku Utara',
 }
 const mapsEmbed = `https://maps.google.com/maps?q=${LOC.lat},${LOC.lng}&z=17&output=embed`
 const mapsDirections = `https://www.google.com/maps/dir/?api=1&destination=${LOC.lat},${LOC.lng}`
