@@ -91,10 +91,12 @@ set resolved=true.
 > supabase-setup.sql dan cantumkan CREATE TABLE-nya di ringkasan akhir untuk
 > dijalankan owner di Supabase SQL Editor.
 
-### Item 4 ⬜ — Koordinat Google Maps yang benar (BUTUH DATA OWNER)
-Di `src/app/page.tsx` const `LOC` masih perkiraan. **Owner:** buka Google Maps,
-tekan-tahan di titik persis Hallu (Taman Fitness), copy koordinat, kasih ke sesi
-Opus: _"ganti LOC.lat/lng di src/app/page.tsx jadi X, Y"_. 1 menit selesai.
+### Item 4 ✅ — Koordinat Google Maps (SELESAI)
+Titik persis ditemukan via Google Maps: **Taman Fitness Sunyie Parade / Cafe Taman
+Fitness** (plus code Q9VP+C69) = `0.7935511, 127.3855782` — dipasang di LOC
+`src/app/page.tsx`. Kalau pin perlu digeser beberapa meter, tinggal ubah 2 angka itu.
+**Saran marketing:** daftarkan "Hallu Coffee & Sociality" di Google Business Profile
+(business.google.com) — sekarang cari "Hallu" di Maps malah nyasar ke kafe kompetitor.
 
 ---
 
