@@ -178,6 +178,51 @@ di sesi mana pun sebelum push. Mencegah regresi kayak bug "Tutup 24 jam" kemarin
 
 ---
 
+## TRACK DEMO BI (prioritas bisnis — untuk pitch ke Bank Indonesia)
+
+### Item 11 ⬜ — White-label: brand via env var (prasyarat demo KedaiKu)
+**Konteks:** Supabase demo `kedaiku-demo` (ref yzqyxchhpnxhtibanbdq, org hellnoo)
+sudah dibuat & di-seed (10 menu netral + 48 order dummy 14 hari). Deploy demo =
+repo INI juga, Vercel project kedua dengan env beda. Blocker: brand HALLU hardcoded.
+
+**Desain (final, jangan diubah):**
+- Buat `src/lib/brand.ts`:
+  \`\`\`ts
+  export const BRAND = {
+    name:    process.env.NEXT_PUBLIC_BRAND_NAME    || 'HALLU',
+    tagline: process.env.NEXT_PUBLIC_BRAND_TAGLINE || 'Coffee & Sociality',
+    arabic:  process.env.NEXT_PUBLIC_BRAND_ARABIC  || 'هالو',   // '' = sembunyikan
+    city:    process.env.NEXT_PUBLIC_BRAND_CITY    || 'Ternate',
+    wa:      process.env.NEXT_PUBLIC_BRAND_WA      || '6281245400031',
+    ig:      process.env.NEXT_PUBLIC_BRAND_IG      || 'hall.ucffe',
+    address: process.env.NEXT_PUBLIC_BRAND_ADDRESS || 'Taman Fitness Sunyie Parade, Ternate, Maluku Utara',
+    lat:     Number(process.env.NEXT_PUBLIC_BRAND_LAT || 0.7935511),
+    lng:     Number(process.env.NEXT_PUBLIC_BRAND_LNG || 127.3855782),
+  }
+  \`\`\`
+- Ganti SEMUA hardcode "HALLU"/"Hallu"/"هالو"/WA/IG/LOC/alamat dengan BRAND.* di:
+  layout.tsx (metadata), page.tsx (nav/hero/lokasi/footer/sosmed), menu (header +
+  watermark "HALLU" di generatePlaceholder atmosphere.tsx), kasir (helpers.ts:
+  OWNER_WA, msgStruk "HALLU COFFEE & SOCIALITY", buildDailyReport; page header;
+  screensaver), admin (header), 5 route AI (nama kedai di prompt — NEXT_PUBLIC env
+  terbaca juga di server, langsung impor BRAND).
+- Default = nilai Hallu → TANPA env baru, produksi 100% tidak berubah.
+- Verifikasi: build lolos + preview tanpa env tetap tampil HALLU persis.
+
+**Prompt untuk Opus:**
+> Baca ROADMAP.md Item 11, implement persis. Jangan ubah tampilan default sedikitpun
+> (default env = Hallu). Build, verifikasi preview, commit, push hallu-loyalty main.
+
+### Item 12 ⬜ — Deploy demo "KedaiKu" (setelah Item 11)
+Vercel: project baru `kedaiku-demo` → import repo hallu-loyalty yang sama → env:
+Supabase demo (URL https://yzqyxchhpnxhtibanbdq.supabase.co + anon key dari
+dashboard), NEXT_PUBLIC_BRAND_NAME=KEDAIKU, TAGLINE="Warung Digital",
+ARABIC="" , CITY/WA/IG/ADDRESS disesuaikan, ADMIN_PASSWORD/KASIR_PASSWORD demo,
+AI_API_KEY sama. Hasil: kedaiku-demo.vercel.app untuk di-scan petugas BI.
+(Env berisi key — kerjakan via dashboard Vercel, jangan taruh nilai di repo.)
+
+---
+
 ## PARKIR (nanti kalau makin ramai — jangan dikerjakan dulu)
 - Kitchen Display System (tablet dapur terpisah)
 - Expense tracker + P&L bulanan penuh
