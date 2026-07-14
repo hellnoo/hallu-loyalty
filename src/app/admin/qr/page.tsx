@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import QRCode from 'qrcode'
+import { BRAND } from '@/lib/brand'
 
 function PencilIcon() {
   return (
@@ -91,7 +92,7 @@ export default function QRPage() {
       <header className="bg-h-dark border-b border-h-border print:hidden">
         <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
           <div>
-            <div className="font-sans text-xl font-black text-white tracking-widest uppercase">HALLU</div>
+            <div className="font-sans text-xl font-black text-white tracking-widest uppercase">{BRAND.name}</div>
             <div className="text-h-cream text-[0.55rem] tracking-[3px] uppercase font-semibold mt-0.5">QR Generator</div>
           </div>
           <a href="/admin" className="text-h-muted hover:text-white text-sm transition-colors">← Admin</a>
@@ -130,8 +131,8 @@ export default function QRPage() {
             {qrDataUrls.map((url, i) => (
               <div key={i} className="bg-h-card border border-h-border rounded-2xl overflow-hidden print:rounded-xl print:border print:border-gray-300 print:break-inside-avoid print:bg-white">
                 <div className="bg-h-bg print:bg-black px-3 pt-3 pb-1 text-center">
-                  <div className="font-sans font-black text-white text-xs tracking-[4px] uppercase">HALLU</div>
-                  <div className="text-h-cream text-[7px] tracking-[2px] uppercase font-semibold mt-0.5">Coffee &amp; Sociality</div>
+                  <div className="font-sans font-black text-white text-xs tracking-[4px] uppercase">{BRAND.name}</div>
+                  <div className="text-h-cream text-[7px] tracking-[2px] uppercase font-semibold mt-0.5">{BRAND.tagline}</div>
                 </div>
                 <div className="bg-h-red print:bg-red-600 px-2 py-1 text-center">
                   <span className="text-white text-[9px] font-black uppercase tracking-[3px]">↓ Scan Here ↓</span>

@@ -8,6 +8,7 @@ import { subscribePush, sendPush } from '@/lib/push'
 import type { MenuItem, StoreSettings } from '@/types'
 import { formatRp } from '@/lib/format'
 import { calcIsOpen } from '@/lib/store-hours'
+import { BRAND, BRAND_NICE } from '@/lib/brand'
 import { CAT_ICONS, generatePlaceholder } from '@/components/menu/atmosphere'
 import { ChatbotWidget } from '@/components/menu/ChatbotWidget'
 import { ShowcaseModal } from '@/components/menu/ShowcaseModal'
@@ -200,7 +201,7 @@ function MenuContent() {
   if (restoring) return (
     <div className="min-h-screen bg-h-bg flex items-center justify-center">
       <div className="text-center">
-        <div className="font-sans font-black text-white tracking-widest text-xl uppercase mb-2">HALLU</div>
+        <div className="font-sans font-black text-white tracking-widest text-xl uppercase mb-2">{BRAND.name}</div>
         <div className="text-h-muted text-xs animate-pulse">Memuat...</div>
       </div>
     </div>
@@ -239,7 +240,7 @@ function MenuContent() {
               </svg>
             </div>
             <h1 className="font-sans text-2xl font-black text-white uppercase tracking-wider mb-1">Selesai!</h1>
-            <p className="text-h-muted text-xs mt-3 max-w-xs">Terima kasih sudah mampir ke Hallu ☕</p>
+            <p className="text-h-muted text-xs mt-3 max-w-xs">Terima kasih sudah mampir ke {BRAND_NICE} ☕</p>
             {/* Rating */}
             {!rated ? (
               <div className="mt-8 bg-h-card border border-h-border rounded-2xl px-8 py-6 text-center max-w-xs w-full">
@@ -327,9 +328,9 @@ function MenuContent() {
       <header className={`bg-h-dark border-b border-h-border sticky z-40 ${orderId && !submitted ? 'top-[42px]' : 'top-0'}`}>
         <div className="max-w-[480px] mx-auto px-5 py-3.5 flex items-center justify-between">
           <div>
-            <div className="font-sans text-lg font-black text-white tracking-widest uppercase leading-none">HALLU</div>
+            <div className="font-sans text-lg font-black text-white tracking-widest uppercase leading-none">{BRAND.name}</div>
             <div className="flex items-center gap-2 mt-0.5">
-              <div className="text-h-cream text-[0.5rem] tracking-[3px] uppercase font-semibold">Coffee &amp; Sociality</div>
+              <div className="text-h-cream text-[0.5rem] tracking-[3px] uppercase font-semibold">{BRAND.tagline}</div>
               {storeSettings && (() => {
                 const open = calcIsOpen(storeSettings)
                 return (

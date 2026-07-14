@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { DM_Sans, Playfair_Display } from 'next/font/google'
 import './globals.css'
+import { BRAND, BRAND_NICE, BRAND_FULL } from '@/lib/brand'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -15,27 +16,29 @@ const playfair = Playfair_Display({
   style: ['normal', 'italic'],
 })
 
+const T = `${BRAND_FULL} — ${BRAND.city}`
+
 export const metadata: Metadata = {
   title: {
-    default: 'Hallu Coffee & Sociality — Ternate',
-    template: '%s | Hallu',
+    default: T,
+    template: `%s | ${BRAND_NICE}`,
   },
-  description: 'Hallu Coffee & Sociality di Ternate — specialty coffee, ruang nongkrong yang cozy, dan momen-momen terbaik. Scan QR di meja untuk pesan langsung dari HP.',
-  keywords: ['kafe ternate', 'coffee shop ternate', 'hallu', 'specialty coffee ternate', 'tempat nongkrong ternate'],
+  description: `${BRAND_FULL} di ${BRAND.city} — specialty coffee, ruang nongkrong yang cozy, dan momen-momen terbaik. Scan QR di meja untuk pesan langsung dari HP.`,
+  keywords: [`kafe ${BRAND.city.toLowerCase()}`, `coffee shop ${BRAND.city.toLowerCase()}`, BRAND_NICE.toLowerCase(), `tempat nongkrong ${BRAND.city.toLowerCase()}`],
   manifest: '/manifest.json',
-  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Hallu' },
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: BRAND_NICE },
   icons: { icon: '/icon.svg', apple: '/icon.svg' },
   openGraph: {
     type: 'website',
     locale: 'id_ID',
-    title: 'Hallu Coffee & Sociality',
-    description: 'Specialty coffee & tempat nongkrong terbaik di Ternate. Scan QR di meja, pesan dari HP, langsung diantar.',
-    siteName: 'Hallu Café',
+    title: BRAND_FULL,
+    description: `Specialty coffee & tempat nongkrong terbaik di ${BRAND.city}. Scan QR di meja, pesan dari HP, langsung diantar.`,
+    siteName: `${BRAND_NICE} Café`,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Hallu Coffee & Sociality',
-    description: 'Specialty coffee & tempat nongkrong terbaik di Ternate.',
+    title: BRAND_FULL,
+    description: `Specialty coffee & tempat nongkrong terbaik di ${BRAND.city}.`,
   },
 }
 

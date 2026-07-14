@@ -180,7 +180,14 @@ di sesi mana pun sebelum push. Mencegah regresi kayak bug "Tutup 24 jam" kemarin
 
 ## TRACK DEMO BI (prioritas bisnis — untuk pitch ke Bank Indonesia)
 
-### Item 11 ⬜ — White-label: brand via env var (prasyarat demo KedaiKu)
+### Item 11 ✅ — White-label: brand via env var (SELESAI)
+**Hasil:** src/lib/brand.ts (BRAND, BRAND_NICE, BRAND_FULL, WA_LINK, WA_DISPLAY).
+55+ hardcode di 14 file diganti. Diverifikasi 2 mode di preview: tanpa env =
+HALLU identik; dengan env = KEDAIKU/Warung Digital total, Arabic tersembunyi.
+Catatan: public/manifest.json & icon.svg masih statis Hallu (PWA install saja,
+tidak terlihat di demo web — genericize nanti kalau perlu).
+
+<details><summary>Spec asli (arsip)</summary>
 **Konteks:** Supabase demo `kedaiku-demo` (ref yzqyxchhpnxhtibanbdq, org hellnoo)
 sudah dibuat & di-seed (10 menu netral + 48 order dummy 14 hari). Deploy demo =
 repo INI juga, Vercel project kedua dengan env beda. Blocker: brand HALLU hardcoded.
@@ -212,6 +219,8 @@ repo INI juga, Vercel project kedua dengan env beda. Blocker: brand HALLU hardco
 **Prompt untuk Opus:**
 > Baca ROADMAP.md Item 11, implement persis. Jangan ubah tampilan default sedikitpun
 > (default env = Hallu). Build, verifikasi preview, commit, push hallu-loyalty main.
+
+</details>
 
 ### Item 12 ⬜ — Deploy demo "KedaiKu" (setelah Item 11)
 Vercel: project baru `kedaiku-demo` → import repo hallu-loyalty yang sama → env:

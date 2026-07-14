@@ -1,12 +1,13 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import type { MenuItem } from '@/types'
+import { BRAND_NICE } from '@/lib/brand'
 
 // ── AI Chatbot Widget ──────────────────────────────────────
 export function ChatbotWidget({ items }: { items: MenuItem[] }) {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([
-    { role: 'assistant', content: 'Halo Kak! ☕ Aku barista AI Hallu. Mau rekomendasi menu? Tanya aja, atau pilih cepat di bawah 👇' }
+    { role: 'assistant', content: `Halo Kak! ☕ Aku barista AI ${BRAND_NICE}. Mau rekomendasi menu? Tanya aja, atau pilih cepat di bawah 👇` }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
