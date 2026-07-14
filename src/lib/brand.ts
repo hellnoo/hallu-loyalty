@@ -5,7 +5,8 @@
 export const BRAND = {
   name:    process.env.NEXT_PUBLIC_BRAND_NAME    || 'HALLU',
   tagline: process.env.NEXT_PUBLIC_BRAND_TAGLINE || 'Coffee & Sociality',
-  arabic:  process.env.NEXT_PUBLIC_BRAND_ARABIC ?? 'هالو',   // '' = sembunyikan
+  // '' atau '-' = sembunyikan elemen Arab (Vercel tidak izinkan env kosong, pakai '-')
+  arabic:  (() => { const a = process.env.NEXT_PUBLIC_BRAND_ARABIC ?? 'هالو'; return a.trim() === '-' ? '' : a })(),
   city:    process.env.NEXT_PUBLIC_BRAND_CITY    || 'Ternate',
   wa:      process.env.NEXT_PUBLIC_BRAND_WA      || '6281245400031',
   ig:      process.env.NEXT_PUBLIC_BRAND_IG      || 'hall.ucffe',
