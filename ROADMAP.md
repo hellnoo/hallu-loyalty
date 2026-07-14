@@ -222,13 +222,14 @@ repo INI juga, Vercel project kedua dengan env beda. Blocker: brand HALLU hardco
 
 </details>
 
-### Item 12 ⬜ — Deploy demo "KedaiKu" (setelah Item 11)
-Vercel: project baru `kedaiku-demo` → import repo hallu-loyalty yang sama → env:
-Supabase demo (URL https://yzqyxchhpnxhtibanbdq.supabase.co + anon key dari
-dashboard), NEXT_PUBLIC_BRAND_NAME=KEDAIKU, TAGLINE="Warung Digital",
-ARABIC="" , CITY/WA/IG/ADDRESS disesuaikan, ADMIN_PASSWORD/KASIR_PASSWORD demo,
-AI_API_KEY sama. Hasil: kedaiku-demo.vercel.app untuk di-scan petugas BI.
-(Env berisi key — kerjakan via dashboard Vercel, jangan taruh nilai di repo.)
+### Item 12 ✅ — Deploy demo "KedaiKu" (SELESAI — LIVE)
+**https://kedaiku-demo.vercel.app** — Vercel project kedua dari repo yang sama,
+env: Supabase demo (yzqyxchhpnxhtibanbdq, 10 menu + 48 order dummy), brand
+KEDAIKU/"Warung Digital"/arabic disembunyikan ('-'). Login demo:
+admin `demoadmin26`, kasir `demokasir26`. Verified 200 + brand benar;
+produksi Hallu tidak terpengaruh. Auto-deploy dari main (kedua project).
+**Sisa manual (owner):** tambah env `AI_API_KEY` (key Groq yang sama) di
+Vercel project kedaiku-demo → Redeploy, supaya chatbot AI jalan di demo.
 
 ---
 
