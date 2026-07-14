@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import type { Order, OrderItem, MenuItem, Shift } from '@/types'
 import { formatRp } from '@/lib/format'
+import { BRAND, BRAND_NICE, BRAND_FULL } from '@/lib/brand'
 
-export const OWNER_WA = '6281245400031'
+export const OWNER_WA = BRAND.wa
 
 // ═══ OFFLINE / PENDING QUEUE ═══════════════════════════════
 const PENDING_ORDERS_KEY = 'hallu-kasir-pending-orders'
@@ -114,7 +115,7 @@ export function buildDailyReport(orders: Order[], date: string, shifts: Shift[] 
   })
 
   const lines = [
-    `📊 *LAPORAN HARIAN HALLU*`,
+    `📊 *LAPORAN HARIAN ${BRAND.name}*`,
     `📅 ${tanggal}`,
     ``,
     `💰 *Total Pendapatan: ${formatRp(revenue)}*`,
@@ -132,7 +133,7 @@ export function buildDailyReport(orders: Order[], date: string, shifts: Shift[] 
     avgRating ? `` : '',
     avgRating ? `⭐ Rata-rata Rating: ${avgRating} (dari ${ratedOrders.length} ulasan)` : '',
     ``,
-    `_Laporan otomatis dari Hallu POS_ 🚀`,
+    `_Laporan otomatis dari ${BRAND_NICE} POS_ 🚀`,
   ].filter(l => l !== undefined)
 
   return lines.join('\n')
@@ -164,7 +165,7 @@ export function waLink(phone: string, msg: string) {
 export function msgSiap(order: Order) {
   const meja = order.table_number > 0 ? `Meja ${order.table_number}` : 'Walk-in'
   const bayar = order.payment_method === 'qris' ? 'QRIS' : order.payment_method === 'transfer' ? 'Transfer' : 'Tunai'
-  return `Halo ${order.customer_name || 'Kak'}! 👋\n\nPesananmu di *Hallu Coffee & Sociality* sudah siap diambil. 🔔\n\n🪑 ${meja}\n💳 Pembayaran: ${bayar}\n\nSilakan ke kasir ya! ☕`
+  return `Halo ${order.customer_name || 'Kak'}! 👋\n\nPesananmu di *${BRAND_FULL}* sudah siap diambil. 🔔\n\n🪑 ${meja}\n💳 Pembayaran: ${bayar}\n\nSilakan ke kasir ya! ☕`
 }
 
 export function msgStruk(order: Order) {
@@ -184,8 +185,8 @@ export function msgStruk(order: Order) {
   const sep = '━━━━━━━━━━━━━━━'
 
   return [
-    `*HALLU COFFEE & SOCIALITY*`,
-    `_Ternate, Indonesia_`,
+    `*${BRAND.name} ${BRAND.tagline.toUpperCase()}*`,
+    `_${BRAND.city}, Indonesia_`,
     sep,
     `🧾 No. Order: *${noOrder}*`,
     `📅 ${tanggal}, ${waktu} WIT`,
@@ -199,9 +200,9 @@ export function msgStruk(order: Order) {
     `💳 Bayar: ${bayar} ✓ LUNAS`,
     sep,
     `Terima kasih sudah mampir! ☕`,
-    `Sampai jumpa lagi di Hallu 🤎`,
+    `Sampai jumpa lagi di ${BRAND_NICE} 🤎`,
     ``,
-    `_Struk digital — Hallu POS_`,
+    `_Struk digital — ${BRAND_NICE} POS_`,
   ].join('\n')
 }
 

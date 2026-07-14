@@ -6,6 +6,7 @@ import type { MenuItem, Order, Shift } from '@/types'
 import { EMPLOYEES } from '@/types'
 import { subscribePush, sendPush } from '@/lib/push'
 import { formatRp } from '@/lib/format'
+import { BRAND, BRAND_NICE } from '@/lib/brand'
 import { getCurrentBusinessDay, getBusinessDayBounds, toLocalDateString } from '@/lib/business-day'
 import type { PayMethod, PendingOrder } from '@/components/kasir/helpers'
 import {
@@ -124,7 +125,7 @@ export default function KasirPage() {
 
   useEffect(() => {
     const count = newOrders.length
-    document.title = count > 0 ? `(${count}) Order Baru | Hallu Kasir` : 'Hallu Kasir'
+    document.title = count > 0 ? `(${count}) Order Baru | ${BRAND_NICE} Kasir` : `${BRAND_NICE} Kasir`
   }, [newOrders])
 
   // Fix: reload orders saat tab kembali aktif (Realtime kadang disconnect saat tab lama tidak aktif)
@@ -452,7 +453,7 @@ export default function KasirPage() {
       <div className="bg-h-card border border-h-border rounded-2xl p-8 w-full max-w-sm">
         <div className="text-center mb-8">
           <a href="/" title="Kembali ke beranda" className="inline-block">
-            <div className="font-sans text-2xl font-black text-white tracking-widest uppercase hover:text-h-cream transition-colors">HALLU</div>
+            <div className="font-sans text-2xl font-black text-white tracking-widest uppercase hover:text-h-cream transition-colors">{BRAND.name}</div>
           </a>
           <div className="flex items-center gap-2 justify-center mt-1">
             <div className="h-px w-6 bg-h-red" />
@@ -492,14 +493,14 @@ export default function KasirPage() {
           style={{ backgroundColor: '#7C1515' }}
         >
           <div className="text-center animate-pulse" style={{ animationDuration: '3s' }}>
-            <div className="font-serif text-7xl mb-2" style={{ color: '#D4B896', fontFamily: 'var(--font-playfair)', letterSpacing: '0.05em' }}>
-              هالو
-            </div>
+            {BRAND.arabic && <div className="font-serif text-7xl mb-2" style={{ color: '#D4B896', fontFamily: 'var(--font-playfair)', letterSpacing: '0.05em' }}>
+              {BRAND.arabic}
+            </div>}
             <div className="font-sans font-black text-3xl tracking-[0.3em] uppercase mb-1" style={{ color: '#D4B896' }}>
-              HALLU
+              {BRAND.name}
             </div>
             <div className="text-xs tracking-[0.25em] uppercase" style={{ color: '#B8967A' }}>
-              Coffee &amp; Sociality
+              {BRAND.tagline}
             </div>
           </div>
           <div className="absolute bottom-10 text-xs tracking-widest uppercase opacity-40" style={{ color: '#D4B896' }}>
@@ -510,7 +511,7 @@ export default function KasirPage() {
       <header className="bg-h-dark border-b border-h-border">
         <div className="max-w-4xl mx-auto px-5 py-4 flex items-center justify-between">
           <a href="/" title="Kembali ke beranda" className="group">
-            <div className="font-sans text-xl font-black text-white tracking-widest uppercase group-hover:text-h-cream transition-colors">HALLU</div>
+            <div className="font-sans text-xl font-black text-white tracking-widest uppercase group-hover:text-h-cream transition-colors">{BRAND.name}</div>
             <div className="text-h-cream text-[0.55rem] tracking-[3px] uppercase font-semibold mt-0.5">Dashboard Kasir</div>
           </a>
           <div className="flex items-center gap-3 flex-wrap justify-end">
@@ -716,9 +717,9 @@ export default function KasirPage() {
               <div className="overflow-y-auto flex-1 p-5">
                 <div className="bg-white text-black rounded-lg p-5 font-mono text-xs leading-relaxed shadow-lg">
                   <div className="text-center mb-2">
-                    <div className="font-black text-sm tracking-wider">HALLU</div>
-                    <div className="text-[9px] tracking-widest text-gray-500">COFFEE &amp; SOCIALITY</div>
-                    <div className="text-[9px] text-gray-400">Ternate, Indonesia</div>
+                    <div className="font-black text-sm tracking-wider">{BRAND.name}</div>
+                    <div className="text-[9px] tracking-widest text-gray-500">{BRAND.tagline.toUpperCase()}</div>
+                    <div className="text-[9px] text-gray-400">{BRAND.city}, Indonesia</div>
                   </div>
                   <div className="border-t border-dashed border-gray-300 my-2" />
                   <div className="flex justify-between text-[10px]"><span>No. Order</span><span className="font-bold">{noOrder}</span></div>

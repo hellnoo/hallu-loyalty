@@ -8,19 +8,20 @@ import {
   InstagramIcon, TikTokIcon, WhatsAppIcon, CoffeeIcon, UsersIcon,
   QrIcon, MapPinIcon, ClockIcon, PhoneIcon, NavigationIcon, ArrowIcon,
 } from '@/components/icons'
+import { BRAND, BRAND_NICE, BRAND_FULL, WA_LINK, WA_DISPLAY } from '@/lib/brand'
 
-const WA = 'https://wa.me/6281245400031'
-const IG = 'https://instagram.com/hall.ucffe'
-const TIKTOK = 'https://tiktok.com/@hall.ucffe'
-const IG_HANDLE = '@hall.ucffe'
+const WA = WA_LINK
+const IG = `https://instagram.com/${BRAND.ig}`
+const TIKTOK = `https://tiktok.com/@${BRAND.ig}`
+const IG_HANDLE = `@${BRAND.ig}`
 
-// ── Lokasi Hallu ──────────────────────────────────────────
+// ── Lokasi kedai ──────────────────────────────────────────
 // Titik Taman Fitness Sunyie Parade / Cafe Taman Fitness (Google Maps, plus code Q9VP+C69)
 const LOC = {
-  lat: 0.7935511,
-  lng: 127.3855782,
-  label: 'Hallu Coffee & Sociality',
-  address: 'Taman Fitness Sunyie Parade, Ternate, Maluku Utara',
+  lat: BRAND.lat,
+  lng: BRAND.lng,
+  label: BRAND_FULL,
+  address: BRAND.address,
 }
 const mapsEmbed = `https://maps.google.com/maps?q=${LOC.lat},${LOC.lng}&z=17&output=embed`
 const mapsDirections = `https://www.google.com/maps/dir/?api=1&destination=${LOC.lat},${LOC.lng}`
@@ -49,7 +50,7 @@ function generatePlaceholder(item: MenuItem): string {
     <rect width="400" height="240" fill="url(#glow)"/>
     <text x="200" y="108" text-anchor="middle" font-size="58" opacity="0.9">${icon}</text>
     <text x="200" y="158" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="rgba(255,255,255,0.88)">${safeName}</text>
-    <text x="200" y="208" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="rgba(212,184,150,0.4)" letter-spacing="5">HALLU</text>
+    <text x="200" y="208" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="rgba(212,184,150,0.4)" letter-spacing="5">${BRAND.name}</text>
   </svg>`
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)
 }
@@ -143,16 +144,16 @@ export default function Home() {
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navScrolled ? 'bg-h-dark/90 backdrop-blur-md border-b border-h-border' : ''}`}>
         <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
           <div>
-            <div className="font-sans font-black text-white tracking-widest text-lg uppercase leading-none">HALLU</div>
-            <div className="text-h-cream text-[0.45rem] tracking-[3px] uppercase font-semibold mt-0.5">Coffee &amp; Sociality</div>
+            <div className="font-sans font-black text-white tracking-widest text-lg uppercase leading-none">{BRAND.name}</div>
+            <div className="text-h-cream text-[0.45rem] tracking-[3px] uppercase font-semibold mt-0.5">{BRAND.tagline}</div>
           </div>
           <div className="flex items-center gap-2">
-            <a href={IG} target="_blank" rel="noreferrer" aria-label="Instagram Hallu"
+            <a href={IG} target="_blank" rel="noreferrer" aria-label={`Instagram ${BRAND_NICE}`}
               title="Follow di Instagram"
               className="w-9 h-9 flex items-center justify-center rounded-full border border-h-border hover:border-pink-500/60 hover:text-pink-400 text-white/70 transition-colors">
               <InstagramIcon />
             </a>
-            <a href={TIKTOK} target="_blank" rel="noreferrer" aria-label="TikTok Hallu"
+            <a href={TIKTOK} target="_blank" rel="noreferrer" aria-label={`TikTok ${BRAND_NICE}`}
               title="Follow di TikTok"
               className="w-9 h-9 flex items-center justify-center rounded-full border border-h-border hover:border-white/60 hover:text-white text-white/70 transition-colors">
               <TikTokIcon />
@@ -179,23 +180,23 @@ export default function Home() {
 
         <div className="relative z-10 max-w-lg">
           {/* Arabic */}
-          <div className="font-serif text-7xl md:text-8xl font-black mb-2 leading-none"
+          {BRAND.arabic && <div className="font-serif text-7xl md:text-8xl font-black mb-2 leading-none"
             style={{ fontFamily: 'var(--font-playfair)', color: '#D4B896' }}>
-            هالو
-          </div>
+            {BRAND.arabic}
+          </div>}
           {/* Brand */}
           <div className="font-sans font-black text-h-cream text-4xl md:text-5xl tracking-[0.25em] uppercase mb-3">
-            HALLU
+            {BRAND.name}
           </div>
           {/* Divider */}
           <div className="flex items-center gap-3 justify-center mb-4">
             <div className="h-px flex-1 max-w-[60px]" style={{ background: 'linear-gradient(to right, transparent, #7C1515)' }} />
-            <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold">Coffee &amp; Sociality</div>
+            <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold">{BRAND.tagline}</div>
             <div className="h-px flex-1 max-w-[60px]" style={{ background: 'linear-gradient(to left, transparent, #7C1515)' }} />
           </div>
           {/* Tagline */}
           <p className="text-white/45 text-sm leading-relaxed max-w-sm mx-auto mt-3 mb-6">
-            Specialty coffee dan ruang sosial untuk menemani momen terbaikmu di Ternate.
+            Specialty coffee dan ruang sosial untuk menemani momen terbaikmu di {BRAND.city}.
           </p>
           {/* Jam operasional */}
           {storeSettings && (() => {
@@ -262,9 +263,9 @@ export default function Home() {
       <section className="py-20 px-5">
         <Section className="max-w-3xl mx-auto text-center">
           <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Tentang Kami</div>
-          <h2 className="font-sans font-black text-white text-3xl uppercase tracking-wider mb-6">Halo, kami Hallu</h2>
+          <h2 className="font-sans font-black text-white text-3xl uppercase tracking-wider mb-6">Halo, kami {BRAND_NICE}</h2>
           <p className="text-white/60 text-base leading-relaxed mb-4">
-            Hallu (هالو · &quot;halo&quot; dalam bahasa Arab) lahir dari satu ide sederhana —
+            {BRAND_NICE}{BRAND.arabic ? <> ({BRAND.arabic} · &quot;halo&quot; dalam bahasa Arab)</> : null} lahir dari satu ide sederhana —
             tempat di mana semua orang merasa <em className="text-h-cream not-italic font-semibold">disambut</em>.
           </p>
           <p className="text-white/50 text-sm leading-relaxed">
@@ -320,7 +321,7 @@ export default function Home() {
               </div>
               <iframe
                 src={mapsEmbed}
-                title="Lokasi Hallu"
+                title={`Lokasi ${BRAND_NICE}`}
                 className="w-full h-full relative z-10"
                 style={{ border: 0 }}
                 loading="lazy"
@@ -433,7 +434,7 @@ export default function Home() {
             <div className="absolute inset-0 pointer-events-none"
               style={{ background: 'radial-gradient(ellipse at 50% 120%, rgba(124,21,21,0.4) 0%, transparent 65%)' }} />
             <div className="relative z-10">
-              <div className="font-serif text-5xl mb-3" style={{ color: '#D4B896', fontFamily: 'var(--font-playfair)' }}>هالو</div>
+              {BRAND.arabic && <div className="font-serif text-5xl mb-3" style={{ color: '#D4B896', fontFamily: 'var(--font-playfair)' }}>{BRAND.arabic}</div>}
               <h3 className="font-sans font-black text-white text-xl uppercase tracking-wider mb-2">Ada yang bisa kami bantu?</h3>
               <p className="text-h-muted text-sm mb-8 leading-relaxed">
                 Reservasi tempat, pertanyaan menu, atau sekadar menyapa —<br />kami siap membantu lewat WhatsApp.
@@ -443,7 +444,7 @@ export default function Home() {
                 <WhatsAppIcon className="w-5 h-5" />
                 Chat WhatsApp
               </a>
-              <div className="mt-6 text-h-muted text-xs">+62 812-4540-0031</div>
+              <div className="mt-6 text-h-muted text-xs">{WA_DISPLAY}</div>
             </div>
           </div>
         </Section>
@@ -453,8 +454,8 @@ export default function Home() {
       <footer className="border-t border-h-border py-10 px-5">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-center sm:text-left">
-            <div className="font-sans font-black text-white tracking-widest text-sm uppercase">HALLU</div>
-            <div className="text-h-muted text-xs mt-0.5">Coffee &amp; Sociality · Ternate, Indonesia</div>
+            <div className="font-sans font-black text-white tracking-widest text-sm uppercase">{BRAND.name}</div>
+            <div className="text-h-muted text-xs mt-0.5">{BRAND.tagline} · {BRAND.city}, Indonesia</div>
             {storeSettings && (
               <div className="text-h-muted text-xs mt-1">
                 🕐 {storeSettings.open_days} · {storeSettings.open_time}–{storeSettings.close_time}
@@ -484,7 +485,7 @@ export default function Home() {
           </div>
         </div>
         <div className="text-center mt-8 text-white/10 text-[10px] tracking-widest uppercase">
-          © 2025 Hallu · All rights reserved
+          © 2025 {BRAND_NICE} · All rights reserved
         </div>
       </footer>
 

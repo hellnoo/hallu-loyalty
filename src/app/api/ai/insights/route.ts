@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { aiComplete, aiEnabled, aiErrorDetails } from '@/lib/ai'
+import { BRAND_NICE, BRAND_FULL } from '@/lib/brand'
 
 export const runtime = 'nodejs'
 
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
       `${i.name} | ${i.category} | Harga Rp${i.price} | HPP Rp${i.hpp} | Margin ${i.margin ?? 'N/A'}% | Terjual ${i.qtySold30d}x | Revenue Rp${i.revenue30d}`
     ).join('\n')
 
-    const prompt = `Kamu adalah konsultan menu kafe yang berpengalaman. Analisis data menu Hallu Coffee & Sociality berikut (30 hari terakhir):
+    const prompt = `Kamu adalah konsultan menu kafe yang berpengalaman. Analisis data menu ${BRAND_FULL} berikut (30 hari terakhir):
 
 ${dataStr}
 
@@ -36,7 +37,7 @@ Buat MENU ENGINEERING ANALYSIS dengan klasifikasi berikut (BCG matrix untuk menu
 - 🐕 *Dog* (margin rendah + lambat laku) → pertimbangkan hapus / ganti
 
 OUTPUT format Markdown WhatsApp (*tebal*):
-1. Mulai dengan judul: 🧠 *Menu Engineering Hallu*
+1. Mulai dengan judul: 🧠 *Menu Engineering ${BRAND_NICE}*
 2. Klasifikasi tiap item (max 3 item per kategori, item paling penting)
 3. Beri 3-5 REKOMENDASI ACTION konkret (item spesifik + apa yang harus dilakukan)
 4. Total max 400 kata, bahasa Indonesia santai friendly

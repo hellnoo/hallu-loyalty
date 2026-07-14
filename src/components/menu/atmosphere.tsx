@@ -1,5 +1,6 @@
 import React from 'react'
 import type { MenuItem } from '@/types'
+import { BRAND } from '@/lib/brand'
 
 export const CAT_ICONS: Record<string, string> = {
   'Kopi': '☕', 'Non-Kopi': '🥤', 'Makanan': '🍽️', 'Lainnya': '✨',
@@ -25,7 +26,7 @@ export function generatePlaceholder(item: MenuItem): string {
     <rect width="400" height="200" fill="url(#glow)"/>
     <text x="200" y="92" text-anchor="middle" font-size="54" opacity="0.9">${icon}</text>
     <text x="200" y="138" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="rgba(255,255,255,0.88)">${safeName}</text>
-    <text x="200" y="178" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="rgba(212,184,150,0.45)" letter-spacing="5">HALLU</text>
+    <text x="200" y="178" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="rgba(212,184,150,0.45)" letter-spacing="5">${BRAND.name}</text>
   </svg>`
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)
 }

@@ -5,11 +5,12 @@ import { supabase } from '@/lib/supabase'
 import type { MenuItem, HppComponent, StoreSettings } from '@/types'
 import { formatRp } from '@/lib/format'
 import { isStoreOpen } from '@/lib/store-hours'
+import { BRAND } from '@/lib/brand'
 import { margin, marginColor, BLANK, compressImage, Toggle, DEFAULT_SETTINGS, exportCsv } from '@/components/admin/helpers'
 import type { FormData, AdminTab, OrderRow } from '@/components/admin/helpers'
 
 const CATEGORIES = ['Kopi', 'Non-Kopi', 'Makanan', 'Lainnya'] as const
-const OWNER_WA = '6281245400031'
+const OWNER_WA = BRAND.wa
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false)
@@ -122,7 +123,7 @@ export default function AdminPage() {
       byMonth[ym].rev += rev; byMonth[ym].count++
     })
     const waText = [
-      '🗄️ *ARSIP DATA HALLU (sebelum dihapus)*',
+      `🗄️ *ARSIP DATA ${BRAND.name} (sebelum dihapus)*`,
       `Order sebelum: ${new Date(cutoff).toLocaleDateString('id-ID')}`,
       `Total: *${rows.length} order · ${formatRp(totalRev)}*`,
       '',
@@ -327,7 +328,7 @@ export default function AdminPage() {
       <div className="bg-h-card border border-h-border rounded-2xl p-8 w-full max-w-sm">
         <div className="text-center mb-8">
           <a href="/" title="Kembali ke beranda" className="inline-block">
-            <div className="font-sans text-2xl font-black text-white tracking-widest uppercase hover:text-h-cream transition-colors">HALLU</div>
+            <div className="font-sans text-2xl font-black text-white tracking-widest uppercase hover:text-h-cream transition-colors">{BRAND.name}</div>
           </a>
           <div className="flex items-center gap-2 justify-center mt-1">
             <div className="h-px w-6 bg-h-red" />
@@ -357,7 +358,7 @@ export default function AdminPage() {
       <header className="bg-h-dark border-b border-h-border">
         <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
           <a href="/" title="Kembali ke beranda" className="group">
-            <div className="font-sans text-xl font-black text-white tracking-widest uppercase group-hover:text-h-cream transition-colors">HALLU</div>
+            <div className="font-sans text-xl font-black text-white tracking-widest uppercase group-hover:text-h-cream transition-colors">{BRAND.name}</div>
             <div className="text-h-cream text-[0.55rem] tracking-[3px] uppercase font-semibold mt-0.5">Admin Panel</div>
           </a>
           <div className="flex items-center gap-4">

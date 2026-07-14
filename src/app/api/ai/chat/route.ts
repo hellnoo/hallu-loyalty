@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { aiComplete, aiEnabled, aiErrorDetails } from '@/lib/ai'
+import { BRAND, BRAND_FULL } from '@/lib/brand'
 
 export const runtime = 'nodejs'
 
@@ -8,7 +9,7 @@ type ChatInput = {
   menu: { name: string; category: string; price: number; description: string | null }[]
 }
 
-const SYSTEM_PROMPT = (menuStr: string) => `Kamu adalah AI barista Hallu Coffee & Sociality (kafe di Ternate). Persona kamu: ramah, hangat, sedikit playful, pakai bahasa Indonesia santai. Bisa pakai sapaan "Kak".
+const SYSTEM_PROMPT = (menuStr: string) => `Kamu adalah AI barista ${BRAND_FULL} (kafe di ${BRAND.city}). Persona kamu: ramah, hangat, sedikit playful, pakai bahasa Indonesia santai. Bisa pakai sapaan "Kak".
 
 MENU SAAT INI:
 ${menuStr}
