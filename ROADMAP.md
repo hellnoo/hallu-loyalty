@@ -233,6 +233,47 @@ Vercel project kedaiku-demo → Redeploy, supaya chatbot AI jalan di demo.
 
 ---
 
+## TRACK FRANCHISE (keputusan: franchise dibangun DI hallu-loyalty, bukan franc-ops)
+
+> Konteks: repo terpisah `hellnoo/franc-ops` (D:\franc-ops, DB di akun Supabase
+> thatwokz `ehrohsbzvlbtpeqylbdg`) = dashboard multi-outlet owner/mitra/kasir dengan
+> Supabase Auth + RLS granular + expenses. Keputusan: hallu-loyalty jadi platform
+> tunggal; franc-ops jadi referensi pola (auth/RLS, expenses, HPP snapshot) dan
+> pensiun setelah F4. Alasan: konsistensi pengalaman outlet (QR/AI/realtime),
+> satu codebase untuk solo dev, white-label sudah terbukti (demo KedaiKu).
+
+### Item F1 ✅ (bisa dilakukan kapan saja, tanpa kode)
+Outlet franchise baru = deploy pola KedaiKu: Supabase baru (jalankan
+supabase-setup.sql) + Vercel project baru dari repo ini + env brand Hallu dengan
+NEXT_PUBLIC_BRAND_ADDRESS/CITY beda per outlet + password admin/kasir per outlet.
+
+### Item F2 ⬜ — Dashboard Owner agregat lintas outlet (/owner)
+- Halaman baru `/owner` (password baru env OWNER_PASSWORD, pola sama admin).
+- Config outlet via env server-only `OUTLETS_JSON`:
+  `[{"name":"Hallu Pusat","url":"https://<ref>.supabase.co","anon":"<key>"},...]`
+- Server route `/api/owner/summary` membaca SEMUA outlet (createClient per outlet,
+  parallel): omzet business-day hari ini, jumlah order, 7 hari terakhir, top item.
+- UI: kartu per outlet + total agregat + banding antar outlet. Read-only.
+- Ini menggantikan fungsi inti franc-ops (pantau semua outlet dari satu layar).
+
+### Item F3 ⬜ — Expenses per outlet + P&L (port dari franc-ops)
+- SQL: tabel `expenses (id, category check in bahan/gaji/sewa/listrik/operasional/lain,
+  description, amount, expense_date, created_at)` — per DB outlet, idempotent.
+- Kasir: tab/section "Pengeluaran" (input harian sederhana + list hari ini).
+- Admin Analitik: P&L bulanan = revenue − HPP terjual − expenses per kategori.
+- /owner (F2): agregat P&L lintas outlet.
+
+### Item F4 ⬜ — Auth & RLS proper (gabung dengan Item 9, pakai pola franc-ops)
+Supabase Auth (email/password) role owner/mitra/kasir + RLS granular per peran
+meniru `D:\franc-ops\supabase-setup.sql` (get_my_role() security definer, policy
+per tabel). Mitra login → lihat outlet-nya saja. Setelah ini franc-ops pensiun.
+
+### Catatan HPP snapshot (kerjakan bersama Item 1 varian)
+Saat submit order, simpan juga `hpp` per item (snapshot dari menu_items saat itu)
+di jsonb items — laporan margin historis akurat walau HPP menu berubah.
+
+---
+
 ## PARKIR (nanti kalau makin ramai — jangan dikerjakan dulu)
 - Kitchen Display System (tablet dapur terpisah)
 - Expense tracker + P&L bulanan penuh
