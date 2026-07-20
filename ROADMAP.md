@@ -242,10 +242,16 @@ Vercel project kedaiku-demo → Redeploy, supaya chatbot AI jalan di demo.
 > pensiun setelah F4. Alasan: konsistensi pengalaman outlet (QR/AI/realtime),
 > satu codebase untuk solo dev, white-label sudah terbukti (demo KedaiKu).
 
-### Item F1 ✅ (bisa dilakukan kapan saja, tanpa kode)
-Outlet franchise baru = deploy pola KedaiKu: Supabase baru (jalankan
-supabase-setup.sql) + Vercel project baru dari repo ini + env brand Hallu dengan
-NEXT_PUBLIC_BRAND_ADDRESS/CITY beda per outlet + password admin/kasir per outlet.
+### Item F1 ✅ — Outlet mitra #1 LIVE: https://hallu-outlet.vercel.app
+Supabase `hallu-outlet` (ref fxzkdepohxflcnsompxo, akun hellnoo) — schema produksi
+tanpa dummy + 13 menu Hallu pusat tersalin (harga/HPP/foto). Login: admin
+`mitraadmin26`, kasir `mitrakasir26` (SEGERA ganti via Vercel env). Alamat masih
+placeholder "Ternate, Maluku Utara" → ganti env NEXT_PUBLIC_BRAND_ADDRESS.
+AI_API_KEY belum diset (chatbot nonaktif) → tambah manual kalau mau.
+CATATAN: kedaiku-demo di-PAUSE untuk slot ini — restore sebelum ±12 Okt 2026
+(batas 90 hari) atau sebelum presentasi BI. Keputusan: DB franc-ops tidak jadi
+dipakai (kosong, tidak ada nilai selain slot); akun thatwokz tidak disentuh.
+Outlet berikutnya: ulangi pola ini (butuh slot — pertimbangkan Supabase Pro).
 
 ### Item F2 ⬜ — Dashboard Owner agregat lintas outlet (/owner)
 - Halaman baru `/owner` (password baru env OWNER_PASSWORD, pola sama admin).
