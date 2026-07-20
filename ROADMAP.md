@@ -253,14 +253,16 @@ CATATAN: kedaiku-demo di-PAUSE untuk slot ini — restore sebelum ±12 Okt 2026
 dipakai (kosong, tidak ada nilai selain slot); akun thatwokz tidak disentuh.
 Outlet berikutnya: ulangi pola ini (butuh slot — pertimbangkan Supabase Pro).
 
-### Item F2 ⬜ — Dashboard Owner agregat lintas outlet (/owner)
-- Halaman baru `/owner` (password baru env OWNER_PASSWORD, pola sama admin).
-- Config outlet via env server-only `OUTLETS_JSON`:
-  `[{"name":"Hallu Pusat","url":"https://<ref>.supabase.co","anon":"<key>"},...]`
-- Server route `/api/owner/summary` membaca SEMUA outlet (createClient per outlet,
-  parallel): omzet business-day hari ini, jumlah order, 7 hari terakhir, top item.
-- UI: kartu per outlet + total agregat + banding antar outlet. Read-only.
-- Ini menggantikan fungsi inti franc-ops (pantau semua outlet dari satu layar).
+### Item F2 ✅ — Dashboard Owner agregat lintas outlet (/owner) — SELESAI (kode)
+- `/owner` (password env OWNER_PASSWORD) + `/api/owner/summary` +
+  `src/lib/outlets.ts`. Business-day dihitung WIT (UTC+9) di server, bukan UTC.
+- Baca semua outlet dari OUTLETS_JSON paralel: omzet hari ini, transaksi,
+  omzet 7 hari, sparkline 7 hari, top item — per outlet + agregat total.
+- Fallback tanpa OUTLETS_JSON = outlet deployment sendiri.
+- Build + verifikasi UI/route lolos (login gate, timezone, error handling).
+- **SISA (owner, di Vercel project HALLU PUSAT):** set env OWNER_PASSWORD +
+  OUTLETS_JSON berisi [{name,url,anon} pusat & hallu-outlet] → Redeploy →
+  verifikasi angka real. Anon key: Supabase → Settings → API keys (legacy anon).
 
 ### Item F3 ⬜ — Expenses per outlet + P&L (port dari franc-ops)
 - SQL: tabel `expenses (id, category check in bahan/gaji/sewa/listrik/operasional/lain,
