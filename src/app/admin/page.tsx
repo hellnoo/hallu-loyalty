@@ -1177,12 +1177,13 @@ export default function AdminPage() {
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70" onClick={() => setShowForm(false)} />
-          <div className="relative bg-h-card border border-h-border rounded-2xl p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-6">
+          <div className="relative bg-h-card border border-h-border rounded-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 flex-shrink-0 border-b border-h-border">
               <h2 className="font-sans text-base font-black text-white uppercase tracking-wider">{editing ? 'Edit Item' : 'Tambah Item'}</h2>
               <button onClick={() => setShowForm(false)} className="text-h-muted hover:text-white text-2xl leading-none">×</button>
             </div>
-            <form onSubmit={handleSave} className="space-y-4">
+            <form onSubmit={handleSave} className="flex flex-col min-h-0 flex-1">
+              <div className="overflow-y-auto px-6 py-4 space-y-4 flex-1 min-h-0">
               <div>
                 <label className="text-xs text-h-muted font-bold uppercase tracking-wide block mb-1.5">Nama *</label>
                 <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
@@ -1275,7 +1276,8 @@ export default function AdminPage() {
                 <Toggle value={form.available} onChange={v => setForm(f => ({ ...f, available: v }))} />
                 <span className="text-sm text-h-muted">{form.available ? 'Tersedia' : 'Tidak tersedia / Habis'}</span>
               </div>
-              <div className="flex gap-3 pt-2">
+              </div>{/* ── akhir area scroll ── */}
+              <div className="flex gap-3 px-6 py-4 border-t border-h-border flex-shrink-0 bg-h-card">
                 <button type="button" onClick={() => setShowForm(false)}
                   className="flex-1 border border-h-border text-h-muted py-3 rounded-xl text-sm font-medium hover:border-white/20 hover:text-white transition-colors">
                   Batal
