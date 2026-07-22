@@ -279,7 +279,24 @@ Outlet berikutnya: ulangi pola ini (butuh slot — pertimbangkan Supabase Pro).
 - **SISA (owner):** jalankan `supabase-expenses.sql` di SQL Editor **tiap DB outlet**
   (pusat `wbarxjnqtybpvwdyayre` + hallu-outlet `fxzkdepohxflcnsompxo`).
 
-### Item F4 ⬜ — Auth & RLS proper (gabung dengan Item 9, pakai pola franc-ops)
+### Item F4a ✅ — Hardening RLS Fase 1 (tanpa ganti login) — SELESAI (kode)
+Anon key (publik) tidak bisa lagi ubah menu/harga, setelan toko, tulis/hapus
+pengeluaran, atau hapus order. Operasi tulis itu pindah ke server route
+`/api/secure` (service_role, dijaga password admin/kasir), dengan FALLBACK anon
+saat rollout supaya app tidak putus. Baca (SELECT) tetap anon (dibutuhkan app + /owner).
+- `src/lib/supabase-admin.ts` (service_role, server-only), `/api/secure` (whitelist op
+  per scope, 401/403/501 diverifikasi), `src/lib/secure-db.ts` (client + fallback).
+- Login admin/kasir sekarang simpan password di localStorage (pola sama /owner) utk
+  otorisasi /api/secure. Semua tulis menu/settings/expenses/cleanup dirouting.
+- `supabase-rls-harden.sql` = SQL perketat RLS (menu/settings/expenses baca-saja,
+  orders tanpa DELETE). shifts & push_subscriptions tidak disentuh.
+- **SISA (owner, WAJIB urut):** (1) set env `SUPABASE_SERVICE_ROLE_KEY` di Vercel
+  pusat + outlet (Supabase → Settings → API Keys → service_role), (2) Redeploy,
+  (3) admin & kasir LOGIN ULANG sekali, (4) baru jalankan `supabase-rls-harden.sql`
+  di tiap DB. Sisa risiko (dibiarkan utk F4b): orders bisa di-UPDATE anon, PII order
+  kebaca anon, shifts anon — butuh Auth beneran.
+
+### Item F4b ⬜ — Auth & RLS proper (gabung dengan Item 9, pakai pola franc-ops)
 Supabase Auth (email/password) role owner/mitra/kasir + RLS granular per peran
 meniru `D:\franc-ops\supabase-setup.sql` (get_my_role() security definer, policy
 per tabel). Mitra login → lihat outlet-nya saja. Setelah ini franc-ops pensiun.

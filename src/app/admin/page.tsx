@@ -9,6 +9,7 @@ import { BRAND } from '@/lib/brand'
 import { margin, marginColor, BLANK, compressImage, Toggle, DEFAULT_SETTINGS, exportCsv } from '@/components/admin/helpers'
 import type { FormData, AdminTab, OrderRow } from '@/components/admin/helpers'
 import { EXPENSE_CATEGORIES, expLabel, expIcon, type Expense } from '@/lib/expenses'
+import { secureWrite } from '@/lib/secure-db'
 
 const CATEGORIES = ['Kopi', 'Non-Kopi', 'Makanan', 'Lainnya'] as const
 const OWNER_WA = BRAND.wa
@@ -150,12 +151,15 @@ export default function AdminPage() {
     }
     setCleaning(true); setCleanupResult(null)
     const cutoff = new Date(Date.now() - cleanupDays * 24 * 60 * 60 * 1000).toISOString()
-    const { count, error } = await supabase.from('orders')
-      .delete({ count: 'exact' })
-      .in('status', ['done', 'cancelled'])
-      .lt('created_at', cutoff)
+    const { count, error } = await secureWrite({
+      scope: 'admin', table: 'orders', op: 'deleteOld', cutoff, statuses: ['done', 'cancelled'],
+      fallback: async () => {
+        const r = await supabase.from('orders').delete({ count: 'exact' }).in('status', ['done', 'cancelled']).lt('created_at', cutoff)
+        return { error: r.error, count: r.count }
+      },
+    })
     setCleaning(false)
-    if (error) { setCleanupResult('❌ Gagal: ' + error.message); return }
+    if (error) { setCleanupResult('❌ Gagal: ' + (error instanceof Error ? error.message : String(error))); return }
     setCleanupResult(`✅ ${count ?? 0} order dihapus (>${cleanupDays} hari). Backup sudah ada di WA owner.`)
     setBackupReady(false)
     setOrders([])
@@ -163,7 +167,10 @@ export default function AdminPage() {
 
   const saveSettings = async () => {
     setSettingsSaving(true)
-    await supabase.from('store_settings').upsert(settings)
+    await secureWrite({
+      scope: 'admin', table: 'store_settings', op: 'upsert', values: settings,
+      fallback: async () => { const r = await supabase.from('store_settings').upsert(settings); return { error: r.error } },
+    })
     setSettingsSaving(false)
     setSettingsSaved(true)
     setTimeout(() => setSettingsSaved(false), 2500)
@@ -214,7 +221,7 @@ export default function AdminPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     const res = await fetch('/api/admin-auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) })
-    if (res.ok) { localStorage.setItem('hallu-admin', 'ok'); setAuthed(true) }
+    if (res.ok) { localStorage.setItem('hallu-admin', 'ok'); localStorage.setItem('hallu-admin-pw', pw); setAuthed(true) }
     else setPwError('Password salah')
   }
 
@@ -225,15 +232,27 @@ export default function AdminPage() {
     setShowForm(true)
   }
 
+  // Tulis menu_items lewat server (service_role) + fallback anon — menutup akses tulis anon.
+  const menuUpdate = (id: string, values: Record<string, unknown>) => secureWrite({
+    scope: 'admin', table: 'menu_items', op: 'update', matchId: id, values,
+    fallback: async () => { const r = await supabase.from('menu_items').update(values).eq('id', id); return { error: r.error } },
+  })
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true)
-    if (editing) await supabase.from('menu_items').update(form).eq('id', editing.id)
-    else await supabase.from('menu_items').insert(form)
+    if (editing) await menuUpdate(editing.id, form)
+    else await secureWrite({
+      scope: 'admin', table: 'menu_items', op: 'insert', values: form,
+      fallback: async () => { const r = await supabase.from('menu_items').insert(form); return { error: r.error } },
+    })
     await loadItems(); setShowForm(false); setSaving(false)
   }
 
   const handleDelete = async (id: string) => {
-    await supabase.from('menu_items').delete().eq('id', id)
+    await secureWrite({
+      scope: 'admin', table: 'menu_items', op: 'delete', matchId: id,
+      fallback: async () => { const r = await supabase.from('menu_items').delete().eq('id', id); return { error: r.error } },
+    })
     setItems(prev => prev.filter(i => i.id !== id))
     setConfirmDeleteId(null)
   }
@@ -246,7 +265,7 @@ export default function AdminPage() {
       const { error: upErr } = await supabase.storage.from('menu-images').upload(path, compressed, { upsert: true, contentType: 'image/jpeg' })
       if (upErr) throw upErr
       const { data: { publicUrl } } = supabase.storage.from('menu-images').getPublicUrl(path)
-      await supabase.from('menu_items').update({ image_url: publicUrl }).eq('id', itemId)
+      await menuUpdate(itemId, { image_url: publicUrl })
       setItems(prev => prev.map(i => i.id === itemId ? { ...i, image_url: publicUrl } : i))
     } catch { alert('Gagal upload foto. Pastikan bucket menu-images sudah dibuat di Supabase Storage.') }
     setUploadingId(null)
@@ -263,7 +282,7 @@ export default function AdminPage() {
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Gagal start generate')
       const taskId = json.taskId
-      await supabase.from('menu_items').update({ model_3d_task_id: taskId }).eq('id', item.id)
+      await menuUpdate(item.id, { model_3d_task_id: taskId })
       // Poll status
       pollMeshyTask(item.id, taskId)
     } catch (err) {
@@ -284,7 +303,7 @@ export default function AdminPage() {
         setMeshyStatus(s => ({ ...s, [itemId]: { status: json.status, progress: json.progress || 0, error: json.error } }))
         if (json.status === 'SUCCEEDED' && json.glbUrl) {
           clearInterval(interval)
-          await supabase.from('menu_items').update({ model_3d_url: json.glbUrl }).eq('id', itemId)
+          await menuUpdate(itemId, { model_3d_url: json.glbUrl })
           setItems(prev => prev.map(i => i.id === itemId ? { ...i, model_3d_url: json.glbUrl } : i))
         } else if (json.status === 'FAILED' || tries >= maxTries) {
           clearInterval(interval)
@@ -300,24 +319,24 @@ export default function AdminPage() {
   const saveManualGlb = async (item: MenuItem) => {
     const url = manualGlbUrl.trim()
     if (!url) return
-    await supabase.from('menu_items').update({ model_3d_url: url }).eq('id', item.id)
+    await menuUpdate(item.id, { model_3d_url: url })
     setItems(prev => prev.map(i => i.id === item.id ? { ...i, model_3d_url: url } : i))
     setManualGlbUrl('')
   }
 
   const remove3DModel = async (item: MenuItem) => {
-    await supabase.from('menu_items').update({ model_3d_url: null, model_3d_task_id: null }).eq('id', item.id)
+    await menuUpdate(item.id, { model_3d_url: null, model_3d_task_id: null })
     setItems(prev => prev.map(i => i.id === item.id ? { ...i, model_3d_url: null, model_3d_task_id: null } : i))
   }
 
   const handleImageRemove = async (item: MenuItem) => {
-    await supabase.from('menu_items').update({ image_url: null }).eq('id', item.id)
+    await menuUpdate(item.id, { image_url: null })
     setItems(prev => prev.map(i => i.id === item.id ? { ...i, image_url: null } : i))
   }
 
   const toggleAvailable = async (item: MenuItem) => {
     const next = !item.available
-    await supabase.from('menu_items').update({ available: next }).eq('id', item.id)
+    await menuUpdate(item.id, { available: next })
     setItems(prev => prev.map(i => i.id === item.id ? { ...i, available: next } : i))
   }
 
@@ -375,7 +394,7 @@ export default function AdminPage() {
             <a href="/" className="text-h-muted hover:text-white text-sm transition-colors">Beranda</a>
             <a href="/admin/qr" className="text-h-muted hover:text-white text-sm transition-colors">QR Generator</a>
             <a href="/kasir" className="text-h-muted hover:text-white text-sm transition-colors">Kasir</a>
-            <button onClick={() => { localStorage.removeItem('hallu-admin'); setAuthed(false) }}
+            <button onClick={() => { localStorage.removeItem('hallu-admin'); localStorage.removeItem('hallu-admin-pw'); setAuthed(false) }}
               className="border border-h-border hover:border-white/30 text-h-muted hover:text-white px-4 py-1.5 rounded-full text-sm transition-colors">
               Keluar
             </button>

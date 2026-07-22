@@ -9,6 +9,7 @@ import { formatRp } from '@/lib/format'
 import { BRAND, BRAND_NICE } from '@/lib/brand'
 import { getCurrentBusinessDay, getBusinessDayBounds, toLocalDateString } from '@/lib/business-day'
 import { EXPENSE_CATEGORIES, expIcon, expLabel, type Expense } from '@/lib/expenses'
+import { secureWrite } from '@/lib/secure-db'
 import type { PayMethod, PendingOrder } from '@/components/kasir/helpers'
 import {
   OWNER_WA, orderTotal, buildDailyReport, PAY_OPTS, msgStruk, waLink,
@@ -104,18 +105,24 @@ export default function KasirPage() {
     const amount = Math.round(Number(expAmount.replace(/[^\d]/g, '')))
     if (!amount || amount <= 0) return
     setExpSaving(true)
-    const { data, error } = await supabase.from('expenses').insert({
-      category: expCat, description: expDesc.trim() || null, amount, expense_date: rekapDate,
-    }).select('*').single()
-    if (!error && data) {
-      setExpenses(prev => [data as Expense, ...prev])
+    const values = { category: expCat, description: expDesc.trim() || null, amount, expense_date: rekapDate }
+    const { error, data } = await secureWrite({
+      scope: 'kasir', table: 'expenses', op: 'insert', values,
+      fallback: async () => { const r = await supabase.from('expenses').insert(values).select('*'); return { error: r.error, data: r.data } },
+    })
+    const row = Array.isArray(data) ? (data as Expense[])[0] : null
+    if (!error && row) {
+      setExpenses(prev => [row, ...prev])
       setExpDesc(''); setExpAmount('')
     }
     setExpSaving(false)
   }
   const deleteExpense = async (id: string) => {
     setExpenses(prev => prev.filter(e => e.id !== id))
-    await supabase.from('expenses').delete().eq('id', id)
+    await secureWrite({
+      scope: 'kasir', table: 'expenses', op: 'delete', matchId: id,
+      fallback: async () => { const r = await supabase.from('expenses').delete().eq('id', id); return { error: r.error } },
+    })
   }
 
   useEffect(() => {
@@ -457,6 +464,7 @@ export default function KasirPage() {
     const res = await fetch('/api/kasir-auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) })
     if (res.ok) {
       localStorage.setItem('hallu-kasir', 'ok')
+      localStorage.setItem('hallu-kasir-pw', pw)
       setAuthed(true)
       subscribePush('kasir') // daftar push notification kasir
     }
@@ -590,7 +598,7 @@ export default function KasirPage() {
               className="bg-h-red/10 hover:bg-h-red/20 border border-h-red/40 text-h-cream px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors">
               Tutup Kasir
             </button>
-            <button onClick={() => { localStorage.removeItem('hallu-kasir'); setAuthed(false) }}
+            <button onClick={() => { localStorage.removeItem('hallu-kasir'); localStorage.removeItem('hallu-kasir-pw'); setAuthed(false) }}
               className="border border-h-border hover:border-white/30 text-h-muted hover:text-white px-4 py-1.5 rounded-full text-sm transition-colors">
               Keluar
             </button>
