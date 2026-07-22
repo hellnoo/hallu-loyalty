@@ -264,12 +264,20 @@ Outlet berikutnya: ulangi pola ini (butuh slot — pertimbangkan Supabase Pro).
   OUTLETS_JSON berisi [{name,url,anon} pusat & hallu-outlet] → Redeploy →
   verifikasi angka real. Anon key: Supabase → Settings → API keys (legacy anon).
 
-### Item F3 ⬜ — Expenses per outlet + P&L (port dari franc-ops)
-- SQL: tabel `expenses (id, category check in bahan/gaji/sewa/listrik/operasional/lain,
-  description, amount, expense_date, created_at)` — per DB outlet, idempotent.
-- Kasir: tab/section "Pengeluaran" (input harian sederhana + list hari ini).
-- Admin Analitik: P&L bulanan = revenue − HPP terjual − expenses per kategori.
-- /owner (F2): agregat P&L lintas outlet.
+### Item F3 ✅ — Expenses per outlet + P&L (port dari franc-ops) — SELESAI (kode)
+- SQL: tabel `expenses (category bahan/gaji/sewa/listrik/operasional/lain, description,
+  amount, expense_date, created_at)` — idempotent, di `supabase-setup.sql` (outlet baru)
+  + `supabase-expenses.sql` (migrasi DB lama). RLS + realtime + index.
+- `src/lib/expenses.ts`: kategori + label/icon dipakai kasir/admin/owner.
+- Kasir: tab "Pengeluaran" — pilih kategori, keterangan, jumlah, simpan; list per
+  tanggal + total. (diverifikasi render: 6 kategori, form, empty state, no error)
+- Admin Analitik: kartu Laba-Rugi bulanan = omzet − HPP terjual (join menu by id/nama)
+  − pengeluaran per kategori → laba kotor & laba bersih + margin.
+- /owner (F2): agregat P&L bulan berjalan (omzet, HPP, pengeluaran, laba bersih) +
+  laba bersih per outlet. Route fetch orders+menu+expenses paralel per outlet.
+- Build + tsc lolos.
+- **SISA (owner):** jalankan `supabase-expenses.sql` di SQL Editor **tiap DB outlet**
+  (pusat `wbarxjnqtybpvwdyayre` + hallu-outlet `fxzkdepohxflcnsompxo`).
 
 ### Item F4 ⬜ — Auth & RLS proper (gabung dengan Item 9, pakai pola franc-ops)
 Supabase Auth (email/password) role owner/mitra/kasir + RLS granular per peran

@@ -10,16 +10,22 @@ type OutletOk = {
   todayRevenue: number; todayOrders: number
   weekRevenue: number; weekOrders: number
   daily: Daily[]; topItems: { name: string; qty: number }[]
+  monthRevenue: number; cogs: number; expTotal: number; netProfit: number
 }
 type OutletErr = { name: string; ok: false; error: string }
 type Summary = {
   today: string
+  month: string
   outlets: (OutletOk | OutletErr)[]
-  aggregate: { todayRevenue: number; todayOrders: number; weekRevenue: number; weekOrders: number; outletCount: number }
+  aggregate: {
+    todayRevenue: number; todayOrders: number; weekRevenue: number; weekOrders: number
+    monthRevenue: number; cogs: number; expTotal: number; netProfit: number; outletCount: number
+  }
 }
 
 const PW_KEY = 'hallu-owner-pw'
 const fmtDay = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' })
+const fmtMonth = (m: string) => new Date(m + '-02').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
 
 function Sparkline({ daily }: { daily: Daily[] }) {
   const max = Math.max(...daily.map(d => d.revenue), 1)
@@ -146,6 +152,26 @@ export default function OwnerPage() {
           </div>
         </div>
 
+        {/* Agregat Laba-Rugi — bulan berjalan */}
+        <div>
+          <h2 className="font-sans text-lg font-black text-white uppercase tracking-wider mb-1">Laba-Rugi Bulan Ini</h2>
+          <p className="text-h-muted text-xs mb-4">Gabungan semua outlet · {data ? fmtMonth(data.month) : ''}</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: 'Omzet Bulan Ini', value: formatRp(agg?.monthRevenue || 0), tone: 'white' },
+              { label: 'HPP Terjual', value: formatRp(agg?.cogs || 0), tone: 'muted' },
+              { label: 'Pengeluaran', value: formatRp(agg?.expTotal || 0), tone: 'muted' },
+              { label: 'Laba Bersih', value: formatRp(agg?.netProfit || 0), tone: (agg?.netProfit ?? 0) >= 0 ? 'green' : 'red' },
+            ].map((c) => (
+              <div key={c.label} className={`border rounded-2xl p-4 ${c.tone === 'green' ? 'bg-green-500/10 border-green-500/30' : c.tone === 'red' ? 'bg-red-500/10 border-red-500/30' : 'bg-h-card border-h-border'}`}>
+                <div className="text-[10px] text-h-muted uppercase tracking-wide font-semibold mb-1">{c.label}</div>
+                <div className={`text-lg font-black leading-tight ${c.tone === 'green' ? 'text-green-400' : c.tone === 'red' ? 'text-red-400' : 'text-white'}`}>{c.value}</div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-h-muted/70 mt-2">Laba bersih = omzet − HPP terjual − pengeluaran. Catat pengeluaran & isi HPP menu di tiap outlet agar akurat.</p>
+        </div>
+
         {/* Per outlet */}
         <div>
           <h2 className="text-xs font-black text-h-muted uppercase tracking-widest mb-3">Per Outlet</h2>
@@ -166,6 +192,10 @@ export default function OwnerPage() {
                 <div className="flex justify-between items-center mt-3 pt-3 border-t border-h-border">
                   <span className="text-[10px] text-h-muted uppercase tracking-wide">Omzet 7 hari</span>
                   <span className="text-sm font-bold text-white">{formatRp(o.weekRevenue)}</span>
+                </div>
+                <div className="flex justify-between items-center mt-1.5">
+                  <span className="text-[10px] text-h-muted uppercase tracking-wide">Laba bersih (bln ini)</span>
+                  <span className={`text-sm font-bold ${o.netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatRp(o.netProfit)}</span>
                 </div>
                 {o.topItems.length > 0 && (
                   <div className="mt-2 text-xs text-h-muted">
