@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Order, OrderItem, MenuItem, Shift } from '@/types'
 import { formatRp } from '@/lib/format'
 import { BRAND, BRAND_NICE, BRAND_FULL } from '@/lib/brand'
+import { fmtWITTime, fmtWITDateLong, fmtWITDateShort } from '@/lib/business-day'
 
 export const OWNER_WA = BRAND.wa
 
@@ -68,12 +69,11 @@ export function useOnlineStatus() {
   return online
 }
 
-export function formatTime(s: string) { return new Date(s).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }
+export function formatTime(s: string) { return fmtWITTime(s) }
 export function orderTotal(items: OrderItem[]) { return items.reduce((s, i) => s + i.price * i.qty, 0) }
 
 export function buildDailyReport(orders: Order[], date: string, shifts: Shift[] = []): string {
-  const d = new Date(date)
-  const tanggal = d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  const tanggal = fmtWITDateLong(date)
   const revenue = orders.reduce((s, o) => s + orderTotal(o.items), 0)
   const avgOrder = orders.length ? Math.round(revenue / orders.length) : 0
 
@@ -109,8 +109,8 @@ export function buildDailyReport(orders: Order[], date: string, shifts: Shift[] 
       return t >= start && t <= end
     })
     const sr = so.reduce((sum, o) => sum + orderTotal(o.items), 0)
-    const jamStart = new Date(s.started_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
-    const jamEnd = s.ended_at ? new Date(s.ended_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : 'masih jaga'
+    const jamStart = fmtWITTime(s.started_at)
+    const jamEnd = s.ended_at ? fmtWITTime(s.ended_at) : 'masih jaga'
     return `• *${s.employee_name}* (${jamStart}–${jamEnd}) — ${so.length} order, ${formatRp(sr)}`
   })
 
@@ -171,8 +171,7 @@ export function msgSiap(order: Order) {
 export function msgStruk(order: Order) {
   const meja = order.table_number > 0 ? `Meja ${order.table_number}` : 'Walk-in'
   const bayar = order.payment_method === 'qris' ? 'QRIS' : order.payment_method === 'transfer' ? 'Transfer' : 'Tunai'
-  const d = new Date(order.created_at)
-  const tanggal = d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+  const tanggal = fmtWITDateShort(order.created_at)
   const waktu = formatTime(order.created_at)
   const noOrder = order.id.slice(0, 8).toUpperCase()
   const total = orderTotal(order.items)

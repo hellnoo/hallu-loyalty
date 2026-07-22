@@ -7,7 +7,7 @@ import { EMPLOYEES } from '@/types'
 import { subscribePush, sendPush } from '@/lib/push'
 import { formatRp } from '@/lib/format'
 import { BRAND, BRAND_NICE } from '@/lib/brand'
-import { getCurrentBusinessDay, getBusinessDayBounds, toLocalDateString } from '@/lib/business-day'
+import { getCurrentBusinessDay, getBusinessDayBounds, shiftDay, witHour, fmtWITDateTime, fmtWITDateLong, fmtWITTime } from '@/lib/business-day'
 import { EXPENSE_CATEGORIES, expIcon, expLabel, type Expense } from '@/lib/expenses'
 import { secureWrite } from '@/lib/secure-db'
 import type { PayMethod, PendingOrder } from '@/components/kasir/helpers'
@@ -376,13 +376,11 @@ export default function KasirPage() {
     setAiReportLoading(true); setAiReportError(null)
     try {
       const todayStr = getCurrentBusinessDay()
-      // Bounds business day kemarin
-      const yesterdayDateObj = new Date(todayStr); yesterdayDateObj.setDate(yesterdayDateObj.getDate() - 1)
-      const yesterdayStr = toLocalDateString(yesterdayDateObj)
+      // Bounds business day kemarin (murni string, bebas zona waktu)
+      const yesterdayStr = shiftDay(todayStr, -1)
       const yBounds = getBusinessDayBounds(yesterdayStr)
-      // Last 7 business days (start from 7 hari lalu jam 5 pagi)
-      const weekStartObj = new Date(todayStr); weekStartObj.setDate(weekStartObj.getDate() - 7)
-      const weekStart = getBusinessDayBounds(toLocalDateString(weekStartObj)).start
+      // Last 7 business days (mulai 7 hari lalu jam 5 pagi WIT)
+      const weekStart = getBusinessDayBounds(shiftDay(todayStr, -7)).start
       const todayBounds = getBusinessDayBounds(todayStr)
 
       // Yesterday + last 7 days
@@ -433,7 +431,7 @@ export default function KasirPage() {
       // Peak hour
       const hourCounts: Record<number, number> = {}
       closeReportOrders.forEach(o => {
-        const h = new Date(o.created_at).getHours()
+        const h = witHour(o.created_at)
         hourCounts[h] = (hourCounts[h] || 0) + 1
       })
       const todayPeakHour = Object.entries(hourCounts).sort(([,a], [,b]) => b - a)[0]?.[0]
@@ -819,7 +817,7 @@ export default function KasirPage() {
                   </div>
                   <div className="border-t border-dashed border-gray-300 my-2" />
                   <div className="flex justify-between text-[10px]"><span>No. Order</span><span className="font-bold">{noOrder}</span></div>
-                  <div className="flex justify-between text-[10px]"><span>Waktu</span><span>{new Date(strukOrder.created_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</span></div>
+                  <div className="flex justify-between text-[10px]"><span>Waktu</span><span>{fmtWITDateTime(strukOrder.created_at)} WIT</span></div>
                   <div className="flex justify-between text-[10px]"><span>Meja</span><span>{strukOrder.table_number > 0 ? strukOrder.table_number : 'Walk-in'}</span></div>
                   <div className="flex justify-between text-[10px]"><span>Nama</span><span>{strukOrder.customer_name || 'Customer'}</span></div>
                   <div className="border-t border-dashed border-gray-300 my-2" />
@@ -870,7 +868,7 @@ export default function KasirPage() {
 
       {/* ── Modal Tutup Kasir & Laporan ── */}
       {showCloseModal && (() => {
-        const today = new Date().toISOString().slice(0, 10)
+        const today = getCurrentBusinessDay()
         const revenue = closeReportOrders.reduce((s, o) => s + orderTotal(o.items), 0)
         const byMethod: Record<string, { total: number; count: number }> = {}
         closeReportOrders.forEach(o => {
@@ -901,7 +899,7 @@ export default function KasirPage() {
                 <div>
                   <div className="font-sans font-black text-white uppercase tracking-wider">Tutup Kasir</div>
                   <div className="text-xs text-h-muted mt-0.5">
-                    {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                    {fmtWITDateLong(new Date())}
                   </div>
                 </div>
                 <button onClick={() => setShowCloseModal(false)} className="text-h-muted hover:text-white text-2xl leading-none">×</button>
@@ -962,9 +960,9 @@ export default function KasirPage() {
                                 <div>
                                   <div className="text-sm text-white font-bold">{s.employee_name}</div>
                                   <div className="text-[10px] text-h-muted">
-                                    {new Date(s.started_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                    {fmtWITTime(s.started_at)}
                                     {' – '}
-                                    {s.ended_at ? new Date(s.ended_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : 'sedang jaga'}
+                                    {s.ended_at ? fmtWITTime(s.ended_at) : 'sedang jaga'}
                                     {' · '}{formatDuration(s.started_at, s.ended_at)}
                                   </div>
                                 </div>

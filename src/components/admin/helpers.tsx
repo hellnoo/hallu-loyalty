@@ -1,4 +1,5 @@
 import type { MenuItem, StoreSettings } from '@/types'
+import { fmtWITDateTime, toWITDateString } from '@/lib/business-day'
 
 export function margin(price: number, hpp: number) {
   if (!hpp || !price) return null
@@ -63,7 +64,7 @@ export function exportCsv(orders: OrderRow[]) {
       const itemList = o.items.map(i => `${i.name}x${i.qty}`).join(' | ')
       return [
         o.id.slice(0, 8),
-        new Date(o.created_at).toLocaleString('id-ID'),
+        fmtWITDateTime(o.created_at),
         o.table_number,
         o.customer_name || '-',
         itemList,
@@ -78,6 +79,6 @@ export function exportCsv(orders: OrderRow[]) {
   const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a'); a.href = url
-  a.download = `hallu-rekap-${new Date().toISOString().slice(0, 10)}.csv`
+  a.download = `hallu-rekap-${toWITDateString(new Date())}.csv`
   a.click(); URL.revokeObjectURL(url)
 }

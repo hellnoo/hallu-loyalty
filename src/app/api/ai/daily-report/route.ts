@@ -25,8 +25,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const data: ReportInput = await req.json()
-    const tanggal = new Date(data.date).toLocaleDateString('id-ID', {
-      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    const tanggal = new Date(data.date + 'T06:00:00Z').toLocaleDateString('id-ID', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jayapura'
     })
 
     const prompt = `Kamu adalah business analyst untuk ${BRAND_FULL} (kafe di ${BRAND.city}). Buat laporan harian gaya WhatsApp yang ENAK DIBACA owner, dengan emoji dan insight tajam. Format Markdown WhatsApp (*tebal*, _miring_).

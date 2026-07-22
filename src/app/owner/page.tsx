@@ -24,8 +24,9 @@ type Summary = {
 }
 
 const PW_KEY = 'hallu-owner-pw'
-const fmtDay = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' })
-const fmtMonth = (m: string) => new Date(m + '-02').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+// Dibaca di WIT (Asia/Jayapura) supaya label tanggal benar walau device bukan WIT
+const fmtDay = (d: string) => new Date(d + 'T06:00:00Z').toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', timeZone: 'Asia/Jayapura' })
+const fmtMonth = (m: string) => new Date(m + '-02T06:00:00Z').toLocaleDateString('id-ID', { month: 'long', year: 'numeric', timeZone: 'Asia/Jayapura' })
 
 function Sparkline({ daily }: { daily: Daily[] }) {
   const max = Math.max(...daily.map(d => d.revenue), 1)

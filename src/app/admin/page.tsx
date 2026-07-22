@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import type { MenuItem, StoreSettings } from '@/types'
 import { formatRp } from '@/lib/format'
 import { isStoreOpen } from '@/lib/store-hours'
+import { monthStartWIT, witHour, fmtWITDateTime, fmtWITDateShort, toWITDateString, shiftDay, fmtWITWeekdayDay } from '@/lib/business-day'
 import { BRAND } from '@/lib/brand'
 import { margin, marginColor, BLANK, compressImage, Toggle, DEFAULT_SETTINGS, exportCsv } from '@/components/admin/helpers'
 import type { FormData, AdminTab, OrderRow } from '@/components/admin/helpers'
@@ -128,7 +129,7 @@ export default function AdminPage() {
     })
     const waText = [
       `🗄️ *ARSIP DATA ${BRAND.name} (sebelum dihapus)*`,
-      `Order sebelum: ${new Date(cutoff).toLocaleDateString('id-ID')}`,
+      `Order sebelum: ${fmtWITDateShort(cutoff)}`,
       `Total: *${rows.length} order · ${formatRp(totalRev)}*`,
       '',
       '*Ringkasan per bulan:*',
@@ -189,14 +190,17 @@ export default function AdminPage() {
   const loadMonth = async (ym: string) => {
     setMonthLoading(true)
     const [y, m] = ym.split('-').map(Number)
-    const start = new Date(y, m - 1, 1, 5, 0, 0, 0)      // tgl 1 jam 05:00
-    const end = new Date(y, m, 1, 5, 0, 0, 0)            // bulan depan tgl 1 jam 05:00
-    const prevStart = new Date(y, m - 2, 1, 5, 0, 0, 0)  // bulan lalu tgl 1 jam 05:00
-    // rentang expense_date (date murni) untuk bulan ini
+    // batas bulan jam 05:00 WIT (bukan zona HP/server)
     const mStr = `${y}-${String(m).padStart(2, '0')}`
     const nextY = m === 12 ? y + 1 : y
     const nextM = m === 12 ? 1 : m + 1
     const nextStr = `${nextY}-${String(nextM).padStart(2, '0')}`
+    const prevY = m === 1 ? y - 1 : y
+    const prevM = m === 1 ? 12 : m - 1
+    const prevStr = `${prevY}-${String(prevM).padStart(2, '0')}`
+    const start = monthStartWIT(mStr)       // tgl 1 jam 05:00 WIT
+    const end = monthStartWIT(nextStr)      // bulan depan tgl 1 jam 05:00 WIT
+    const prevStart = monthStartWIT(prevStr) // bulan lalu tgl 1 jam 05:00 WIT
     const [cur, prev, exp] = await Promise.all([
       supabase.from('orders').select('*').eq('status', 'done')
         .gte('created_at', start.toISOString()).lt('created_at', end.toISOString())
@@ -607,23 +611,19 @@ export default function AdminPage() {
           const doneOrders = orders.filter(o => o.status === 'done')
           const allOrders30 = orders
 
-          // 7-day revenue (last 7 days, done orders)
-          const today = new Date(); today.setHours(23,59,59,999)
-          const days7 = Array.from({ length: 7 }, (_, i) => {
-            const d = new Date(today); d.setDate(d.getDate() - (6 - i))
-            return d
-          })
-          const rev7 = days7.map(d => {
-            const dayStr = d.toISOString().slice(0, 10)
-            const dayOrders = doneOrders.filter(o => o.created_at.slice(0, 10) === dayStr)
+          // 7-day revenue (7 hari terakhir, done orders) — dikelompokkan per tanggal WIT
+          const todayW = toWITDateString(new Date())
+          const days7 = Array.from({ length: 7 }, (_, i) => shiftDay(todayW, -(6 - i)))
+          const rev7 = days7.map(dayStr => {
+            const dayOrders = doneOrders.filter(o => toWITDateString(new Date(o.created_at)) === dayStr)
             const revenue = dayOrders.reduce((s, o) => s + o.items.reduce((ss, i) => ss + i.price * i.qty, 0), 0)
-            return { label: d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' }), revenue, count: dayOrders.length }
+            return { label: fmtWITWeekdayDay(dayStr), revenue, count: dayOrders.length }
           })
           const maxRev = Math.max(...rev7.map(d => d.revenue), 1)
 
-          // Peak hours (all 30-day orders by hour)
+          // Peak hours (all 30-day orders by hour WIT)
           const hourCounts = Array(24).fill(0)
-          allOrders30.forEach(o => { hourCounts[new Date(o.created_at).getHours()]++ })
+          allOrders30.forEach(o => { hourCounts[witHour(o.created_at)]++ })
           const maxHour = Math.max(...hourCounts, 1)
           // only show 7:00–23:00
           const hoursDisplay = Array.from({ length: 17 }, (_, i) => i + 7)
@@ -671,7 +671,8 @@ export default function AdminPage() {
                 const mPrevRev = sumRev(monthPrevOrders)
                 const mCount = monthOrders.length
                 // hari operasional = jumlah tanggal unik (business day, cutoff 05:00)
-                const bizDay = (iso: string) => { const d = new Date(iso); if (d.getHours() < 5) d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10) }
+                // business day (WIT, cutoff 05:00) dari sebuah timestamp
+                const bizDay = (iso: string) => toWITDateString(new Date(new Date(iso).getTime() - 5 * 3600 * 1000))
                 const activeDays = new Set(monthOrders.map(o => bizDay(o.created_at))).size
                 const avgPerDay = activeDays ? Math.round(mRev / activeDays) : 0
                 const avgPerTrx = mCount ? Math.round(mRev / mCount) : 0
@@ -1018,7 +1019,7 @@ export default function AdminPage() {
                             return (
                               <tr key={o.id} className="hover:bg-h-dark/40 transition-colors">
                                 <td className="px-4 py-3 text-xs text-h-muted whitespace-nowrap">
-                                  {new Date(o.created_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                  {fmtWITDateTime(o.created_at)}
                                 </td>
                                 <td className="px-4 py-3 text-xs text-white font-bold">{o.table_number}</td>
                                 <td className="px-4 py-3 text-xs text-white">{o.customer_name || <span className="text-h-border">—</span>}</td>
