@@ -8,6 +8,7 @@ import { isStoreOpen } from '@/lib/store-hours'
 import { BRAND } from '@/lib/brand'
 import { margin, marginColor, BLANK, compressImage, Toggle, DEFAULT_SETTINGS, exportCsv } from '@/components/admin/helpers'
 import type { FormData, AdminTab, OrderRow } from '@/components/admin/helpers'
+import { EXPENSE_CATEGORIES, expLabel, expIcon, type Expense } from '@/lib/expenses'
 
 const CATEGORIES = ['Kopi', 'Non-Kopi', 'Makanan', 'Lainnya'] as const
 const OWNER_WA = BRAND.wa
@@ -23,6 +24,7 @@ export default function AdminPage() {
   const [monthValue, setMonthValue] = useState(() => new Date().toISOString().slice(0, 7)) // YYYY-MM
   const [monthOrders, setMonthOrders] = useState<OrderRow[]>([])
   const [monthPrevOrders, setMonthPrevOrders] = useState<OrderRow[]>([])
+  const [monthExpenses, setMonthExpenses] = useState<Expense[]>([])
   const [monthLoading, setMonthLoading] = useState(false)
   const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS)
   const [settingsSaving, setSettingsSaving] = useState(false)
@@ -182,15 +184,23 @@ export default function AdminPage() {
     const start = new Date(y, m - 1, 1, 5, 0, 0, 0)      // tgl 1 jam 05:00
     const end = new Date(y, m, 1, 5, 0, 0, 0)            // bulan depan tgl 1 jam 05:00
     const prevStart = new Date(y, m - 2, 1, 5, 0, 0, 0)  // bulan lalu tgl 1 jam 05:00
-    const [cur, prev] = await Promise.all([
+    // rentang expense_date (date murni) untuk bulan ini
+    const mStr = `${y}-${String(m).padStart(2, '0')}`
+    const nextY = m === 12 ? y + 1 : y
+    const nextM = m === 12 ? 1 : m + 1
+    const nextStr = `${nextY}-${String(nextM).padStart(2, '0')}`
+    const [cur, prev, exp] = await Promise.all([
       supabase.from('orders').select('*').eq('status', 'done')
         .gte('created_at', start.toISOString()).lt('created_at', end.toISOString())
         .order('created_at', { ascending: true }),
       supabase.from('orders').select('*').eq('status', 'done')
         .gte('created_at', prevStart.toISOString()).lt('created_at', start.toISOString()),
+      supabase.from('expenses').select('*')
+        .gte('expense_date', `${mStr}-01`).lt('expense_date', `${nextStr}-01`),
     ])
     setMonthOrders((cur.data as OrderRow[]) || [])
     setMonthPrevOrders((prev.data as OrderRow[]) || [])
+    setMonthExpenses((exp.data as Expense[]) || [])
     setMonthLoading(false)
   }
 
@@ -656,6 +666,25 @@ export default function AdminPage() {
                 const topItems = Object.values(itemMap).sort((a, b) => b.qty - a.qty).slice(0, 5)
                 const monthLabel = new Date(monthValue + '-02').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
 
+                // ── P&L / Laba-Rugi ──
+                // HPP terjual: cocokkan item order ke HPP menu saat ini (by id, fallback nama)
+                const hppById: Record<string, number> = {}
+                const hppByName: Record<string, number> = {}
+                items.forEach(it => { hppById[it.id] = it.hpp || 0; hppByName[it.name] = it.hpp || 0 })
+                let cogs = 0, matchedQty = 0, totalQty = 0
+                monthOrders.forEach(o => o.items.forEach(i => {
+                  totalQty += i.qty
+                  const h = hppById[i.id] ?? hppByName[i.name]
+                  if (h !== undefined && h > 0) { cogs += h * i.qty; matchedQty += i.qty }
+                }))
+                const grossProfit = mRev - cogs
+                const expByCat: Record<string, number> = {}
+                monthExpenses.forEach(e => { expByCat[e.category] = (expByCat[e.category] || 0) + e.amount })
+                const expTotal = monthExpenses.reduce((s, e) => s + e.amount, 0)
+                const netProfit = grossProfit - expTotal
+                const netMargin = mRev > 0 ? Math.round((netProfit / mRev) * 100) : null
+                const hppCoverage = totalQty > 0 ? Math.round((matchedQty / totalQty) * 100) : 100
+
                 return (
                   <div className="bg-h-card border border-h-border rounded-2xl p-5 space-y-5">
                     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -736,6 +765,57 @@ export default function AdminPage() {
                               ))}
                             </div>
                           </div>
+                        </div>
+
+                        {/* ── Laba-Rugi (P&L) ── */}
+                        <div className="border-t border-h-border pt-5">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="text-[10px] uppercase tracking-widest font-bold text-h-muted">Laba-Rugi Bulan Ini</div>
+                            <a href="/kasir" className="text-[10px] text-h-cream hover:underline">+ catat pengeluaran di Kasir</a>
+                          </div>
+                          <div className="grid sm:grid-cols-3 gap-3 mb-4">
+                            <div className="bg-h-dark border border-h-border rounded-xl p-4">
+                              <div className="text-xs text-h-muted mb-1">Laba Kotor</div>
+                              <div className="text-lg font-black text-white leading-tight">{formatRp(grossProfit)}</div>
+                              <div className="text-[10px] text-h-muted mt-1">Pendapatan − HPP terjual</div>
+                            </div>
+                            <div className="bg-h-dark border border-h-border rounded-xl p-4">
+                              <div className="text-xs text-h-muted mb-1">Total Pengeluaran</div>
+                              <div className="text-lg font-black text-white leading-tight">{formatRp(expTotal)}</div>
+                              <div className="text-[10px] text-h-muted mt-1">{monthExpenses.length} catatan</div>
+                            </div>
+                            <div className={`border rounded-xl p-4 ${netProfit >= 0 ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                              <div className="text-xs text-h-muted mb-1">Laba Bersih</div>
+                              <div className={`text-lg font-black leading-tight ${netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatRp(netProfit)}</div>
+                              <div className="text-[10px] text-h-muted mt-1">{netMargin !== null ? `margin ${netMargin}%` : '—'}</div>
+                            </div>
+                          </div>
+                          {/* Rincian */}
+                          <div className="bg-h-dark border border-h-border rounded-xl divide-y divide-h-border text-xs">
+                            <div className="flex justify-between px-4 py-2.5">
+                              <span className="text-white">Pendapatan (omzet)</span>
+                              <span className="font-bold text-white">{formatRp(mRev)}</span>
+                            </div>
+                            <div className="flex justify-between px-4 py-2.5">
+                              <span className="text-h-muted">− HPP terjual{hppCoverage < 90 ? <span className="text-yellow-500/80"> (≈{hppCoverage}% item ada HPP)</span> : ''}</span>
+                              <span className="font-bold text-h-muted">−{formatRp(cogs)}</span>
+                            </div>
+                            {EXPENSE_CATEGORIES.filter(c => expByCat[c.value]).map(c => (
+                              <div key={c.value} className="flex justify-between px-4 py-2.5">
+                                <span className="text-h-muted">− {c.icon} {c.label}</span>
+                                <span className="font-bold text-h-muted">−{formatRp(expByCat[c.value])}</span>
+                              </div>
+                            ))}
+                            <div className={`flex justify-between px-4 py-3 ${netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                              <span className="font-black uppercase tracking-wide">Laba Bersih</span>
+                              <span className="font-black">{formatRp(netProfit)}</span>
+                            </div>
+                          </div>
+                          {cogs === 0 && (
+                            <div className="text-[10px] text-yellow-500/80 mt-2">
+                              💡 HPP menu masih 0 — isi HPP di tab &quot;HPP &amp; Margin&quot; supaya laba kotor akurat.
+                            </div>
+                          )}
                         </div>
                       </>
                     )}

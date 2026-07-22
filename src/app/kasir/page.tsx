@@ -8,6 +8,7 @@ import { subscribePush, sendPush } from '@/lib/push'
 import { formatRp } from '@/lib/format'
 import { BRAND, BRAND_NICE } from '@/lib/brand'
 import { getCurrentBusinessDay, getBusinessDayBounds, toLocalDateString } from '@/lib/business-day'
+import { EXPENSE_CATEGORIES, expIcon, expLabel, type Expense } from '@/lib/expenses'
 import type { PayMethod, PendingOrder } from '@/components/kasir/helpers'
 import {
   OWNER_WA, orderTotal, buildDailyReport, PAY_OPTS, msgStruk, waLink,
@@ -16,7 +17,7 @@ import {
 } from '@/components/kasir/helpers'
 import { OrderCard, ManualOrderForm, StartShiftModal, HandoverModal } from '@/components/kasir/components'
 
-type Tab = 'new' | 'manual' | 'history' | 'rekap'
+type Tab = 'new' | 'manual' | 'history' | 'rekap' | 'expenses'
 
 export default function KasirPage() {
   const [authed, setAuthed] = useState(false)
@@ -39,6 +40,12 @@ export default function KasirPage() {
   const alarmRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [strukOrder, setStrukOrder] = useState<Order | null>(null)
   const [strukPhone, setStrukPhone] = useState('')
+  // ── Pengeluaran (expenses) ────────────────────────────────
+  const [expenses, setExpenses] = useState<Expense[]>([])
+  const [expCat, setExpCat] = useState<string>('bahan')
+  const [expDesc, setExpDesc] = useState('')
+  const [expAmount, setExpAmount] = useState('')
+  const [expSaving, setExpSaving] = useState(false)
   // ── Shift state ──────────────────────────────────────────
   const isOnline = useOnlineStatus()
   const [pendingCount, setPendingCount] = useState(0)
@@ -85,6 +92,30 @@ export default function KasirPage() {
     const { start, end } = getBusinessDayBounds(date || rekapDate)
     const { data } = await supabase.from('orders').select('*').eq('status', 'done').gte('created_at', start.toISOString()).lte('created_at', end.toISOString()).order('created_at', { ascending: false })
     if (data) setDoneOrders(data as Order[])
+  }
+
+  // ── Pengeluaran ──────────────────────────────────────────
+  const loadExpenses = async (date?: string) => {
+    const { data } = await supabase.from('expenses').select('*')
+      .eq('expense_date', date || rekapDate).order('created_at', { ascending: false })
+    if (data) setExpenses(data as Expense[])
+  }
+  const addExpense = async () => {
+    const amount = Math.round(Number(expAmount.replace(/[^\d]/g, '')))
+    if (!amount || amount <= 0) return
+    setExpSaving(true)
+    const { data, error } = await supabase.from('expenses').insert({
+      category: expCat, description: expDesc.trim() || null, amount, expense_date: rekapDate,
+    }).select('*').single()
+    if (!error && data) {
+      setExpenses(prev => [data as Expense, ...prev])
+      setExpDesc(''); setExpAmount('')
+    }
+    setExpSaving(false)
+  }
+  const deleteExpense = async (id: string) => {
+    setExpenses(prev => prev.filter(e => e.id !== id))
+    await supabase.from('expenses').delete().eq('id', id)
   }
 
   useEffect(() => {
@@ -481,6 +512,7 @@ export default function KasirPage() {
     { key: 'manual', label: 'Input Manual' },
     { key: 'history', label: 'Riwayat' },
     { key: 'rekap', label: 'Rekap' },
+    { key: 'expenses', label: 'Pengeluaran' },
   ]
 
   return (
@@ -569,7 +601,7 @@ export default function KasirPage() {
       <div className="bg-h-dark border-b border-h-border sticky top-0 z-30 overflow-x-auto">
         <div className="max-w-4xl mx-auto flex min-w-max">
           {TABS.map(({ key, label }) => (
-            <button key={key} onClick={() => { setTab(key); if (key === 'history' || key === 'rekap') loadDone(rekapDate) }}
+            <button key={key} onClick={() => { setTab(key); if (key === 'history' || key === 'rekap') loadDone(rekapDate); if (key === 'expenses') loadExpenses(rekapDate) }}
               className={`px-5 py-3.5 text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 ${tab === key ? 'text-h-cream border-h-red' : 'text-h-muted border-transparent hover:text-white'}`}>
               {label}
             </button>
@@ -610,7 +642,7 @@ export default function KasirPage() {
               </div>
             )}
           </div>
-        ) : (
+        ) : tab === 'rekap' ? (
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <input type="date" value={rekapDate} onChange={e => { setRekapDate(e.target.value); loadDone(e.target.value) }}
@@ -667,6 +699,62 @@ export default function KasirPage() {
               </div>
             </div>
           )}
+          </div>
+        ) : (
+          /* ── Pengeluaran ── */
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <input type="date" value={rekapDate} onChange={e => { setRekapDate(e.target.value); loadExpenses(e.target.value) }}
+                className="bg-h-card border border-h-border rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-h-red transition-colors" />
+              <span className="text-xs text-h-muted">{expenses.length > 0 ? `${expenses.length} pengeluaran` : 'Belum ada'}</span>
+              <span className="text-sm font-black text-h-cream ml-auto">{formatRp(expenses.reduce((s, e) => s + e.amount, 0))}</span>
+            </div>
+
+            {/* Form input pengeluaran */}
+            <form onSubmit={e => { e.preventDefault(); addExpense() }} className="bg-h-card border border-h-border rounded-2xl p-4 space-y-3">
+              <div className="text-xs font-bold text-white uppercase tracking-wider">Catat Pengeluaran</div>
+              <div className="grid grid-cols-2 gap-2">
+                {EXPENSE_CATEGORIES.map(c => (
+                  <button key={c.value} type="button" onClick={() => setExpCat(c.value)}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-colors text-left ${expCat === c.value ? 'bg-h-red border-h-red text-white' : 'bg-h-dark border-h-border text-h-muted hover:text-white'}`}>
+                    {c.icon} {c.label}
+                  </button>
+                ))}
+              </div>
+              <input value={expDesc} onChange={e => setExpDesc(e.target.value)} placeholder="Keterangan (opsional) — cth: beli susu 5L"
+                className="w-full bg-h-dark border border-h-border rounded-xl px-4 py-2.5 text-sm text-white placeholder-h-muted focus:outline-none focus:border-h-red transition-colors" />
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-h-muted text-sm">Rp</span>
+                  <input value={expAmount} onChange={e => setExpAmount(e.target.value.replace(/[^\d]/g, ''))} inputMode="numeric" placeholder="0"
+                    className="w-full bg-h-dark border border-h-border rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-h-muted focus:outline-none focus:border-h-red transition-colors" />
+                </div>
+                <button type="submit" disabled={expSaving || !expAmount}
+                  className="bg-h-red hover:bg-h-red-d disabled:opacity-40 text-white px-6 py-2.5 rounded-xl font-black text-sm uppercase tracking-wider transition-colors whitespace-nowrap">
+                  {expSaving ? '...' : '+ Simpan'}
+                </button>
+              </div>
+            </form>
+
+            {/* List pengeluaran hari ini */}
+            {expenses.length === 0 ? (
+              <div className="text-center pt-8"><div className="text-5xl mb-3">🧾</div><div className="text-h-muted text-sm">Belum ada pengeluaran di tanggal ini</div></div>
+            ) : (
+              <div className="bg-h-card border border-h-border rounded-2xl divide-y divide-h-border overflow-hidden">
+                {expenses.map(e => (
+                  <div key={e.id} className="px-4 py-3 flex items-center gap-3">
+                    <span className="text-lg w-6 text-center flex-shrink-0">{expIcon(e.category)}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm text-white font-semibold">{expLabel(e.category)}</div>
+                      {e.description && <div className="text-xs text-h-muted truncate">{e.description}</div>}
+                    </div>
+                    <span className="text-sm font-bold text-white whitespace-nowrap">{formatRp(e.amount)}</span>
+                    <button onClick={() => deleteExpense(e.id)} title="Hapus"
+                      className="text-h-muted hover:text-red-400 text-lg leading-none px-1 transition-colors">×</button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>

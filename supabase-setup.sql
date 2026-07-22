@@ -84,11 +84,29 @@ create table if not exists push_subscriptions (
 );
 
 -- ============================================================
+-- 5b. EXPENSES (pengeluaran — untuk P&L / laba-rugi)
+-- ============================================================
+create table if not exists expenses (
+  id uuid primary key default gen_random_uuid(),
+  category text not null default 'operasional', -- bahan | gaji | sewa | listrik | operasional | lain
+  description text,
+  amount int not null default 0,
+  expense_date date not null default ((now() at time zone 'Asia/Jayapura')::date),
+  created_at timestamptz default now()
+);
+create index if not exists idx_expenses_date on expenses (expense_date);
+
+-- ============================================================
 -- 6. REALTIME — order masuk instan ke /kasir
 -- ============================================================
 do $$
 begin
   alter publication supabase_realtime add table orders;
+exception when duplicate_object then null;
+end $$;
+do $$
+begin
+  alter publication supabase_realtime add table expenses;
 exception when duplicate_object then null;
 end $$;
 
@@ -99,7 +117,7 @@ end $$;
 do $$
 declare t text;
 begin
-  foreach t in array array['menu_items','orders','store_settings','shifts','push_subscriptions']
+  foreach t in array array['menu_items','orders','store_settings','shifts','push_subscriptions','expenses']
   loop
     execute format('alter table %I enable row level security', t);
     execute format('drop policy if exists "hallu_all_%s" on %I', t, t);
