@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { MenuItem, HppComponent, StoreSettings } from '@/types'
+import type { MenuItem, StoreSettings } from '@/types'
 import { formatRp } from '@/lib/format'
 import { isStoreOpen } from '@/lib/store-hours'
 import { BRAND } from '@/lib/brand'
@@ -10,6 +10,7 @@ import { margin, marginColor, BLANK, compressImage, Toggle, DEFAULT_SETTINGS, ex
 import type { FormData, AdminTab, OrderRow } from '@/components/admin/helpers'
 import { EXPENSE_CATEGORIES, expLabel, expIcon, type Expense } from '@/lib/expenses'
 import { secureWrite } from '@/lib/secure-db'
+import { HppCalculator } from '@/components/admin/HppCalculator'
 
 const CATEGORIES = ['Kopi', 'Non-Kopi', 'Makanan', 'Lainnya'] as const
 const OWNER_WA = BRAND.wa
@@ -1222,62 +1223,18 @@ export default function AdminPage() {
                   )}
                 </div>
               </div>
-              {/* ── Kalkulator HPP ── */}
-              <div className="bg-h-dark border border-h-border rounded-xl p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs text-h-muted font-bold uppercase tracking-wide">Kalkulator HPP</label>
-                  <button type="button"
-                    onClick={() => {
-                      const comps: HppComponent[] = [...(form.hpp_components || []), { nama: '', biaya: 0 }]
-                      const total = comps.reduce((s, c) => s + (c.biaya || 0), 0)
-                      setForm(f => ({ ...f, hpp_components: comps, hpp: total }))
-                    }}
-                    className="text-xs text-h-cream hover:text-white font-bold border border-h-red/40 hover:border-h-red px-2.5 py-1 rounded-lg transition-colors">
-                    + Komponen
-                  </button>
-                </div>
-                {(form.hpp_components || []).length === 0 && (
-                  <p className="text-xs text-h-border text-center py-2">Klik "+ Komponen" untuk mulai hitung HPP</p>
-                )}
-                {(form.hpp_components || []).map((comp, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <input
-                      value={comp.nama} placeholder="Nama (misal: Kopi 18g)"
-                      onChange={e => {
-                        const comps = [...(form.hpp_components || [])]
-                        comps[i] = { ...comps[i], nama: e.target.value }
-                        setForm(f => ({ ...f, hpp_components: comps }))
-                      }}
-                      className="flex-1 bg-h-card border border-h-border rounded-lg px-3 py-2 text-xs text-white placeholder-h-muted focus:outline-none focus:border-h-red transition-colors" />
-                    <div className="relative flex-shrink-0">
-                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-h-muted">Rp</span>
-                      <input type="number" min={0} step={100}
-                        value={comp.biaya || ''}
-                        placeholder="0"
-                        onChange={e => {
-                          const comps = [...(form.hpp_components || [])]
-                          comps[i] = { ...comps[i], biaya: parseInt(e.target.value) || 0 }
-                          const total = comps.reduce((s, c) => s + (c.biaya || 0), 0)
-                          setForm(f => ({ ...f, hpp_components: comps, hpp: total }))
-                        }}
-                        className="w-28 bg-h-card border border-h-border rounded-lg pl-7 pr-2 py-2 text-xs text-white focus:outline-none focus:border-h-red transition-colors" />
-                    </div>
-                    <button type="button"
-                      onClick={() => {
-                        const comps = (form.hpp_components || []).filter((_, j) => j !== i)
-                        const total = comps.reduce((s, c) => s + (c.biaya || 0), 0)
-                        setForm(f => ({ ...f, hpp_components: comps, hpp: total }))
-                      }}
-                      className="text-h-muted hover:text-h-cream text-lg leading-none flex-shrink-0 transition-colors">×</button>
-                  </div>
-                ))}
-                {(form.hpp_components || []).length > 0 && (
-                  <div className="flex justify-between items-center pt-1 border-t border-h-border">
-                    <span className="text-xs text-h-muted">Total HPP</span>
-                    <span className="text-sm font-black text-white">{formatRp(form.hpp)}</span>
-                  </div>
-                )}
-              </div>
+              {/* ── Kalkulator HPP (berbasis bahan) ── */}
+              <HppCalculator
+                value={form.hpp_components || []}
+                onChange={(comps, total) => setForm(f => ({ ...f, hpp_components: comps, hpp: total }))}
+              />
+              {form.hpp > 0 && form.price > 0 && (
+                <p className="text-[11px] text-h-muted -mt-1">
+                  Total HPP {formatRp(form.hpp)} → margin{' '}
+                  <span className={`font-bold ${marginColor(margin(form.price, form.hpp) ?? 0)}`}>{margin(form.price, form.hpp)}%</span>
+                  {' '}· profit {formatRp(form.price - form.hpp)}/porsi
+                </p>
+              )}
 
               {/* 3D Model (manual paste GLB URL) */}
               {editing && (
