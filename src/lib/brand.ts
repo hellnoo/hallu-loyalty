@@ -15,8 +15,8 @@ export const BRAND = {
   lng:     Number(process.env.NEXT_PUBLIC_BRAND_LNG || 127.3855782),
 }
 
-// Turunan yang sering dipakai
-export const BRAND_NICE = BRAND.name.charAt(0) + BRAND.name.slice(1).toLowerCase() // "Hallu"
+// Turunan yang sering dipakai — title-case per kata (dukung nama multi-kata, mis. "HALLU BREW" → "Hallu Brew")
+export const BRAND_NICE = BRAND.name.split(' ').filter(Boolean).map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')
 export const BRAND_FULL = `${BRAND_NICE} ${BRAND.tagline}` // "Hallu Coffee & Sociality"
 export const WA_LINK = `https://wa.me/${BRAND.wa}`
 export const WA_DISPLAY = '+62 ' + BRAND.wa.replace(/^62/, '').replace(/(\d{3})(\d{4})(\d+)/, '$1-$2-$3')
