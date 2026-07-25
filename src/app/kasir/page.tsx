@@ -1,7 +1,7 @@
 'use client'
 export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState, useMemo } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, DB_SCHEMA } from '@/lib/supabase'
 import type { MenuItem, Order, Shift } from '@/types'
 import { EMPLOYEES } from '@/types'
 import { subscribePush, sendPush } from '@/lib/push'
@@ -133,7 +133,7 @@ export default function KasirPage() {
   useEffect(() => {
     if (!authed) return
     const ch = supabase.channel('kasir-orders')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
+      .on('postgres_changes', { event: 'INSERT', schema: DB_SCHEMA, table: 'orders' }, payload => {
         const order = payload.new as Order
         setNewOrders(prev => {
           if (prev.find(o => o.id === order.id)) return prev
@@ -146,7 +146,7 @@ export default function KasirPage() {
           showBrowserNotif('🔔 Order Baru!', `${meja}${nama}`)
         }
       })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, payload => {
+      .on('postgres_changes', { event: 'UPDATE', schema: DB_SCHEMA, table: 'orders' }, payload => {
         const updated = payload.new as Order
         if (updated.status === 'done') {
           setNewOrders(prev => prev.filter(o => o.id !== updated.id))

@@ -25,7 +25,8 @@ export async function POST(req: Request) {
     const { type, orderId, title, body, url, tag } = await req.json()
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { db: { schema: process.env.NEXT_PUBLIC_SUPABASE_SCHEMA || 'public' } }
     )
 
     let query = supabase.from('push_subscriptions').select('endpoint, subscription').eq('type', type)

@@ -1,20 +1,42 @@
 # Tambah Outlet Baru (Franchise Hallu)
 
-Satu kode (`hellnoo/hallu-loyalty`), banyak outlet. Tiap outlet = **1 project Supabase (DB sendiri)** + **1 project Vercel (deploy sendiri)** yang nunjuk ke DB itu. Menu, harga, transaksi, pengeluaran semuanya terpisah per outlet.
+Satu kode (`hellnoo/hallu-loyalty`), banyak outlet. **Dua model**, pilih sesuai siapa pemilik outletnya:
+
+| Model | Untuk siapa | DB |
+|---|---|---|
+| **A. Schema di DB pusat** (hemat, tanpa project baru) | Outlet **milik sendiri** (mis. Hallu Brew) | Numpang DB pusat, 1 schema Postgres per outlet |
+| **B. DB terpisah** | Outlet **mitra/pihak ketiga** | Project Supabase sendiri (isolasi penuh — mitra tak mungkin sentuh data pusat) |
 
 ---
 
-## ⚠️ Cek dulu: batas Supabase gratis
-Free tier Supabase = **2 project aktif per organisasi**. Sekarang org `hellnoo` sudah punya 2 aktif: **hallu-loyalty (pusat)** + **hallu-outlet**. Untuk outlet ke-3 dst, pilih salah satu:
-- **Pause** project lain yang nganggur (mis. kedaiku-demo) untuk membebaskan slot, **atau**
-- Buat **organisasi/akun Supabase baru** (tiap org gratis dapat 2 project lagi), **atau**
-- **Upgrade** Supabase (Pro) untuk banyak project dalam 1 org.
+## Model A — Outlet milik sendiri: schema di DB pusat
 
-> Kalau outlet mau banyak (>3-4), pertimbangkan pindah ke **1 DB multi-tenant** (semua outlet di 1 project + kolom `outlet_id` + RLS per outlet). Lebih hemat & skalabel, tapi butuh kerjaan Auth/RLS (Item F4b). Untuk sekarang model per-DB paling gampang.
+Data tetap terpisah rapi (schema `public` = pusat, `brew` = Hallu Brew, dst.), tapi **nol project Supabase baru** — bebas dari limit 2 project. Aman karena outletnya milik owner yang sama (anon key dipakai bersama).
+
+1. **SQL Editor DB pusat** → jalankan `supabase-outlet-schema.sql` (contoh konkret schema `brew`; outlet lain: ganti semua kata `brew`). Tanpa seed menu.
+2. **Dashboard → Settings → API → "Exposed schemas"** → tambahkan `brew` → Save. (Tanpa ini API menolak schema baru.)
+3. **Vercel: Add New Project** → import repo yang sama → env:
+   - `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` = **salin dari project pusat** (DB sama)
+   - **`NEXT_PUBLIC_SUPABASE_SCHEMA` = `brew`** ← kunci pemisah datanya
+   - `ADMIN_PASSWORD`, `KASIR_PASSWORD` (baru, beda dari pusat)
+   - Brand: `NEXT_PUBLIC_BRAND_NAME` dst. (lihat tabel Model B)
+   - VAPID boleh salin dari pusat; `SUPABASE_SERVICE_ROLE_KEY` juga (kalau F4a aktif)
+4. **Sambungkan ke /owner**: di `OUTLETS_JSON` pusat tambah entri dgn field `"schema":"brew"`:
+   `{"name":"Hallu Brew","url":"<url pusat>","anon":"<anon pusat>","schema":"brew"}`
+
+Catatan: bucket foto `menu-images` dipakai bersama (path = uuid item, tak bentrok).
 
 ---
 
-## Langkah (model per-DB, yang dipakai sekarang)
+## Model B — Outlet mitra: DB terpisah
+
+Tiap outlet mitra = **1 project Supabase (DB sendiri)** + **1 project Vercel (deploy sendiri)** yang nunjuk ke DB itu. Menu, harga, transaksi, pengeluaran semuanya terpisah fisik.
+
+> ⚠️ Limit Supabase gratis = **2 project aktif per AKUN** (bukan per organisasi — sudah dibuktikan: bikin org baru di akun yang sama tetap ditolak). Slot tambahan = akun lain (mis. thatwokz), pause project nganggur, atau upgrade Pro.
+
+---
+
+## Langkah Model B (per-DB)
 
 ### 1. Buat DB Supabase baru
 - supabase.com → New project (region **Singapore**). Catat password DB.
