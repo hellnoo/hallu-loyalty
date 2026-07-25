@@ -58,7 +58,7 @@ export async function POST(req: Request) {
 
   const outletData = await Promise.all(outlets.map(async (o) => {
     try {
-      const sb = createClient(o.url, o.anon, { auth: { persistSession: false } })
+      const sb = createClient(o.url, o.anon, { auth: { persistSession: false }, db: { schema: o.schema || 'public' } })
       const [ordersRes, menuRes, expRes] = await Promise.all([
         sb.from('orders').select('items, created_at, payment_method').eq('status', 'done').gte('created_at', fetchStart.toISOString()),
         sb.from('menu_items').select('id, name, hpp'),

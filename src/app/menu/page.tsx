@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState, Suspense } from 'react'
 import Script from 'next/script'
 import { useSearchParams } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { supabase, DB_SCHEMA } from '@/lib/supabase'
 import { subscribePush, sendPush } from '@/lib/push'
 import type { MenuItem, StoreSettings } from '@/types'
 import { formatRp } from '@/lib/format'
@@ -185,7 +185,7 @@ function MenuContent() {
   useEffect(() => {
     if (!orderId) return
     const ch = supabase.channel(`order-status-${orderId}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${orderId}` }, payload => {
+      .on('postgres_changes', { event: 'UPDATE', schema: DB_SCHEMA, table: 'orders', filter: `id=eq.${orderId}` }, payload => {
         const newStatus = payload.new.status
         setOrderStatus(newStatus)
         // Bersihkan localStorage kalau order sudah selesai / dibatalkan
