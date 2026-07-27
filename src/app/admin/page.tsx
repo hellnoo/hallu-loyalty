@@ -30,6 +30,7 @@ export default function AdminPage() {
   const [monthExpenses, setMonthExpenses] = useState<Expense[]>([])
   const [monthLoading, setMonthLoading] = useState(false)
   const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS)
+  const [newEmployee, setNewEmployee] = useState('')
   const [settingsSaving, setSettingsSaving] = useState(false)
   const [settingsSaved, setSettingsSaved] = useState(false)
   const [cleanupDays, setCleanupDays] = useState(60)
@@ -57,7 +58,12 @@ export default function AdminPage() {
 
   const loadSettings = async () => {
     const { data } = await supabase.from('store_settings').select('*').eq('id', 1).single()
-    if (data) setSettings(data as StoreSettings)
+    if (data) {
+      const s = data as StoreSettings
+      // DB lama yang belum punya kolom employees → pakai default
+      if (!Array.isArray(s.employees) || s.employees.length === 0) s.employees = DEFAULT_SETTINGS.employees
+      setSettings(s)
+    }
   }
 
   const generateAiDescription = async () => {
@@ -1122,9 +1128,41 @@ export default function AdminPage() {
                   </div>
                 </div>
 
+                {/* Karyawan / kasir — nama yang muncul di pilihan shift "Siapa yang Datang?" */}
+                <div>
+                  <label className="text-xs text-h-muted font-bold uppercase tracking-wide block mb-1.5">Karyawan Kasir (Shift)</label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {settings.employees.map(name => (
+                      <span key={name} className="inline-flex items-center gap-1.5 bg-h-dark border border-h-border rounded-full pl-3 pr-1.5 py-1 text-xs text-white">
+                        {name}
+                        <button type="button" title={`Hapus ${name}`}
+                          onClick={() => setSettings(s => ({ ...s, employees: s.employees.filter(e => e !== name) }))}
+                          className="w-4.5 h-4.5 rounded-full text-h-muted hover:text-red-400 text-sm leading-none px-1 transition-colors">×</button>
+                      </span>
+                    ))}
+                    {settings.employees.length === 0 && <span className="text-xs text-h-border">Belum ada — tambah minimal 1 nama</span>}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      value={newEmployee}
+                      onChange={e => setNewEmployee(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); const n = newEmployee.trim(); if (n && !settings.employees.includes(n)) { setSettings(s => ({ ...s, employees: [...s.employees, n] })); setNewEmployee('') } } }}
+                      placeholder="Nama karyawan baru"
+                      className="flex-1 bg-h-dark border border-h-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-h-red text-white placeholder-h-muted transition-colors"
+                    />
+                    <button type="button"
+                      onClick={() => { const n = newEmployee.trim(); if (n && !settings.employees.includes(n)) { setSettings(s => ({ ...s, employees: [...s.employees, n] })); setNewEmployee('') } }}
+                      disabled={!newEmployee.trim()}
+                      className="bg-h-dark border border-h-red/40 hover:border-h-red disabled:opacity-40 text-h-cream px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-colors whitespace-nowrap">
+                      + Tambah
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-h-muted mt-1.5">Nama-nama ini muncul di kasir saat mulai jaga / ganti shift. Jangan lupa klik Simpan.</p>
+                </div>
+
                 <button
                   onClick={saveSettings}
-                  disabled={settingsSaving}
+                  disabled={settingsSaving || settings.employees.length === 0}
                   className="w-full bg-h-red hover:bg-h-red-d disabled:opacity-60 text-white py-3 rounded-xl text-sm font-black uppercase tracking-wide transition-colors">
                   {settingsSaved ? '✓ Tersimpan!' : settingsSaving ? 'Menyimpan...' : 'Simpan Pengaturan'}
                 </button>

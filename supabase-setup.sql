@@ -57,6 +57,8 @@ create table if not exists store_settings (
   is_manually_closed boolean not null default false
 );
 insert into store_settings (id) values (1) on conflict (id) do nothing;
+-- Daftar karyawan kasir (per outlet, diatur dari Admin → Pengaturan)
+alter table store_settings add column if not exists employees jsonb not null default '["Amin","Rama","Ubuy"]'::jsonb;
 
 -- ============================================================
 -- 4. SHIFTS (jaga karyawan — fleksibel)

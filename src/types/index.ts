@@ -35,8 +35,8 @@ export type Shift = {
   handover_to: string | null
 }
 
-export const EMPLOYEES = ['Amin', 'Rama', 'Ubuy'] as const
-export type EmployeeName = typeof EMPLOYEES[number]
+// Fallback kalau store_settings.employees belum diisi (DB lama / belum migrasi)
+export const DEFAULT_EMPLOYEES = ['Amin', 'Rama', 'Ubuy']
 
 export type StoreSettings = {
   id: number
@@ -44,6 +44,7 @@ export type StoreSettings = {
   close_time: string       // "22:00"
   open_days: string        // "Senin – Minggu"
   is_manually_closed: boolean
+  employees: string[]      // daftar nama kasir/penjaga — diatur per outlet dari Admin → Pengaturan
 }
 
 export type MenuItem = {

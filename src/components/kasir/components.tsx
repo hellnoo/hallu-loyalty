@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Order, MenuItem, Shift } from '@/types'
-import { EMPLOYEES } from '@/types'
+import { DEFAULT_EMPLOYEES } from '@/types'
 import { formatRp } from '@/lib/format'
 import type { PayMethod } from './helpers'
 import { PAY_OPTS, formatTime, orderTotal, waLink, msgSiap, msgStruk, formatDuration,
@@ -267,12 +267,14 @@ export function ManualOrderForm({ onSubmitted, isOnline }: { onSubmitted: () => 
   )
 }
 
-export function StartShiftModal({ onStart, loading }: {
+export function StartShiftModal({ onStart, loading, employees }: {
   onStart: (employee: string, notes?: string) => Promise<void>
   loading: boolean
+  employees?: string[]
 }) {
   const [selected, setSelected] = useState<string>('')
   const [notes, setNotes] = useState('')
+  const staff = employees && employees.length ? employees : DEFAULT_EMPLOYEES
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85">
@@ -283,8 +285,8 @@ export function StartShiftModal({ onStart, loading }: {
           <div className="text-xs text-h-muted mt-1.5">Tap nama kamu untuk mulai jaga</div>
         </div>
         <div className="p-5 space-y-4">
-          <div className="grid grid-cols-3 gap-2">
-            {EMPLOYEES.map(name => (
+          <div className={`grid gap-2 ${staff.length <= 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+            {staff.map(name => (
               <button key={name} type="button" onClick={() => setSelected(name)}
                 className={`py-5 rounded-xl text-sm font-black uppercase tracking-wider transition-all ${
                   selected === name
@@ -315,17 +317,19 @@ export function StartShiftModal({ onStart, loading }: {
   )
 }
 
-export function HandoverModal({ activeShift, onClose, onHandover, onEndOnly, loading }: {
+export function HandoverModal({ activeShift, onClose, onHandover, onEndOnly, loading, employees }: {
   activeShift: Shift
   onClose: () => void
   onHandover: (toEmployee: string, notes?: string) => Promise<void>
   onEndOnly: (notes?: string) => Promise<void>
   loading: boolean
+  employees?: string[]
 }) {
   const [mode, setMode] = useState<'handover' | 'endOnly'>('handover')
   const [nextEmployee, setNextEmployee] = useState<string>('')
   const [notes, setNotes] = useState('')
-  const options = EMPLOYEES.filter(e => e !== activeShift.employee_name)
+  const staff = employees && employees.length ? employees : DEFAULT_EMPLOYEES
+  const options = staff.filter(e => e !== activeShift.employee_name)
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85">
