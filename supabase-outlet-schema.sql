@@ -50,6 +50,7 @@ create table if not exists brew.store_settings (
   is_manually_closed boolean not null default false
 );
 insert into brew.store_settings (id) values (1) on conflict (id) do nothing;
+alter table brew.store_settings add column if not exists employees jsonb not null default '["Amin","Rama","Ubuy"]'::jsonb;
 
 create table if not exists brew.shifts (
   id uuid primary key default gen_random_uuid(),

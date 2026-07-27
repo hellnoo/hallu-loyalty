@@ -3,7 +3,6 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { supabase, DB_SCHEMA } from '@/lib/supabase'
 import type { MenuItem, Order, Shift } from '@/types'
-import { EMPLOYEES } from '@/types'
 import { subscribePush, sendPush } from '@/lib/push'
 import { formatRp } from '@/lib/format'
 import { BRAND, BRAND_NICE } from '@/lib/brand'
@@ -52,6 +51,7 @@ export default function KasirPage() {
   const [pendingCount, setPendingCount] = useState(0)
   const [syncing, setSyncing] = useState(false)
   const [activeShift, setActiveShift] = useState<Shift | null>(null)
+  const [employees, setEmployees] = useState<string[]>([])
   const [showStartShift, setShowStartShift] = useState(false)
   const [showHandover, setShowHandover] = useState(false)
   const [shiftLoading, setShiftLoading] = useState(false)
@@ -185,6 +185,12 @@ export default function KasirPage() {
       .then(({ data }) => {
         if (data) setActiveShift(data as Shift)
         else setShowStartShift(true) // belum ada shift → tampilkan dialog start
+      })
+    // Daftar karyawan outlet ini (diatur dari Admin → Pengaturan)
+    supabase.from('store_settings').select('employees').eq('id', 1).single()
+      .then(({ data }) => {
+        const emp = (data as { employees?: unknown } | null)?.employees
+        if (Array.isArray(emp) && emp.length) setEmployees(emp.map(String))
       })
   }, [authed])
 
@@ -767,7 +773,7 @@ export default function KasirPage() {
 
       {/* ── Modal Start Shift ── */}
       {showStartShift && !activeShift && (
-        <StartShiftModal onStart={startShift} loading={shiftLoading} />
+        <StartShiftModal onStart={startShift} loading={shiftLoading} employees={employees} />
       )}
 
       {/* ── Modal Serah Terima Shift ── */}
@@ -783,6 +789,7 @@ export default function KasirPage() {
             setShowStartShift(true) // langsung tampilkan dialog start lagi
           }}
           loading={shiftLoading}
+          employees={employees}
         />
       )}
 

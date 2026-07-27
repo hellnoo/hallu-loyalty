@@ -1,4 +1,5 @@
 import type { MenuItem, StoreSettings } from '@/types'
+import { DEFAULT_EMPLOYEES } from '@/types'
 import { fmtWITDateTime, toWITDateString } from '@/lib/business-day'
 
 export function margin(price: number, hpp: number) {
@@ -43,7 +44,7 @@ export function Toggle({ value, onChange }: { value: boolean; onChange: (v: bool
 
 export type AdminTab = 'menu' | 'hpp' | 'analitik' | 'pengaturan'
 
-export const DEFAULT_SETTINGS: StoreSettings = { id: 1, open_time: '08:00', close_time: '22:00', open_days: 'Senin – Minggu', is_manually_closed: false }
+export const DEFAULT_SETTINGS: StoreSettings = { id: 1, open_time: '08:00', close_time: '22:00', open_days: 'Senin – Minggu', is_manually_closed: false, employees: [...DEFAULT_EMPLOYEES] }
 
 export type OrderRow = {
   id: string
