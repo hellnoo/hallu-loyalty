@@ -69,10 +69,22 @@ Tiap outlet mitra = **1 project Supabase (DB sendiri)** + **1 project Vercel (de
 - Ganti password default → login `/admin` outlet, atur menu (mitra isi sendiri, atau salin dari pusat).
 - Cek `/menu` tampil benar & status buka/tutup sesuai (waktu sudah WIT).
 
-### 4. Sambungkan ke dashboard owner
+### 4. Sambungkan ke dashboard owner + Admin Pusat (kelola lintas outlet)
 - Di project **pusat** (`hallu-loyalty`) → env `OUTLETS_JSON` → tambah entri outlet baru:
   `{"name":"Nama Outlet","url":"https://<ref>.supabase.co","anon":"<anon key outlet>"}`
-- Redeploy pusat → `/owner` ikut mantau outlet baru (omzet, transaksi, laba).
+- Redeploy pusat → `/owner` ikut mantau outlet baru (omzet, transaksi, laba), dan
+  outlet itu muncul di dropdown **"Kelola Outlet"** di Admin Pusat (kelola menu/
+  HPP/jam/karyawan outlet itu tanpa login terpisah — Item F5).
+- **Outlet Model B (DB terpisah, mis. mitra)** butuh field tambahan `serviceRole`
+  supaya Admin Pusat bisa TULIS ke sana: `{"name":"...","url":"...","anon":"...",
+  "serviceRole":"<service_role key outlet itu>"}` — ambil di project outlet →
+  Settings → API Keys → Legacy → **service_role** (SECRET, tempel sendiri).
+  Tanpa ini, outlet tetap muncul di dropdown tapi ditandai "belum terhubung"
+  (baca-tulis lewat Admin Pusat belum bisa, mitra tetap bisa kelola dari admin
+  mereka sendiri seperti biasa).
+- **Outlet Model A (schema-based, mis. Hallu Brew)** otomatis writable dari Admin
+  Pusat begitu `SUPABASE_SERVICE_ROLE_KEY` pusat diset — tidak perlu `serviceRole`
+  terpisah (satu project yang sama).
 
 ---
 

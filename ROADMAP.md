@@ -301,6 +301,49 @@ Supabase Auth (email/password) role owner/mitra/kasir + RLS granular per peran
 meniru `D:\franc-ops\supabase-setup.sql` (get_my_role() security definer, policy
 per tabel). Mitra login → lihat outlet-nya saja. Setelah ini franc-ops pensiun.
 
+### Item F4c ⚠️ — TERTUNDA (PENTING): tutup celah anon key lintas-schema
+Ditemukan & BELUM ditutup: outlet schema-based (mis. Hallu Brew) pakai anon key
+YANG SAMA dengan pusat (satu project). Supabase pilih schema dari HEADER
+request (`Accept-Profile`), bukan dari kunci — jadi siapa pun yang ambil anon
+key Hallu Brew (ikut ke-bundle publik, wajar) bisa ganti header ke `public` dan
+baca/tulis data PUSAT (order, nama, no HP pelanggan) langsung via REST API,
+lewat RLS `using (true)` yang masih permisif. Diverifikasi nyata via curl session
+ini (anon key sama bisa akses `Accept-Profile: brew` DAN `Accept-Profile: public`).
+**Fix yang benar:** role Postgres baru `brew_anon` (grant HANYA ke schema brew,
+tidak ke public) + JWT baru yang di-sign dgn role claim itu, ganti
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` Hallu Brew ke JWT baru, lalu revoke akses
+`anon` lama ke schema `brew`. Butuh JWT Secret pusat (Settings→API→JWT
+Settings) — TIDAK PERNAH diketik/dipegang Claude, wajib dikerjakan owner
+sendiri (klik "Generate new JWT" di dashboard kalau ada, atau via fungsi
+`sign()` pgjwt di SQL editor). Sempat coba eksekusi sesi ini tapi dashboard
+Supabase blank-render terus-menerus — belum sempat selesai.
+
+### Item F5 ✅ — Admin Pusat kelola SEMUA outlet (1 password) — SELESAI (kode)
+Dropdown "Kelola Outlet" di Admin Pusat → atur menu/HPP/jam buka-tutup/karyawan
+outlet MANAPUN (termasuk mitra hallu-outlet) pakai satu password admin pusat,
+tanpa login terpisah ke tiap outlet. Analitik & "Bersihkan Data Lama" sengaja
+TETAP khusus outlet sendiri (Analitik lintas outlet sudah ada di `/owner`).
+- `src/lib/outlets.ts`: `OutletCfg.serviceRole` opsional — wajib utk outlet di
+  project Supabase LAIN (mis. hallu-outlet); outlet schema-based (Hallu Brew)
+  otomatis pakai `SUPABASE_SERVICE_ROLE_KEY` pusat, tanpa secret baru.
+- `src/lib/supabase-admin.ts`: `getOutletServiceClient(outlet)`.
+- `/api/central/outlets` (daftar dropdown, tanpa kirim kredensial ke client),
+  `/api/central/menu` (list/insert/update/delete menu_items lintas outlet),
+  `/api/central/settings` (get/save store_settings), `/api/central/menu-image`
+  (upload foto ke project outlet lain — outlet schema-based tetap upload
+  langsung, satu bucket dgn pusat). Semua dijaga `ADMIN_PASSWORD` pusat,
+  dicocokkan `url + schema` (Pusat & Hallu Brew berbagi url project).
+- Diverifikasi: build+tsc lolos, mode "outlet sendiri" (default, tanpa
+  OUTLETS_JSON) tetap jalan identik seperti sebelumnya (regression-checked di
+  preview), route /api/central/* diuji via curl (401 password salah, 200 daftar
+  outlet, 404 outlet tak ditemukan, 501 outlet ditemukan tp belum ada
+  service_role — pesan jelas).
+- **SISA (owner):** di `OUTLETS_JSON` pusat, tambah field `"serviceRole"` utk
+  hallu-outlet (Supabase hallu-outlet → Settings → API Keys → Legacy →
+  service_role — SECRET, tempel sendiri, Claude tidak pegang). Hallu Brew
+  otomatis writable begitu `SUPABASE_SERVICE_ROLE_KEY` pusat diset (prasyarat
+  F4a yang sama).
+
 ### Catatan HPP snapshot (kerjakan bersama Item 1 varian)
 Saat submit order, simpan juga `hpp` per item (snapshot dari menu_items saat itu)
 di jsonb items — laporan margin historis akurat walau HPP menu berubah.
