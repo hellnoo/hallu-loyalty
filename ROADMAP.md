@@ -301,22 +301,43 @@ Supabase Auth (email/password) role owner/mitra/kasir + RLS granular per peran
 meniru `D:\franc-ops\supabase-setup.sql` (get_my_role() security definer, policy
 per tabel). Mitra login → lihat outlet-nya saja. Setelah ini franc-ops pensiun.
 
-### Item F4c ⚠️ — TERTUNDA (PENTING): tutup celah anon key lintas-schema
-Ditemukan & BELUM ditutup: outlet schema-based (mis. Hallu Brew) pakai anon key
-YANG SAMA dengan pusat (satu project). Supabase pilih schema dari HEADER
-request (`Accept-Profile`), bukan dari kunci — jadi siapa pun yang ambil anon
-key Hallu Brew (ikut ke-bundle publik, wajar) bisa ganti header ke `public` dan
-baca/tulis data PUSAT (order, nama, no HP pelanggan) langsung via REST API,
-lewat RLS `using (true)` yang masih permisif. Diverifikasi nyata via curl session
-ini (anon key sama bisa akses `Accept-Profile: brew` DAN `Accept-Profile: public`).
-**Fix yang benar:** role Postgres baru `brew_anon` (grant HANYA ke schema brew,
-tidak ke public) + JWT baru yang di-sign dgn role claim itu, ganti
-`NEXT_PUBLIC_SUPABASE_ANON_KEY` Hallu Brew ke JWT baru, lalu revoke akses
-`anon` lama ke schema `brew`. Butuh JWT Secret pusat (Settings→API→JWT
-Settings) — TIDAK PERNAH diketik/dipegang Claude, wajib dikerjakan owner
-sendiri (klik "Generate new JWT" di dashboard kalau ada, atau via fungsi
-`sign()` pgjwt di SQL editor). Sempat coba eksekusi sesi ini tapi dashboard
-Supabase blank-render terus-menerus — belum sempat selesai.
+### Item F4c ✅ — Celah anon key lintas-schema DITUTUP — SELESAI
+Ditemukan: outlet schema-based (Hallu Brew) tadinya pakai anon key YANG SAMA
+dengan pusat (satu project). Supabase pilih schema dari HEADER request
+(`Accept-Profile`), bukan dari kunci — jadi anon key Hallu Brew (ikut ke-bundle
+publik, wajar) bisa ganti header ke `public` dan baca/tulis data PUSAT (order,
+nama, no HP pelanggan) langsung via REST API, lewat RLS `using (true)` yang
+masih permisif. Diverifikasi nyata via curl (anon key sama bisa akses
+`Accept-Profile: brew` DAN `Accept-Profile: public`).
+
+**Fix yang dieksekusi:**
+1. Role Postgres baru `brew_anon` — `grant usage`+`select/insert/update/delete`
+   HANYA ke schema `brew`, `grant brew_anon to authenticator` (wajib biar
+   PostgREST bisa `SET ROLE`).
+2. Extension `pgjwt` diaktifkan; **owner sendiri** (bukan Claude — JWT Secret
+   levelnya di atas service_role, Claude tidak pernah pegang/lihat) generate
+   JWT baru dengan role claim `brew_anon` via `extensions.sign()` di SQL
+   editor, isi secret dari Settings→API Keys→Legacy JWT Secret→Reveal.
+3. Owner tempel JWT baru ke `NEXT_PUBLIC_SUPABASE_ANON_KEY` project `hallu-brew`
+   di Vercel → Redeploy.
+4. Setelah dikonfirmasi live: `revoke all + revoke usage on schema brew from
+   anon, authenticated` (kunci lama dicabut aksesnya ke brew; public utk pusat
+   tidak disentuh).
+
+**Diverifikasi 4 arah via `SET LOCAL ROLE` simulation di SQL editor (bukti di
+level enforcement Postgres, bukan cuma anggapan):**
+- `brew_anon` baca `brew.store_settings` → ✅ berhasil
+- `brew_anon` baca `public.orders` → ❌ `42501 permission denied for table orders`
+- `anon` (kunci lama, dipakai pusat) baca `public.menu_items` → ✅ 13 baris (pusat tidak terpengaruh)
+- `anon` baca `brew.menu_items` → ❌ `42501 permission denied for schema brew`
+
+Template ini (`<schema>_anon` role + JWT bertanda-tangan + revoke anon lama)
+dipakai lagi untuk tiap outlet schema-based baru ke depan (lihat catatan di
+Item F5 soal repetisi ini vs upgrade Supabase Pro vs Auth beneran F4b).
+
+Catatan sisa (tidak kritis): ada 1 publishable key "default" ekstra ter-buat
+tanpa sengaja di project pusat saat eksplorasi (tidak dipakai app, levelnya
+sama dgn anon biasa — aman dibiarkan atau dihapus manual oleh owner).
 
 ### Item F5 ✅ — Admin Pusat kelola SEMUA outlet (1 password) — SELESAI (kode)
 Dropdown "Kelola Outlet" di Admin Pusat → atur menu/HPP/jam buka-tutup/karyawan
