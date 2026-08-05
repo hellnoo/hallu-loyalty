@@ -16,6 +16,14 @@ import { HppCalculator } from '@/components/admin/HppCalculator'
 const CATEGORIES = ['Kopi', 'Non-Kopi', 'Makanan', 'Lainnya'] as const
 const OWNER_WA = BRAND.wa
 
+// Identitas outlet "diri sendiri" (deployment yang lagi diakses) — url+schema,
+// karena outlet schema-based (mis. Hallu Brew) berbagi url project dgn pusat.
+const SELF_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const SELF_SCHEMA = process.env.NEXT_PUBLIC_SUPABASE_SCHEMA || 'public'
+type OutletOption = { name: string; url: string; schema: string; writable: boolean; sameProject: boolean }
+const outletKey = (o: { url: string; schema: string }) => `${o.url}::${o.schema}`
+const SELF_KEY = outletKey({ url: SELF_URL, schema: SELF_SCHEMA })
+
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false)
   const [pw, setPw] = useState(''); const [pwError, setPwError] = useState('')
@@ -50,19 +58,65 @@ export default function AdminPage() {
   const [uploadingId, setUploadingId] = useState<string | null>(null)
   const [meshyStatus, setMeshyStatus] = useState<Record<string, { status: string; progress: number; error?: string }>>({})
   const [manualGlbUrl, setManualGlbUrl] = useState('')
+  // ── Kelola lintas outlet (dari Admin Pusat) ──
+  const [outlets, setOutlets] = useState<OutletOption[]>([])
+  const [activeOutletKey, setActiveOutletKey] = useState<string>('') // '' = outlet sendiri
+  const [outletError, setOutletError] = useState<string | null>(null)
+  const isSelf = !activeOutletKey || activeOutletKey === SELF_KEY
+  const activeOutlet = outlets.find(o => outletKey(o) === activeOutletKey) || null
+  const adminPw = () => (typeof window !== 'undefined' ? localStorage.getItem('hallu-admin-pw') || '' : '')
 
   useEffect(() => { if (localStorage.getItem('hallu-admin') === 'ok') setAuthed(true) }, [])
-  useEffect(() => { if (authed) { loadItems(); loadSettings() } }, [authed]) // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { if (authed && tab === 'analitik' && orders.length === 0) loadOrders() }, [authed, tab]) // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { if (authed && tab === 'analitik') loadMonth(monthValue) }, [authed, tab, monthValue]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (authed) { loadItems(); loadSettings() } }, [authed, activeOutletKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (authed && isSelf && tab === 'analitik' && orders.length === 0) loadOrders() }, [authed, tab, isSelf]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (authed && isSelf && tab === 'analitik') loadMonth(monthValue) }, [authed, tab, monthValue, isSelf]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Daftar outlet buat dropdown "Kelola Outlet" — dijaga password admin pusat
+  useEffect(() => {
+    if (!authed) return
+    fetch('/api/central/outlets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: adminPw() }) })
+      .then(r => r.json()).then(json => { if (Array.isArray(json.outlets)) setOutlets(json.outlets) }).catch(() => {})
+  }, [authed]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Kelola lintas outlet: panggil server /api/central/* kalau bukan outlet
+  // sendiri (dijaga password admin pusat, server yang pegang service_role tiap outlet)
+  const centralMenu = async (op: string, opts: { values?: unknown; matchId?: string } = {}) => {
+    const res = await fetch('/api/central/menu', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: adminPw(), outletUrl: activeOutlet?.url, outletSchema: activeOutlet?.schema, op, ...opts }),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.error || 'gagal')
+    return json
+  }
+  const centralSettings = async (op: string, values?: unknown) => {
+    const res = await fetch('/api/central/settings', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: adminPw(), outletUrl: activeOutlet?.url, outletSchema: activeOutlet?.schema, op, values }),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.error || 'gagal')
+    return json
+  }
 
   const loadSettings = async () => {
-    const { data } = await supabase.from('store_settings').select('*').eq('id', 1).single()
-    if (data) {
-      const s = data as StoreSettings
-      // DB lama yang belum punya kolom employees → pakai default
+    setOutletError(null)
+    if (isSelf) {
+      const { data } = await supabase.from('store_settings').select('*').eq('id', 1).single()
+      if (data) {
+        const s = data as StoreSettings
+        if (!Array.isArray(s.employees) || s.employees.length === 0) s.employees = DEFAULT_SETTINGS.employees
+        setSettings(s)
+      }
+      return
+    }
+    try {
+      const json = await centralSettings('get')
+      const s = { ...DEFAULT_SETTINGS, ...(json.data as StoreSettings) }
       if (!Array.isArray(s.employees) || s.employees.length === 0) s.employees = DEFAULT_SETTINGS.employees
       setSettings(s)
+    } catch (err) {
+      setSettings(DEFAULT_SETTINGS)
+      setOutletError(err instanceof Error ? err.message : 'Gagal muat pengaturan outlet')
     }
   }
 
@@ -174,14 +228,22 @@ export default function AdminPage() {
   }
 
   const saveSettings = async () => {
-    setSettingsSaving(true)
-    await secureWrite({
-      scope: 'admin', table: 'store_settings', op: 'upsert', values: settings,
-      fallback: async () => { const r = await supabase.from('store_settings').upsert(settings); return { error: r.error } },
-    })
+    setSettingsSaving(true); setOutletError(null)
+    try {
+      if (isSelf) {
+        await secureWrite({
+          scope: 'admin', table: 'store_settings', op: 'upsert', values: settings,
+          fallback: async () => { const r = await supabase.from('store_settings').upsert(settings); return { error: r.error } },
+        })
+      } else {
+        await centralSettings('save', settings)
+      }
+      setSettingsSaved(true)
+      setTimeout(() => setSettingsSaved(false), 2500)
+    } catch (err) {
+      setOutletError(err instanceof Error ? err.message : 'Gagal simpan pengaturan')
+    }
     setSettingsSaving(false)
-    setSettingsSaved(true)
-    setTimeout(() => setSettingsSaved(false), 2500)
   }
 
   const loadOrders = async () => {
@@ -223,9 +285,20 @@ export default function AdminPage() {
   }
 
   const loadItems = async () => {
-    setLoading(true)
-    const { data } = await supabase.from('menu_items').select('*').order('category').order('name')
-    if (data) setItems(data as MenuItem[])
+    setLoading(true); setOutletError(null)
+    if (isSelf) {
+      const { data } = await supabase.from('menu_items').select('*').order('category').order('name')
+      if (data) setItems(data as MenuItem[])
+      setLoading(false)
+      return
+    }
+    try {
+      const json = await centralMenu('list')
+      setItems((json.data as MenuItem[]) || [])
+    } catch (err) {
+      setItems([])
+      setOutletError(err instanceof Error ? err.message : 'Gagal muat menu outlet')
+    }
     setLoading(false)
   }
 
@@ -243,27 +316,45 @@ export default function AdminPage() {
     setShowForm(true)
   }
 
-  // Tulis menu_items lewat server (service_role) + fallback anon — menutup akses tulis anon.
-  const menuUpdate = (id: string, values: Record<string, unknown>) => secureWrite({
-    scope: 'admin', table: 'menu_items', op: 'update', matchId: id, values,
-    fallback: async () => { const r = await supabase.from('menu_items').update(values).eq('id', id); return { error: r.error } },
-  })
+  // Tulis menu_items lewat server (service_role) + fallback anon (outlet sendiri) —
+  // atau lewat /api/central/menu (outlet lain, dipilih dari dropdown Kelola Outlet).
+  const menuUpdate = async (id: string, values: Record<string, unknown>) => {
+    if (isSelf) {
+      return secureWrite({
+        scope: 'admin', table: 'menu_items', op: 'update', matchId: id, values,
+        fallback: async () => { const r = await supabase.from('menu_items').update(values).eq('id', id); return { error: r.error } },
+      })
+    }
+    try { await centralMenu('update', { matchId: id, values }); return { error: null } }
+    catch (err) { setOutletError(err instanceof Error ? err.message : 'Gagal simpan'); return { error: err } }
+  }
 
   const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault(); setSaving(true)
-    if (editing) await menuUpdate(editing.id, form)
-    else await secureWrite({
-      scope: 'admin', table: 'menu_items', op: 'insert', values: form,
-      fallback: async () => { const r = await supabase.from('menu_items').insert(form); return { error: r.error } },
-    })
+    e.preventDefault(); setSaving(true); setOutletError(null)
+    if (editing) {
+      await menuUpdate(editing.id, form)
+    } else if (isSelf) {
+      await secureWrite({
+        scope: 'admin', table: 'menu_items', op: 'insert', values: form,
+        fallback: async () => { const r = await supabase.from('menu_items').insert(form); return { error: r.error } },
+      })
+    } else {
+      try { await centralMenu('insert', { values: form }) }
+      catch (err) { setOutletError(err instanceof Error ? err.message : 'Gagal tambah item') }
+    }
     await loadItems(); setShowForm(false); setSaving(false)
   }
 
   const handleDelete = async (id: string) => {
-    await secureWrite({
-      scope: 'admin', table: 'menu_items', op: 'delete', matchId: id,
-      fallback: async () => { const r = await supabase.from('menu_items').delete().eq('id', id); return { error: r.error } },
-    })
+    if (isSelf) {
+      await secureWrite({
+        scope: 'admin', table: 'menu_items', op: 'delete', matchId: id,
+        fallback: async () => { const r = await supabase.from('menu_items').delete().eq('id', id); return { error: r.error } },
+      })
+    } else {
+      try { await centralMenu('delete', { matchId: id }) }
+      catch (err) { setOutletError(err instanceof Error ? err.message : 'Gagal hapus item') }
+    }
     setItems(prev => prev.filter(i => i.id !== id))
     setConfirmDeleteId(null)
   }
@@ -272,13 +363,31 @@ export default function AdminPage() {
     setUploadingId(itemId)
     try {
       const compressed = await compressImage(file)
-      const path = `${itemId}.jpg`
-      const { error: upErr } = await supabase.storage.from('menu-images').upload(path, compressed, { upsert: true, contentType: 'image/jpeg' })
-      if (upErr) throw upErr
-      const { data: { publicUrl } } = supabase.storage.from('menu-images').getPublicUrl(path)
+      let publicUrl: string
+      if (isSelf || activeOutlet?.sameProject) {
+        // Outlet sendiri, atau outlet schema-based (numpang project ini) → bucket sama
+        const path = `${itemId}.jpg`
+        const { error: upErr } = await supabase.storage.from('menu-images').upload(path, compressed, { upsert: true, contentType: 'image/jpeg' })
+        if (upErr) throw upErr
+        publicUrl = supabase.storage.from('menu-images').getPublicUrl(path).data.publicUrl
+      } else {
+        // Outlet di project Supabase lain → upload lewat server (service_role outlet itu)
+        const fd = new FormData()
+        fd.append('password', adminPw())
+        fd.append('outletUrl', activeOutlet?.url || '')
+        fd.append('outletSchema', activeOutlet?.schema || 'public')
+        fd.append('itemId', itemId)
+        fd.append('file', compressed, `${itemId}.jpg`)
+        const res = await fetch('/api/central/menu-image', { method: 'POST', body: fd })
+        const json = await res.json()
+        if (!res.ok) throw new Error(json.error || 'gagal upload')
+        publicUrl = json.publicUrl
+      }
       await menuUpdate(itemId, { image_url: publicUrl })
       setItems(prev => prev.map(i => i.id === itemId ? { ...i, image_url: publicUrl } : i))
-    } catch { alert('Gagal upload foto. Pastikan bucket menu-images sudah dibuat di Supabase Storage.') }
+    } catch (err) {
+      alert(isSelf ? 'Gagal upload foto. Pastikan bucket menu-images sudah dibuat di Supabase Storage.' : (err instanceof Error ? err.message : 'Gagal upload foto.'))
+    }
     setUploadingId(null)
   }
 
@@ -425,7 +534,38 @@ export default function AdminPage() {
         </div>
       </div>
 
+      {/* ── Kelola Outlet — pilih outlet mana yang mau diatur (khusus tab Menu/HPP/Pengaturan) ── */}
+      {outlets.length > 1 && (
+        <div className="bg-h-card border-b border-h-border">
+          <div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center gap-3">
+            <span className="text-[10px] font-black text-h-muted uppercase tracking-widest whitespace-nowrap">Kelola Outlet</span>
+            <select
+              value={activeOutletKey}
+              onChange={e => { setActiveOutletKey(e.target.value); setShowForm(false); setEditing(null); setConfirmDeleteId(null); setOutletError(null) }}
+              className="bg-h-dark border border-h-border rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-h-red transition-colors">
+              {outlets.map(o => {
+                const key = outletKey(o)
+                const disabled = key !== SELF_KEY && !o.writable
+                return (
+                  <option key={key} value={key} disabled={disabled}>
+                    {o.name}{key === SELF_KEY ? ' (outlet ini)' : disabled ? ' — belum terhubung' : ''}
+                  </option>
+                )
+              })}
+            </select>
+            {!isSelf && (
+              <span className="text-[10px] text-h-cream bg-h-red/10 border border-h-red/30 rounded-full px-3 py-1">
+                Sedang kelola: <strong>{activeOutlet?.name}</strong> — Analitik & Bersihkan Data tetap punya outlet ini sendiri
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       <main className="max-w-5xl mx-auto px-4 py-6">
+        {outletError && (
+          <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg px-3 py-2 mb-4">⚠️ {outletError}</div>
+        )}
 
         {/* ── TAB: Kelola Menu ── */}
         {tab === 'menu' && (
@@ -613,7 +753,17 @@ export default function AdminPage() {
         )}
 
         {/* ── TAB: Analitik ── */}
-        {tab === 'analitik' && (() => {
+        {tab === 'analitik' && !isSelf && (
+          <div className="bg-h-card border border-h-border rounded-2xl p-8 text-center">
+            <div className="text-4xl mb-3">📊</div>
+            <div className="text-white font-bold text-sm mb-1">Analitik & Laba-Rugi outlet lain</div>
+            <div className="text-h-muted text-xs max-w-sm mx-auto">
+              Tab ini menampilkan data outlet <strong className="text-white">{outlets.find(o => outletKey(o) === SELF_KEY)?.name || 'ini'}</strong> sendiri.
+              Untuk lihat omzet & laba-rugi <strong className="text-h-cream">{activeOutlet?.name}</strong> dan semua outlet sekaligus, buka <a href="/owner" className="text-h-cream hover:underline">Dashboard Owner</a>.
+            </div>
+          </div>
+        )}
+        {tab === 'analitik' && isSelf && (() => {
           const doneOrders = orders.filter(o => o.status === 'done')
           const allOrders30 = orders
 
@@ -1170,7 +1320,15 @@ export default function AdminPage() {
 
               <p className="text-xs text-h-muted">* Status buka/tutup tampil otomatis di halaman menu dan landing page.</p>
 
-              {/* Manajemen data — backup dulu baru boleh hapus */}
+              {/* Manajemen data — backup dulu baru boleh hapus. Khusus outlet sendiri
+                  (belum diperluas lintas outlet — order lama tiap outlet dikelola dari outletnya sendiri) */}
+              {!isSelf && (
+                <div className="bg-h-card border border-h-border rounded-2xl p-5 text-center">
+                  <div className="text-sm font-bold text-white mb-1">Bersihkan Data Lama</div>
+                  <div className="text-xs text-h-muted">Fitur ini masih khusus outlet <strong className="text-white">{outlets.find(o => outletKey(o) === SELF_KEY)?.name}</strong> (yang lagi login). Untuk bersihkan data lama <strong className="text-h-cream">{activeOutlet?.name}</strong>, buka Admin outlet itu langsung.</div>
+                </div>
+              )}
+              {isSelf && (
               <div className="bg-h-card border border-h-border rounded-2xl p-5 space-y-4">
                 <div>
                   <div className="text-sm font-black text-white mb-0.5">Bersihkan Data Lama</div>
@@ -1208,6 +1366,7 @@ export default function AdminPage() {
                   💡 Sebenarnya DB masih sangat lega (muat 3-5 tahun) — hapus data <strong className="text-white">tidak wajib</strong>. Kalau tetap mau bersih-bersih, backup ke WA owner memastikan rekap historis aman. CSV yang terdownload = arsip lengkap, forward file-nya ke owner via WA.
                 </div>
               </div>
+              )}
             </div>
           )
         })()}
