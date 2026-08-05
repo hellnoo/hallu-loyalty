@@ -395,6 +395,26 @@ dari Admin Pusat, tanpa Vercel/redeploy.
   cuma Vercel env — permukaan risiko sedikit lebih besar dari F5 murni,
   user pilih ini demi hilangkan friksi manual Vercel tiap outlet baru.
 
+### Item F5c ✅ — Tab "Pantau Outlet" di Admin Pusat (1 password) — SELESAI
+User mau pantau semua outlet dari Admin Pusat, tanpa buka `/owner` + password
+kedua. Sekarang ada tab **Pantau Outlet** di `/admin`: omzet & transaksi hari
+ini + 7 hari (agregat), laba-rugi bulan berjalan (agregat), dan kartu per
+outlet (sparkline 7 hari, laba bersih, top item) — dijaga `ADMIN_PASSWORD`.
+- `src/lib/outlet-summary.ts`: perhitungan diekstrak jadi modul bersama
+  (`buildOutletSummary()`), dipakai `/api/owner/summary` DAN
+  `/api/central/summary` — satu sumber angka, tidak akan beda antar halaman.
+  Route `/api/owner/summary` menyusut dari ~135 baris jadi ~20.
+- `/api/central/summary` baru: guard `ADMIN_PASSWORD` (bukan OWNER_PASSWORD).
+- Admin: `AdminTab` + tab 'outlet', tab bar jadi `overflow-x-auto min-w-max`
+  (5 tab, aman di HP).
+- **Batas keamanan tetap:** `/owner` masih dijaga `OWNER_PASSWORD` sendiri —
+  diverifikasi via curl bahwa ADMIN_PASSWORD **ditolak** di `/api/owner/summary`
+  (401). Jadi ini menambah jalan masuk buat owner, bukan melemahkan yang lama.
+- Diverifikasi: build+tsc lolos; tab dites di preview (header+tanggal WIT benar
+  "Rab, 5"/"Agustus 2026", kartu agregat & P&L & per-outlet render, error state
+  per outlet jalan); curl 401 password salah / 200 password benar / 401 admin-pw
+  di route owner.
+
 ### Catatan HPP snapshot (kerjakan bersama Item 1 varian)
 Saat submit order, simpan juga `hpp` per item (snapshot dari menu_items saat itu)
 di jsonb items — laporan margin historis akurat walau HPP menu berubah.
