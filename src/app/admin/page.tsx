@@ -85,7 +85,15 @@ export default function AdminPage() {
   const [newOutletModel, setNewOutletModel] = useState<'schema' | 'separate'>('schema')
   const [newOutlet, setNewOutlet] = useState({ name: '', schema: '', url: '', anon: '', serviceRole: '' })
 
-  useEffect(() => { if (localStorage.getItem('hallu-admin') === 'ok') setAuthed(true) }, [])
+  // Sesi lama (login sebelum fitur lintas-outlet ada) cuma simpan flag 'ok'
+  // tanpa password — padahal /api/central/* butuh password utk verifikasi.
+  // Minta login ulang sekali, dengan pesan yang jelas (bukan "Password salah").
+  useEffect(() => {
+    if (localStorage.getItem('hallu-admin') !== 'ok') return
+    if (localStorage.getItem('hallu-admin-pw')) { setAuthed(true); return }
+    localStorage.removeItem('hallu-admin')
+    setPwError('Sesi lama — silakan masukkan password sekali lagi untuk mengaktifkan fitur multi-outlet.')
+  }, [])
   useEffect(() => { if (authed) { loadItems(); loadSettings() } }, [authed, activeOutletKey]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (authed && isSelf && tab === 'analitik' && orders.length === 0) loadOrders() }, [authed, tab, isSelf]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (authed && isSelf && tab === 'analitik') loadMonth(monthValue) }, [authed, tab, monthValue, isSelf]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -106,6 +114,7 @@ export default function AdminPage() {
         body: JSON.stringify({ password: adminPw() }),
       })
       const json = await res.json()
+      if (res.status === 401) throw new Error('Sesi tidak valid — klik "Keluar" lalu login lagi dengan password admin.')
       if (!res.ok) throw new Error(json.error || 'Gagal memuat')
       setSummary(json as OutletSummary)
     } catch (err) {
