@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getOutlets } from '@/lib/outlets'
+import { getAllOutlets } from '@/lib/outlets-registry'
 import { getOutletServiceClient } from '@/lib/supabase-admin'
 
 export const runtime = 'nodejs'
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
   // Cocokkan url + schema — Pusat & outlet schema-based (mis. Hallu Brew) berbagi url yang sama.
   const wantSchema = outletSchema || 'public'
-  const outlet = getOutlets().find((o) => o.url === outletUrl && (o.schema || 'public') === wantSchema)
+  const outlet = (await getAllOutlets()).find((o) => o.url === outletUrl && (o.schema || 'public') === wantSchema)
   if (!outlet) return NextResponse.json({ error: 'outlet tidak ditemukan' }, { status: 404 })
 
   const sb = getOutletServiceClient(outlet)
