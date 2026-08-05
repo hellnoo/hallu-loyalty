@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.97.1",
-    "@google/model-viewer": "^4.2.0",
     "@supabase/supabase-js": "^2.45.4",
     "next": "^15.5.15",
     "qrcode": "^1.5.4",
