@@ -124,6 +124,12 @@ begin
     execute format('alter table %I enable row level security', t);
     execute format('drop policy if exists "hallu_all_%s" on %I', t, t);
     execute format('create policy "hallu_all_%s" on %I for all using (true) with check (true)', t, t);
+    -- GRANT eksplisit: supaya script ini TIDAK bergantung pada setelan
+    -- "Automatically expose new tables" di dashboard Supabase. Dengan begini
+    -- setelan itu boleh DIMATIKAN (rekomendasi Supabase) — tabel app tetap
+    -- jalan, dan tabel sensitif yang dibuat belakangan tidak ikut ter-expose
+    -- otomatis. Akses sebenarnya tetap dijaga RLS policy di atas.
+    execute format('grant select, insert, update, delete on %I to anon, authenticated', t);
   end loop;
 end $$;
 
