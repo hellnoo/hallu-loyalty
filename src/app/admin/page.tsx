@@ -65,17 +65,47 @@ export default function AdminPage() {
   const isSelf = !activeOutletKey || activeOutletKey === SELF_KEY
   const activeOutlet = outlets.find(o => outletKey(o) === activeOutletKey) || null
   const adminPw = () => (typeof window !== 'undefined' ? localStorage.getItem('hallu-admin-pw') || '' : '')
+  // Form "+ Tambah Outlet"
+  const [showAddOutlet, setShowAddOutlet] = useState(false)
+  const [addOutletSaving, setAddOutletSaving] = useState(false)
+  const [addOutletError, setAddOutletError] = useState<string | null>(null)
+  const [newOutletModel, setNewOutletModel] = useState<'schema' | 'separate'>('schema')
+  const [newOutlet, setNewOutlet] = useState({ name: '', schema: '', url: '', anon: '', serviceRole: '' })
 
   useEffect(() => { if (localStorage.getItem('hallu-admin') === 'ok') setAuthed(true) }, [])
   useEffect(() => { if (authed) { loadItems(); loadSettings() } }, [authed, activeOutletKey]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (authed && isSelf && tab === 'analitik' && orders.length === 0) loadOrders() }, [authed, tab, isSelf]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (authed && isSelf && tab === 'analitik') loadMonth(monthValue) }, [authed, tab, monthValue, isSelf]) // eslint-disable-line react-hooks/exhaustive-deps
   // Daftar outlet buat dropdown "Kelola Outlet" — dijaga password admin pusat
-  useEffect(() => {
-    if (!authed) return
+  const loadOutlets = () => {
     fetch('/api/central/outlets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: adminPw() }) })
       .then(r => r.json()).then(json => { if (Array.isArray(json.outlets)) setOutlets(json.outlets) }).catch(() => {})
-  }, [authed]) // eslint-disable-line react-hooks/exhaustive-deps
+  }
+  useEffect(() => { if (authed) loadOutlets() }, [authed]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const addOutlet = async () => {
+    setAddOutletSaving(true); setAddOutletError(null)
+    try {
+      const outlet = newOutletModel === 'schema'
+        ? { name: newOutlet.name.trim(), url: SELF_URL, anon: newOutlet.anon.trim(), schema: newOutlet.schema.trim() }
+        : { name: newOutlet.name.trim(), url: newOutlet.url.trim(), anon: newOutlet.anon.trim(), serviceRole: newOutlet.serviceRole.trim() || undefined }
+      if (!outlet.name || !outlet.url || !outlet.anon || (newOutletModel === 'schema' && !outlet.schema)) {
+        throw new Error('Lengkapi semua field wajib dulu')
+      }
+      const res = await fetch('/api/central/outlets', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: adminPw(), op: 'add', outlet }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'gagal')
+      loadOutlets()
+      setShowAddOutlet(false)
+      setNewOutlet({ name: '', schema: '', url: '', anon: '', serviceRole: '' })
+    } catch (err) {
+      setAddOutletError(err instanceof Error ? err.message : 'Gagal tambah outlet')
+    }
+    setAddOutletSaving(false)
+  }
 
   // ── Kelola lintas outlet: panggil server /api/central/* kalau bukan outlet
   // sendiri (dijaga password admin pusat, server yang pegang service_role tiap outlet)
@@ -535,7 +565,34 @@ export default function AdminPage() {
       </div>
 
       {/* ── Kelola Outlet — pilih outlet mana yang mau diatur (khusus tab Menu/HPP/Pengaturan) ── */}
-      {outlets.length > 1 && (
+      {isSelf && (
+        <div className="bg-h-card border-b border-h-border">
+          <div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center gap-3">
+            <span className="text-[10px] font-black text-h-muted uppercase tracking-widest whitespace-nowrap">Kelola Outlet</span>
+            {outlets.length > 1 && (
+              <select
+                value={activeOutletKey}
+                onChange={e => { setActiveOutletKey(e.target.value); setShowForm(false); setEditing(null); setConfirmDeleteId(null); setOutletError(null) }}
+                className="bg-h-dark border border-h-border rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-h-red transition-colors">
+                {outlets.map(o => {
+                  const key = outletKey(o)
+                  const disabled = key !== SELF_KEY && !o.writable
+                  return (
+                    <option key={key} value={key} disabled={disabled}>
+                      {o.name}{key === SELF_KEY ? ' (outlet ini)' : disabled ? ' — belum terhubung' : ''}
+                    </option>
+                  )
+                })}
+              </select>
+            )}
+            <button onClick={() => { setShowAddOutlet(true); setAddOutletError(null) }}
+              className="text-xs font-bold text-h-cream hover:text-white border border-h-red/40 hover:border-h-red px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+              + Tambah Outlet
+            </button>
+          </div>
+        </div>
+      )}
+      {!isSelf && (
         <div className="bg-h-card border-b border-h-border">
           <div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center gap-3">
             <span className="text-[10px] font-black text-h-muted uppercase tracking-widest whitespace-nowrap">Kelola Outlet</span>
@@ -553,11 +610,9 @@ export default function AdminPage() {
                 )
               })}
             </select>
-            {!isSelf && (
-              <span className="text-[10px] text-h-cream bg-h-red/10 border border-h-red/30 rounded-full px-3 py-1">
-                Sedang kelola: <strong>{activeOutlet?.name}</strong> — Analitik & Bersihkan Data tetap punya outlet ini sendiri
-              </span>
-            )}
+            <span className="text-[10px] text-h-cream bg-h-red/10 border border-h-red/30 rounded-full px-3 py-1">
+              Sedang kelola: <strong>{activeOutlet?.name}</strong> — Analitik & Bersihkan Data tetap punya outlet ini sendiri
+            </span>
           </div>
         </div>
       )}
@@ -1486,6 +1541,100 @@ export default function AdminPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal Tambah Outlet ── */}
+      {showAddOutlet && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70" onClick={() => setShowAddOutlet(false)} />
+          <div className="relative bg-h-card border border-h-border rounded-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 flex-shrink-0 border-b border-h-border">
+              <h2 className="font-sans text-base font-black text-white uppercase tracking-wider">Tambah Outlet</h2>
+              <button onClick={() => setShowAddOutlet(false)} className="text-h-muted hover:text-white text-2xl leading-none">×</button>
+            </div>
+            <div className="overflow-y-auto px-6 py-4 space-y-4 flex-1 min-h-0">
+              <div>
+                <label className="text-xs text-h-muted font-bold uppercase tracking-wide block mb-1.5">Nama Outlet *</label>
+                <input value={newOutlet.name} onChange={e => setNewOutlet(o => ({ ...o, name: e.target.value }))}
+                  placeholder="Contoh: Hallu Corner"
+                  className="w-full bg-h-dark border border-h-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-h-red text-white placeholder-h-muted transition-colors" />
+              </div>
+
+              <div>
+                <label className="text-xs text-h-muted font-bold uppercase tracking-wide block mb-1.5">Model Database</label>
+                <div className="grid grid-cols-1 gap-2">
+                  <button type="button" onClick={() => setNewOutletModel('schema')}
+                    className={`text-left px-3.5 py-2.5 rounded-xl border text-xs transition-colors ${newOutletModel === 'schema' ? 'bg-h-red/10 border-h-red text-white' : 'bg-h-dark border-h-border text-h-muted hover:text-white'}`}>
+                    <div className="font-bold">Numpang DB Pusat (schema)</div>
+                    <div className="text-[10px] mt-0.5 opacity-80">Hemat, tanpa project Supabase baru. Untuk outlet milik sendiri.</div>
+                  </button>
+                  <button type="button" onClick={() => setNewOutletModel('separate')}
+                    className={`text-left px-3.5 py-2.5 rounded-xl border text-xs transition-colors ${newOutletModel === 'separate' ? 'bg-h-red/10 border-h-red text-white' : 'bg-h-dark border-h-border text-h-muted hover:text-white'}`}>
+                    <div className="font-bold">Database Terpisah (project sendiri)</div>
+                    <div className="text-[10px] mt-0.5 opacity-80">Isolasi penuh. Untuk outlet mitra/franchise.</div>
+                  </button>
+                </div>
+              </div>
+
+              {newOutletModel === 'schema' ? (
+                <>
+                  <div className="bg-h-dark border border-h-border rounded-xl p-3 text-[10px] text-h-muted leading-relaxed">
+                    💡 Sebelum ini: buat schema Postgres baru + role <code className="text-h-cream">&lt;schema&gt;_anon</code> +
+                    generate anon key khusus schema itu di SQL Editor pusat (pola sama seperti Hallu Brew).
+                    Langkah itu masih manual — minta bantuan kalau perlu.
+                  </div>
+                  <div>
+                    <label className="text-xs text-h-muted font-bold uppercase tracking-wide block mb-1.5">Nama Schema *</label>
+                    <input value={newOutlet.schema} onChange={e => setNewOutlet(o => ({ ...o, schema: e.target.value.trim() }))}
+                      placeholder="Contoh: corner"
+                      className="w-full bg-h-dark border border-h-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-h-red text-white placeholder-h-muted transition-colors" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-h-muted font-bold uppercase tracking-wide block mb-1.5">Anon Key (khusus schema ini) *</label>
+                    <textarea value={newOutlet.anon} onChange={e => setNewOutlet(o => ({ ...o, anon: e.target.value.trim() }))}
+                      placeholder="eyJ..." rows={3}
+                      className="w-full bg-h-dark border border-h-border rounded-xl px-3.5 py-2.5 text-xs font-mono resize-none focus:outline-none focus:border-h-red text-white placeholder-h-muted transition-colors" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className="text-xs text-h-muted font-bold uppercase tracking-wide block mb-1.5">Supabase Project URL *</label>
+                    <input value={newOutlet.url} onChange={e => setNewOutlet(o => ({ ...o, url: e.target.value.trim() }))}
+                      placeholder="https://xxxxx.supabase.co"
+                      className="w-full bg-h-dark border border-h-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-h-red text-white placeholder-h-muted transition-colors" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-h-muted font-bold uppercase tracking-wide block mb-1.5">Anon Key *</label>
+                    <textarea value={newOutlet.anon} onChange={e => setNewOutlet(o => ({ ...o, anon: e.target.value.trim() }))}
+                      placeholder="eyJ..." rows={3}
+                      className="w-full bg-h-dark border border-h-border rounded-xl px-3.5 py-2.5 text-xs font-mono resize-none focus:outline-none focus:border-h-red text-white placeholder-h-muted transition-colors" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-h-muted font-bold uppercase tracking-wide block mb-1.5">Service Role Key <span className="text-h-border">(opsional — tanpa ini cuma bisa dipantau di /owner, belum bisa dikelola dari sini)</span></label>
+                    <textarea value={newOutlet.serviceRole} onChange={e => setNewOutlet(o => ({ ...o, serviceRole: e.target.value.trim() }))}
+                      placeholder="eyJ..." rows={3}
+                      className="w-full bg-h-dark border border-h-border rounded-xl px-3.5 py-2.5 text-xs font-mono resize-none focus:outline-none focus:border-h-red text-white placeholder-h-muted transition-colors" />
+                  </div>
+                </>
+              )}
+
+              {addOutletError && (
+                <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg px-3 py-2">⚠️ {addOutletError}</div>
+              )}
+            </div>
+            <div className="flex gap-3 px-6 py-4 border-t border-h-border flex-shrink-0 bg-h-card">
+              <button type="button" onClick={() => setShowAddOutlet(false)}
+                className="flex-1 border border-h-border text-h-muted py-3 rounded-xl text-sm font-medium hover:border-white/20 hover:text-white transition-colors">
+                Batal
+              </button>
+              <button type="button" onClick={addOutlet} disabled={addOutletSaving}
+                className="flex-1 bg-h-red hover:bg-h-red-d disabled:opacity-60 text-white py-3 rounded-xl text-sm font-black uppercase tracking-wide transition-colors">
+                {addOutletSaving ? 'Menyimpan...' : 'Simpan Outlet'}
+              </button>
+            </div>
           </div>
         </div>
       )}

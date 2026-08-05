@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getOutlets } from '@/lib/outlets'
+import { getAllOutlets } from '@/lib/outlets-registry'
 import { getOutletServiceClient } from '@/lib/supabase-admin'
 
 export const runtime = 'nodejs'
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   }
   if (!outletUrl || !itemId || !file) return NextResponse.json({ error: 'permintaan tidak lengkap' }, { status: 400 })
 
-  const outlet = getOutlets().find((o) => o.url === outletUrl && (o.schema || 'public') === outletSchema)
+  const outlet = (await getAllOutlets()).find((o) => o.url === outletUrl && (o.schema || 'public') === outletSchema)
   if (!outlet) return NextResponse.json({ error: 'outlet tidak ditemukan' }, { status: 404 })
 
   const sb = getOutletServiceClient(outlet)

@@ -365,6 +365,36 @@ TETAP khusus outlet sendiri (Analitik lintas outlet sudah ada di `/owner`).
   otomatis writable begitu `SUPABASE_SERVICE_ROLE_KEY` pusat diset (prasyarat
   F4a yang sama).
 
+### Item F5b ✅ — Tombol "+ Tambah Outlet" (tanpa edit OUTLETS_JSON/Vercel lagi) — SELESAI
+Nambah outlet baru (setelah setup awal) tadinya wajib edit `OUTLETS_JSON` di
+Vercel + redeploy tiap kali — user minta dihilangkan. Sekarang ada tabel
+`public.outlets` (DB pusat) sebagai registry kedua yang bisa diisi langsung
+dari Admin Pusat, tanpa Vercel/redeploy.
+- `supabase-outlets-registry.sql`: tabel `public.outlets` (name/url/anon/
+  schema/service_role). **Sengaja TANPA grant ke anon/authenticated sama
+  sekali** — default-deny Postgres, cuma bisa disentuh via service_role
+  server-side. RLS aktif sbg lapisan kedua. **Jalankan sekali di DB pusat.**
+- `src/lib/outlets-registry.ts`: `getAllOutlets()` gabungkan OUTLETS_JSON
+  (env, cara lama, menang kalau duplikat) + tabel `outlets` (DB, cara baru).
+  `addOutletToDb()`/`removeOutletFromDb()`. Semua route `/api/central/*` dan
+  `/api/owner/summary` dipindah dari `getOutlets()` → `getAllOutlets()`.
+- `/api/central/outlets` diperluas: `op: 'list'|'add'|'remove'`.
+- Admin Pusat: tombol "+ Tambah Outlet" (selalu tampil buat outlet sendiri,
+  bukan cuma saat outlet≥2) → modal pilih model (schema-based / project
+  terpisah) → form field sesuai model → simpan ke DB, refresh dropdown otomatis.
+- Diverifikasi: build+tsc lolos; UI dites di preview (toggle model ganti
+  field dgn benar, submit → error jelas "SUPABASE_SERVICE_ROLE_KEY belum
+  diset" saat env lokal kosong — jalur form→API→DB tersambung benar).
+- **Batas yang TETAP ada** (tidak bisa dihilangkan tanpa kasih app akses
+  superuser DB, terlalu berisiko): untuk outlet **schema-based** baru, bikin
+  role Postgres `<schema>_anon` + generate JWT tetap manual di SQL Editor
+  (pola sama Hallu Brew/F4c) — tombol ini cuma hilangkan langkah
+  "OUTLETS_JSON + redeploy" sesudahnya, bukan langkah bikin role+key-nya.
+- **Trade-off keamanan yang disadari & disetujui user:** kunci outlet
+  (termasuk service_role) sekarang juga hidup di tabel database, bukan
+  cuma Vercel env — permukaan risiko sedikit lebih besar dari F5 murni,
+  user pilih ini demi hilangkan friksi manual Vercel tiap outlet baru.
+
 ### Catatan HPP snapshot (kerjakan bersama Item 1 varian)
 Saat submit order, simpan juga `hpp` per item (snapshot dari menu_items saat itu)
 di jsonb items — laporan margin historis akurat walau HPP menu berubah.

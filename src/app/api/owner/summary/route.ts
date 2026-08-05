@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { getOutlets } from '@/lib/outlets'
+import { getAllOutlets } from '@/lib/outlets-registry'
 
 export const runtime = 'nodejs'
 
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   if (!process.env.OWNER_PASSWORD || password !== process.env.OWNER_PASSWORD) {
     return NextResponse.json({ error: 'Password salah' }, { status: 401 })
   }
-  const outlets = getOutlets()
+  const outlets = await getAllOutlets()
   if (!outlets.length) return NextResponse.json({ error: 'OUTLETS_JSON belum diset' }, { status: 503 })
 
   const today = currentBizDay()
