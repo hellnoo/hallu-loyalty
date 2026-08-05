@@ -38,6 +38,17 @@ Tiap outlet mitra = **1 project Supabase (DB sendiri)** + **1 project Vercel (de
 
 ## Langkah Model B (per-DB)
 
+### 0. ⚠️ Pastikan ada SLOT Supabase kosong dulu
+Free tier = **2 project aktif per AKUN**. Per 2026-08-05 akun `hellnoo` sudah
+penuh: `hallu loyalty` (pusat) + `hallu-outlet`. (`kedaiku-demo` sudah di-pause.)
+Jadi sebelum bikin DB baru, bebaskan slot dengan salah satu:
+- **Pause** project yang lagi nganggur (Settings → General → Pause), **atau**
+- Pakai **akun Supabase lain** (mis. `thatwokz` yang isinya cuma franc-ops kosong), **atau**
+- **Upgrade Pro** (~$25/bln) → project bebas, sekaligus menghilangkan kebutuhan
+  pola role-per-schema di Model A.
+
+> Kalau slot penuh, **Model A (schema)** jauh lebih praktis — nol project baru.
+
 ### 1. Buat DB Supabase baru
 - supabase.com → New project (region **Singapore**). Catat password DB.
 - **SQL Editor** → tempel & jalankan **`supabase-setup.sql`** (skema lengkap: menu, orders, store_settings, shifts, push, **expenses**, RLS, storage bucket, realtime).
@@ -69,22 +80,31 @@ Tiap outlet mitra = **1 project Supabase (DB sendiri)** + **1 project Vercel (de
 - Ganti password default → login `/admin` outlet, atur menu (mitra isi sendiri, atau salin dari pusat).
 - Cek `/menu` tampil benar & status buka/tutup sesuai (waktu sudah WIT).
 
-### 4. Sambungkan ke dashboard owner + Admin Pusat (kelola lintas outlet)
-- Di project **pusat** (`hallu-loyalty`) → env `OUTLETS_JSON` → tambah entri outlet baru:
-  `{"name":"Nama Outlet","url":"https://<ref>.supabase.co","anon":"<anon key outlet>"}`
-- Redeploy pusat → `/owner` ikut mantau outlet baru (omzet, transaksi, laba), dan
-  outlet itu muncul di dropdown **"Kelola Outlet"** di Admin Pusat (kelola menu/
-  HPP/jam/karyawan outlet itu tanpa login terpisah — Item F5).
-- **Outlet Model B (DB terpisah, mis. mitra)** butuh field tambahan `serviceRole`
-  supaya Admin Pusat bisa TULIS ke sana: `{"name":"...","url":"...","anon":"...",
-  "serviceRole":"<service_role key outlet itu>"}` — ambil di project outlet →
-  Settings → API Keys → Legacy → **service_role** (SECRET, tempel sendiri).
-  Tanpa ini, outlet tetap muncul di dropdown tapi ditandai "belum terhubung"
-  (baca-tulis lewat Admin Pusat belum bisa, mitra tetap bisa kelola dari admin
-  mereka sendiri seperti biasa).
-- **Outlet Model A (schema-based, mis. Hallu Brew)** otomatis writable dari Admin
-  Pusat begitu `SUPABASE_SERVICE_ROLE_KEY` pusat diset — tidak perlu `serviceRole`
-  terpisah (satu project yang sama).
+### 4. Daftarkan lewat tombol "+ Tambah Outlet" (TIDAK perlu edit OUTLETS_JSON lagi)
+Buka Admin **Pusat** → tombol **"+ Tambah Outlet"** → pilih **"Database Terpisah
+(project sendiri)"** → isi:
+
+| Field | Isi | Wajib? |
+|---|---|---|
+| Nama Outlet | mis. `Outlet Mitra 2` | ✅ |
+| Supabase Project URL | `https://<ref>.supabase.co` DB baru | ✅ |
+| Anon Key | anon public key DB baru | ✅ |
+| Service Role Key | service_role DB baru (Settings→API Keys→Legacy) | ⬜ opsional |
+
+Klik **Simpan Outlet** → langsung muncul di dropdown "Kelola Outlet" + tab
+"Pantau Outlet" + `/owner`. **Tanpa** edit env Vercel, tanpa redeploy.
+
+- **Tanpa Service Role Key:** outlet tetap **kepantau** (omzet/laba di Pantau
+  Outlet & /owner), tapi belum bisa **dikelola** dari Admin Pusat (ditandai
+  "belum terhubung"). Mitra tetap kelola dari admin mereka sendiri seperti biasa.
+- **Dengan Service Role Key:** menu/HPP/jam/karyawan outlet itu bisa diatur
+  langsung dari Admin Pusat pakai satu password.
+- Prasyarat sekali seumur hidup: `SUPABASE_SERVICE_ROLE_KEY` **pusat** sudah
+  diset di Vercel pusat, dan tabel registry sudah dibuat
+  (`supabase-outlets-registry.sql`, sudah dijalankan di DB pusat).
+
+> Cara lama (env `OUTLETS_JSON` di Vercel pusat) masih didukung dan menang kalau
+> ada duplikat — berguna kalau mau "kunci" konfigurasi outlet di level Vercel.
 
 ---
 
