@@ -21,6 +21,15 @@ const OWNER_WA = BRAND.wa
 const SELF_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const SELF_SCHEMA = process.env.NEXT_PUBLIC_SUPABASE_SCHEMA || 'public'
 type OutletOption = { name: string; url: string; schema: string; writable: boolean; sameProject: boolean }
+type OutletDaily = { date: string; revenue: number; orders: number }
+type OutletSummaryRow =
+  | { name: string; ok: true; todayRevenue: number; todayOrders: number; weekRevenue: number; weekOrders: number; daily: OutletDaily[]; topItems: { name: string; qty: number }[]; monthRevenue: number; cogs: number; expTotal: number; netProfit: number }
+  | { name: string; ok: false; error: string }
+type OutletSummary = {
+  today: string; month: string
+  outlets: OutletSummaryRow[]
+  aggregate: { todayRevenue: number; todayOrders: number; weekRevenue: number; weekOrders: number; monthRevenue: number; cogs: number; expTotal: number; netProfit: number; outletCount: number }
+}
 const outletKey = (o: { url: string; schema: string }) => `${o.url}::${o.schema}`
 const SELF_KEY = outletKey({ url: SELF_URL, schema: SELF_SCHEMA })
 
@@ -65,6 +74,10 @@ export default function AdminPage() {
   const isSelf = !activeOutletKey || activeOutletKey === SELF_KEY
   const activeOutlet = outlets.find(o => outletKey(o) === activeOutletKey) || null
   const adminPw = () => (typeof window !== 'undefined' ? localStorage.getItem('hallu-admin-pw') || '' : '')
+  // Tab "Pantau Outlet" — ringkasan lintas outlet (sama data dgn /owner)
+  const [summary, setSummary] = useState<OutletSummary | null>(null)
+  const [summaryLoading, setSummaryLoading] = useState(false)
+  const [summaryError, setSummaryError] = useState<string | null>(null)
   // Form "+ Tambah Outlet"
   const [showAddOutlet, setShowAddOutlet] = useState(false)
   const [addOutletSaving, setAddOutletSaving] = useState(false)
@@ -82,6 +95,25 @@ export default function AdminPage() {
       .then(r => r.json()).then(json => { if (Array.isArray(json.outlets)) setOutlets(json.outlets) }).catch(() => {})
   }
   useEffect(() => { if (authed) loadOutlets() }, [authed]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Ringkasan lintas outlet (tab Pantau Outlet) — password admin pusat, data
+  // identik dengan halaman /owner (satu modul perhitungan di server)
+  const loadSummary = async () => {
+    setSummaryLoading(true); setSummaryError(null)
+    try {
+      const res = await fetch('/api/central/summary', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: adminPw() }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Gagal memuat')
+      setSummary(json as OutletSummary)
+    } catch (err) {
+      setSummaryError(err instanceof Error ? err.message : 'Gagal memuat ringkasan')
+    }
+    setSummaryLoading(false)
+  }
+  useEffect(() => { if (authed && tab === 'outlet' && !summary) loadSummary() }, [authed, tab]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const addOutlet = async () => {
     setAddOutletSaving(true); setAddOutletError(null)
@@ -553,11 +585,11 @@ export default function AdminPage() {
       </header>
 
       {/* Tabs */}
-      <div className="bg-h-dark border-b border-h-border">
-        <div className="max-w-5xl mx-auto flex">
-          {([['menu', 'Kelola Menu'], ['hpp', 'HPP & Margin'], ['analitik', 'Analitik'], ['pengaturan', 'Pengaturan']] as const).map(([key, label]) => (
+      <div className="bg-h-dark border-b border-h-border overflow-x-auto">
+        <div className="max-w-5xl mx-auto flex min-w-max">
+          {([['menu', 'Kelola Menu'], ['hpp', 'HPP & Margin'], ['analitik', 'Analitik'], ['outlet', 'Pantau Outlet'], ['pengaturan', 'Pengaturan']] as const).map(([key, label]) => (
             <button key={key} onClick={() => setTab(key)}
-              className={`px-6 py-3.5 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 ${tab === key ? 'text-h-cream border-h-red' : 'text-h-muted border-transparent hover:text-white'}`}>
+              className={`px-5 py-3.5 text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 ${tab === key ? 'text-h-cream border-h-red' : 'text-h-muted border-transparent hover:text-white'}`}>
               {label}
             </button>
           ))}
@@ -1254,6 +1286,133 @@ export default function AdminPage() {
                         Menampilkan 50 terbaru — Export CSV untuk data lengkap
                       </div>
                     )}
+                  </div>
+                </>
+              )}
+            </div>
+          )
+        })()}
+
+        {/* ── TAB: Pantau Outlet — ringkasan semua outlet dari satu layar ── */}
+        {tab === 'outlet' && (() => {
+          const agg = summary?.aggregate
+          const fmtDay = (d: string) => new Date(d + 'T06:00:00Z').toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', timeZone: 'Asia/Jayapura' })
+          const fmtMonth = (m: string) => new Date(m + '-02T06:00:00Z').toLocaleDateString('id-ID', { month: 'long', year: 'numeric', timeZone: 'Asia/Jayapura' })
+          return (
+            <div className="space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h1 className="font-sans text-lg font-black text-white uppercase tracking-wider">Pantau Outlet</h1>
+                  <p className="text-h-muted text-xs mt-0.5">
+                    {summary ? `${agg?.outletCount} outlet · ${fmtDay(summary.today)} (jam 05:00–04:59 WIT)` : 'Ringkasan semua outlet dalam satu layar'}
+                  </p>
+                </div>
+                <button onClick={loadSummary} disabled={summaryLoading}
+                  className="text-xs text-h-muted hover:text-white border border-h-border hover:border-white/30 px-3 py-1.5 rounded-lg transition-colors font-bold">
+                  {summaryLoading ? '...' : '↻ Refresh'}
+                </button>
+              </div>
+
+              {summaryError && (
+                <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg px-3 py-2">⚠️ {summaryError}</div>
+              )}
+              {summaryLoading && !summary && (
+                <div className="text-center text-h-muted text-sm py-16 animate-pulse">Memuat data semua outlet...</div>
+              )}
+
+              {summary && (
+                <>
+                  {/* Hari ini — gabungan semua outlet */}
+                  <div>
+                    <h2 className="text-xs font-black text-h-muted uppercase tracking-widest mb-3">Hari Ini (Semua Outlet)</h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {[
+                        { label: 'Total Omzet', value: formatRp(agg?.todayRevenue || 0) },
+                        { label: 'Transaksi', value: String(agg?.todayOrders || 0) },
+                        { label: 'Omzet 7 Hari', value: formatRp(agg?.weekRevenue || 0) },
+                        { label: 'Transaksi 7 Hari', value: String(agg?.weekOrders || 0) },
+                      ].map(c => (
+                        <div key={c.label} className="bg-h-card border border-h-border rounded-2xl p-4">
+                          <div className="text-[10px] text-h-muted uppercase tracking-wide font-semibold mb-1">{c.label}</div>
+                          <div className="text-lg font-black text-white leading-tight">{c.value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Laba-rugi bulan berjalan — gabungan */}
+                  <div>
+                    <h2 className="text-xs font-black text-h-muted uppercase tracking-widest mb-1">Laba-Rugi Bulan Ini (Semua Outlet)</h2>
+                    <p className="text-h-muted text-[10px] mb-3">{fmtMonth(summary.month)}</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {[
+                        { label: 'Omzet', value: formatRp(agg?.monthRevenue || 0), tone: 'white' },
+                        { label: 'HPP Terjual', value: formatRp(agg?.cogs || 0), tone: 'muted' },
+                        { label: 'Pengeluaran', value: formatRp(agg?.expTotal || 0), tone: 'muted' },
+                        { label: 'Laba Bersih', value: formatRp(agg?.netProfit || 0), tone: (agg?.netProfit ?? 0) >= 0 ? 'green' : 'red' },
+                      ].map(c => (
+                        <div key={c.label} className={`border rounded-2xl p-4 ${c.tone === 'green' ? 'bg-green-500/10 border-green-500/30' : c.tone === 'red' ? 'bg-red-500/10 border-red-500/30' : 'bg-h-card border-h-border'}`}>
+                          <div className="text-[10px] text-h-muted uppercase tracking-wide font-semibold mb-1">{c.label}</div>
+                          <div className={`text-lg font-black leading-tight ${c.tone === 'green' ? 'text-green-400' : c.tone === 'red' ? 'text-red-400' : 'text-white'}`}>{c.value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Rincian per outlet */}
+                  <div>
+                    <h2 className="text-xs font-black text-h-muted uppercase tracking-widest mb-3">Per Outlet</h2>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {summary.outlets.map(o => o.ok ? (
+                        <div key={o.name} className="bg-h-card border border-h-border rounded-2xl p-5">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <div className="font-bold text-white text-base">{o.name}</div>
+                              <div className="text-h-muted text-xs">{o.todayOrders} transaksi hari ini</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-h-cream font-black text-lg leading-tight">{formatRp(o.todayRevenue)}</div>
+                              <div className="text-[10px] text-h-muted">hari ini</div>
+                            </div>
+                          </div>
+                          {/* Sparkline 7 hari */}
+                          <div className="flex items-end gap-1 h-12">
+                            {(() => {
+                              const max = Math.max(...o.daily.map(d => d.revenue), 1)
+                              return o.daily.map((d, i) => (
+                                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                                  <div className="w-full flex items-end" style={{ height: '40px' }}>
+                                    <div className="w-full rounded-t transition-all"
+                                      style={{ height: `${Math.max(3, Math.round((d.revenue / max) * 40))}px`, background: i === o.daily.length - 1 ? '#7C1515' : '#3a2a28' }}
+                                      title={`${fmtDay(d.date)}: ${formatRp(d.revenue)}`} />
+                                  </div>
+                                  <div className="text-[7px] text-h-muted">{fmtDay(d.date).split(' ')[1]}</div>
+                                </div>
+                              ))
+                            })()}
+                          </div>
+                          <div className="flex justify-between items-center mt-3 pt-3 border-t border-h-border">
+                            <span className="text-[10px] text-h-muted uppercase tracking-wide">Omzet 7 hari</span>
+                            <span className="text-sm font-bold text-white">{formatRp(o.weekRevenue)}</span>
+                          </div>
+                          <div className="flex justify-between items-center mt-1.5">
+                            <span className="text-[10px] text-h-muted uppercase tracking-wide">Laba bersih (bln ini)</span>
+                            <span className={`text-sm font-bold ${o.netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatRp(o.netProfit)}</span>
+                          </div>
+                          {o.topItems.length > 0 && (
+                            <div className="mt-2 text-xs text-h-muted">
+                              <span className="text-h-cream font-bold">Top: </span>
+                              {o.topItems.map(t => `${t.name} (${t.qty}×)`).join(', ')}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div key={o.name} className="bg-h-card border border-red-500/30 rounded-2xl p-5">
+                          <div className="font-bold text-white text-base">{o.name}</div>
+                          <div className="text-red-400 text-xs mt-1">⚠️ Tidak bisa dibaca: {o.error}</div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </>
               )}

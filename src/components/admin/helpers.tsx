@@ -42,7 +42,7 @@ export function Toggle({ value, onChange }: { value: boolean; onChange: (v: bool
   )
 }
 
-export type AdminTab = 'menu' | 'hpp' | 'analitik' | 'pengaturan'
+export type AdminTab = 'menu' | 'hpp' | 'analitik' | 'outlet' | 'pengaturan'
 
 export const DEFAULT_SETTINGS: StoreSettings = { id: 1, open_time: '08:00', close_time: '22:00', open_days: 'Senin – Minggu', is_manually_closed: false, employees: [...DEFAULT_EMPLOYEES] }
 
