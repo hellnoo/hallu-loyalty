@@ -28,3 +28,27 @@ export function getOutletServiceClient(outlet: OutletCfg): SupabaseClient<any, s
   if (!key) return null
   return createClient(outlet.url, key, { auth: { persistSession: false }, db: { schema: outlet.schema || 'public' } })
 }
+
+// Baca claim "role" dari JWT tanpa memvalidasi tanda tangan — HANYA untuk
+// diagnosa pesan error (nama role bukan rahasia; isi kunci tidak pernah
+// dikirim ke client). Salah tempel kunci = penyebab paling sering
+// "permission denied", dan tanpa ini user tidak punya cara tahu.
+export function keyRole(jwt: string | undefined): string {
+  if (!jwt) return 'kosong'
+  const part = jwt.split('.')[1]
+  if (!part) return 'bukan JWT'
+  try {
+    const json = JSON.parse(Buffer.from(part.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'))
+    return String(json.role || 'tanpa role')
+  } catch { return 'tidak terbaca' }
+}
+
+// Penjelasan kunci apa yang dipakai untuk outlet ini — ditempel ke pesan error.
+export function describeOutletKey(outlet: OutletCfg): string {
+  const pusatUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const sameProject = pusatUrl && outlet.url === pusatUrl
+  if (sameProject) {
+    return `pakai SUPABASE_SERVICE_ROLE_KEY pusat (role: ${keyRole(process.env.SUPABASE_SERVICE_ROLE_KEY)}) di schema "${outlet.schema || 'public'}"`
+  }
+  return `pakai Service Role Key outlet "${outlet.name}" (role: ${keyRole(outlet.serviceRole)})`
+}

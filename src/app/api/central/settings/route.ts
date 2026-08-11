@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getAllOutlets } from '@/lib/outlets-registry'
-import { getOutletServiceClient } from '@/lib/supabase-admin'
+import { getOutletServiceClient, describeOutletKey } from '@/lib/supabase-admin'
 
 export const runtime = 'nodejs'
 
@@ -38,6 +38,9 @@ export async function POST(req: Request) {
     const msg = err instanceof Error ? err.message
       : (err && typeof err === 'object' && 'message' in err) ? String((err as { message: unknown }).message)
       : 'gagal'
-    return NextResponse.json({ error: msg }, { status: 500 })
+    const hint = /permission denied/i.test(msg)
+      ? ` — ${describeOutletKey(outlet)}. Kalau role-nya "anon", berarti yang ditempel di kolom Service Role Key itu anon key; isi ulang outlet ini dengan service_role key yang benar.`
+      : ''
+    return NextResponse.json({ error: msg + hint }, { status: 500 })
   }
 }
