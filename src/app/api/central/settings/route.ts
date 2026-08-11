@@ -26,7 +26,11 @@ export async function POST(req: Request) {
     if (op === 'get') {
       const { data, error } = await sb.from('store_settings').select('*').eq('id', 1).single()
       if (error) throw error
-      return NextResponse.json({ data })
+      // Outlet yang belum menjalankan supabase-outlet-password.sql tidak punya
+      // kolom password → UI menyembunyikan form password + menampilkan panduan,
+      // bukan error mentah dari PostgREST.
+      const supportsPassword = !!data && Object.prototype.hasOwnProperty.call(data, 'admin_password')
+      return NextResponse.json({ data, supportsPassword })
     }
     if (op === 'save') {
       const { error } = await sb.from('store_settings').upsert({ id: 1, ...values })
