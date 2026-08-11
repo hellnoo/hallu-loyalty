@@ -534,20 +534,20 @@ export default function KasirPage() {
         <div
           onClick={() => setIsIdle(false)}
           className="fixed inset-0 z-[100] flex flex-col items-center justify-center cursor-pointer select-none"
-          style={{ backgroundColor: '#7C1515' }}
+          style={{ backgroundColor: 'var(--brand-primary-hex)' }}
         >
           <div className="text-center animate-pulse" style={{ animationDuration: '3s' }}>
-            {BRAND.arabic && <div className="font-serif text-7xl mb-2" style={{ color: '#D4B896', fontFamily: 'var(--font-playfair)', letterSpacing: '0.05em' }}>
+            {BRAND.arabic && <div className="font-serif text-7xl mb-2" style={{ color: 'rgb(var(--brand-accent))', fontFamily: 'var(--font-playfair)', letterSpacing: '0.05em' }}>
               {BRAND.arabic}
             </div>}
-            <div className="font-sans font-black text-3xl tracking-[0.3em] uppercase mb-1" style={{ color: '#D4B896' }}>
+            <div className="font-sans font-black text-3xl tracking-[0.3em] uppercase mb-1" style={{ color: 'rgb(var(--brand-accent))' }}>
               {BRAND.name}
             </div>
-            <div className="text-xs tracking-[0.25em] uppercase" style={{ color: '#B8967A' }}>
+            <div className="text-xs tracking-[0.25em] uppercase" style={{ color: 'rgb(var(--brand-accent) / 0.75)' }}>
               {BRAND.tagline}
             </div>
           </div>
-          <div className="absolute bottom-10 text-xs tracking-widest uppercase opacity-40" style={{ color: '#D4B896' }}>
+          <div className="absolute bottom-10 text-xs tracking-widest uppercase opacity-40" style={{ color: 'rgb(var(--brand-accent))' }}>
             Ketuk untuk melanjutkan
           </div>
         </div>

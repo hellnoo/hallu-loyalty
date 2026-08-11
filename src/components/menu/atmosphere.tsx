@@ -14,7 +14,7 @@ export function generatePlaceholder(item: MenuItem): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200">
     <defs>
       <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#7C1515"/>
+        <stop offset="0%" stop-color="var(--brand-primary-hex)"/>
         <stop offset="100%" stop-color="#2D0808"/>
       </linearGradient>
       <radialGradient id="glow" cx="50%" cy="45%" r="45%">

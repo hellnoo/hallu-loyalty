@@ -9,16 +9,18 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Warm dark base — terinspirasi logo maroon + cream
+        // Warm dark base — netral, dipakai semua brand
         'h-bg':     '#0c0a09',
         'h-dark':   '#141010',
         'h-card':   '#1b1614',
         'h-border': '#2c2422',
-        // Brand maroon (fill: tombol, border, blok) — sesuai logo
-        'h-red':    '#7C1515',
-        'h-red-d':  '#5E0F0F',
-        // Cream/gold accent (teks aksen, detail premium) — sesuai logo
-        'h-cream':  '#D4B896',
+        // Warna brand — dari CSS variable, diisi per outlet lewat
+        // NEXT_PUBLIC_BRAND_COLOR / _ACCENT (lihat layout.tsx & lib/brand.ts).
+        // Format "R G B" + <alpha-value> supaya modifier opacity Tailwind
+        // (mis. bg-h-red/10, border-h-red/40) tetap jalan.
+        'h-red':    'rgb(var(--brand-primary) / <alpha-value>)',
+        'h-red-d':  'rgb(var(--brand-primary-dark) / <alpha-value>)',
+        'h-cream':  'rgb(var(--brand-accent) / <alpha-value>)',
         'h-muted':  '#8a807a',
       },
       fontFamily: {

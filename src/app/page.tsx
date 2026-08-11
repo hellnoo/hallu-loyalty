@@ -9,7 +9,7 @@ import {
   InstagramIcon, TikTokIcon, WhatsAppIcon, CoffeeIcon, UsersIcon,
   QrIcon, MapPinIcon, ClockIcon, PhoneIcon, NavigationIcon, ArrowIcon,
 } from '@/components/icons'
-import { BRAND, BRAND_NICE, BRAND_FULL, WA_LINK, WA_DISPLAY } from '@/lib/brand'
+import { BRAND, BRAND_NICE, BRAND_FULL, WA_LINK, WA_DISPLAY, HAS_WA, HAS_IG, HAS_ADDRESS, HAS_MAP } from '@/lib/brand'
 
 const WA = WA_LINK
 const IG = `https://instagram.com/${BRAND.ig}`
@@ -40,7 +40,7 @@ function generatePlaceholder(item: MenuItem): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240" viewBox="0 0 400 240">
     <defs>
       <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#7C1515"/><stop offset="100%" stop-color="#2D0808"/>
+        <stop offset="0%" stop-color="var(--brand-primary-hex)"/><stop offset="100%" stop-color="#2D0808"/>
       </linearGradient>
       <radialGradient id="glow" cx="50%" cy="45%" r="45%">
         <stop offset="0%" stop-color="#A02020" stop-opacity="0.6"/>
@@ -149,21 +149,27 @@ export default function Home() {
             <div className="text-h-cream text-[0.45rem] tracking-[3px] uppercase font-semibold mt-0.5">{BRAND.tagline}</div>
           </div>
           <div className="flex items-center gap-2">
-            <a href={IG} target="_blank" rel="noreferrer" aria-label={`Instagram ${BRAND_NICE}`}
-              title="Follow di Instagram"
-              className="w-9 h-9 flex items-center justify-center rounded-full border border-h-border hover:border-pink-500/60 hover:text-pink-400 text-white/70 transition-colors">
-              <InstagramIcon />
-            </a>
-            <a href={TIKTOK} target="_blank" rel="noreferrer" aria-label={`TikTok ${BRAND_NICE}`}
-              title="Follow di TikTok"
-              className="w-9 h-9 flex items-center justify-center rounded-full border border-h-border hover:border-white/60 hover:text-white text-white/70 transition-colors">
-              <TikTokIcon />
-            </a>
-            <a href={WA} target="_blank" rel="noreferrer"
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full text-xs font-bold transition-colors">
-              <WhatsAppIcon className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">WhatsApp</span>
-            </a>
+            {HAS_IG && (
+              <>
+                <a href={IG} target="_blank" rel="noreferrer" aria-label={`Instagram ${BRAND_NICE}`}
+                  title="Follow di Instagram"
+                  className="w-9 h-9 flex items-center justify-center rounded-full border border-h-border hover:border-pink-500/60 hover:text-pink-400 text-white/70 transition-colors">
+                  <InstagramIcon />
+                </a>
+                <a href={TIKTOK} target="_blank" rel="noreferrer" aria-label={`TikTok ${BRAND_NICE}`}
+                  title="Follow di TikTok"
+                  className="w-9 h-9 flex items-center justify-center rounded-full border border-h-border hover:border-white/60 hover:text-white text-white/70 transition-colors">
+                  <TikTokIcon />
+                </a>
+              </>
+            )}
+            {HAS_WA && (
+              <a href={WA} target="_blank" rel="noreferrer"
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full text-xs font-bold transition-colors">
+                <WhatsAppIcon className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">WhatsApp</span>
+              </a>
+            )}
           </div>
         </div>
       </nav>
@@ -182,7 +188,7 @@ export default function Home() {
         <div className="relative z-10 max-w-lg">
           {/* Arabic */}
           {BRAND.arabic && <div className="font-serif text-7xl md:text-8xl font-black mb-2 leading-none"
-            style={{ fontFamily: 'var(--font-playfair)', color: '#D4B896' }}>
+            style={{ fontFamily: 'var(--font-playfair)', color: 'rgb(var(--brand-accent))' }}>
             {BRAND.arabic}
           </div>}
           {/* Brand */}
@@ -191,9 +197,9 @@ export default function Home() {
           </div>
           {/* Divider */}
           <div className="flex items-center gap-3 justify-center mb-4">
-            <div className="h-px flex-1 max-w-[60px]" style={{ background: 'linear-gradient(to right, transparent, #7C1515)' }} />
+            <div className="h-px flex-1 max-w-[60px]" style={{ background: 'linear-gradient(to right, transparent, var(--brand-primary-hex))' }} />
             <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold">{BRAND.tagline}</div>
-            <div className="h-px flex-1 max-w-[60px]" style={{ background: 'linear-gradient(to left, transparent, #7C1515)' }} />
+            <div className="h-px flex-1 max-w-[60px]" style={{ background: 'linear-gradient(to left, transparent, var(--brand-primary-hex))' }} />
           </div>
           {/* Tagline */}
           <p className="text-white/45 text-sm leading-relaxed max-w-sm mx-auto mt-3 mb-6">
@@ -220,11 +226,13 @@ export default function Home() {
               className="flex items-center justify-center gap-2 bg-h-red hover:bg-h-red-d text-white px-8 py-3.5 rounded-full font-bold text-sm uppercase tracking-[0.15em] transition-colors">
               <CoffeeIcon className="w-4 h-4" /> Lihat Menu
             </a>
-            <a href={WA} target="_blank" rel="noreferrer"
-              className="flex items-center justify-center gap-2 border border-h-border hover:border-white/30 text-white/70 hover:text-white px-8 py-3.5 rounded-full font-bold text-sm uppercase tracking-[0.15em] transition-colors">
-              <WhatsAppIcon className="w-4 h-4 text-green-400" />
-              Order via WA
-            </a>
+            {HAS_WA && (
+              <a href={WA} target="_blank" rel="noreferrer"
+                className="flex items-center justify-center gap-2 border border-h-border hover:border-white/30 text-white/70 hover:text-white px-8 py-3.5 rounded-full font-bold text-sm uppercase tracking-[0.15em] transition-colors">
+                <WhatsAppIcon className="w-4 h-4 text-green-400" />
+                Order via WA
+              </a>
+            )}
           </div>
         </div>
 
@@ -296,17 +304,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Lokasi ── */}
+      {/* ── Lokasi — disembunyikan kalau outlet belum mengisi alamat/koordinat,
+             daripada menampilkan alamat outlet lain ── */}
+      {(HAS_ADDRESS || HAS_MAP) && (
       <section className="py-20 px-5">
         <Section className="max-w-5xl mx-auto">
           <div className="text-center mb-8">
             <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Lokasi</div>
             <h2 className="font-sans font-black text-white text-3xl uppercase tracking-wider mb-2">Mampir Yuk</h2>
-            <p className="text-h-muted text-sm">{LOC.address}</p>
+            {HAS_ADDRESS && <p className="text-h-muted text-sm">{LOC.address}</p>}
           </div>
 
           <div className="grid lg:grid-cols-5 gap-6">
             {/* Map embed */}
+            {HAS_MAP && (
             <a href={mapsView} target="_blank" rel="noreferrer"
               className="lg:col-span-3 rounded-2xl overflow-hidden border border-h-border h-[340px] relative block group">
               {/* Fallback bg di belakang iframe — tampil kalau map belum/ tidak load */}
@@ -329,19 +340,22 @@ export default function Home() {
                 referrerPolicy="no-referrer-when-downgrade"
               />
             </a>
+            )}
 
             {/* Info & actions */}
-            <div className="lg:col-span-2 flex flex-col gap-4">
+            <div className={`${HAS_MAP ? 'lg:col-span-2' : 'lg:col-span-5'} flex flex-col gap-4`}>
               <div className="bg-h-card border border-h-border rounded-2xl p-6 flex-1 space-y-5">
-                <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-cream flex-shrink-0">
-                    <MapPinIcon className="w-5 h-5" />
+                {HAS_ADDRESS && (
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-cream flex-shrink-0">
+                      <MapPinIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-white text-sm">{LOC.label}</div>
+                      <div className="text-h-muted text-xs mt-0.5 leading-relaxed">{LOC.address}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-bold text-white text-sm">{LOC.label}</div>
-                    <div className="text-h-muted text-xs mt-0.5 leading-relaxed">{LOC.address}</div>
-                  </div>
-                </div>
+                )}
                 {storeSettings && (
                   <div className="flex items-start gap-3.5">
                     <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-cream flex-shrink-0">
@@ -354,32 +368,43 @@ export default function Home() {
                     </div>
                   </div>
                 )}
-                <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-cream flex-shrink-0">
-                    <PhoneIcon className="w-5 h-5" />
+                {HAS_WA && (
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-cream flex-shrink-0">
+                      <PhoneIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-white text-sm">Kontak</div>
+                      {/* Dulu nomornya ditulis literal di sini — outlet lain jadi
+                          menampilkan nomor Hallu. Sekarang ikut BRAND.wa. */}
+                      <a href={WA} target="_blank" rel="noreferrer" className="text-h-cream text-xs mt-0.5 hover:underline">{WA_DISPLAY}</a>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-bold text-white text-sm">Kontak</div>
-                    <a href={WA} target="_blank" rel="noreferrer" className="text-h-cream text-xs mt-0.5 hover:underline">+62 812-4540-0031</a>
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Directions button */}
-              <a href={mapsDirections} target="_blank" rel="noreferrer"
-                className="flex items-center justify-center gap-2 bg-h-red hover:bg-h-red-d text-white px-6 py-4 rounded-2xl font-bold text-sm uppercase tracking-[0.15em] transition-colors">
-                <NavigationIcon className="w-4 h-4" /> Petunjuk Arah
-              </a>
-              <a href={mapsView} target="_blank" rel="noreferrer"
-                className="flex items-center justify-center gap-2 border border-h-border hover:border-white/30 text-white/70 hover:text-white px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-[0.12em] transition-colors">
-                Buka di Google Maps <ArrowIcon className="w-3.5 h-3.5" />
-              </a>
+              {HAS_MAP && (
+                <>
+                  <a href={mapsDirections} target="_blank" rel="noreferrer"
+                    className="flex items-center justify-center gap-2 bg-h-red hover:bg-h-red-d text-white px-6 py-4 rounded-2xl font-bold text-sm uppercase tracking-[0.15em] transition-colors">
+                    <NavigationIcon className="w-4 h-4" /> Petunjuk Arah
+                  </a>
+                  <a href={mapsView} target="_blank" rel="noreferrer"
+                    className="flex items-center justify-center gap-2 border border-h-border hover:border-white/30 text-white/70 hover:text-white px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-[0.12em] transition-colors">
+                    Buka di Google Maps <ArrowIcon className="w-3.5 h-3.5" />
+                  </a>
+                </>
+              )}
             </div>
           </div>
         </Section>
       </section>
+      )}
 
-      {/* ── Follow Kami ── */}
+      {/* ── Follow Kami — disembunyikan kalau outlet belum punya akun sosmed
+             sendiri, daripada mengarahkan ke akun outlet lain ── */}
+      {HAS_IG && (
       <section className="py-16 px-5">
         <Section className="max-w-3xl mx-auto text-center">
           <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Follow Kami</div>
@@ -426,8 +451,10 @@ export default function Home() {
           </div>
         </Section>
       </section>
+      )}
 
       {/* ── CTA / Kontak ── */}
+      {HAS_WA && (
       <section className="py-20 px-5">
         <Section className="max-w-lg mx-auto text-center">
           <div className="relative rounded-3xl overflow-hidden border border-h-border p-10">
@@ -435,7 +462,7 @@ export default function Home() {
             <div className="absolute inset-0 pointer-events-none"
               style={{ background: 'radial-gradient(ellipse at 50% 120%, rgba(124,21,21,0.4) 0%, transparent 65%)' }} />
             <div className="relative z-10">
-              {BRAND.arabic && <div className="font-serif text-5xl mb-3" style={{ color: '#D4B896', fontFamily: 'var(--font-playfair)' }}>{BRAND.arabic}</div>}
+              {BRAND.arabic && <div className="font-serif text-5xl mb-3" style={{ color: 'rgb(var(--brand-accent))', fontFamily: 'var(--font-playfair)' }}>{BRAND.arabic}</div>}
               <h3 className="font-sans font-black text-white text-xl uppercase tracking-wider mb-2">Ada yang bisa kami bantu?</h3>
               <p className="text-h-muted text-sm mb-8 leading-relaxed">
                 Reservasi tempat, pertanyaan menu, atau sekadar menyapa —<br />kami siap membantu lewat WhatsApp.
@@ -450,6 +477,7 @@ export default function Home() {
           </div>
         </Section>
       </section>
+      )}
 
       {/* ── Footer ── */}
       <footer className="border-t border-h-border py-10 px-5">
@@ -465,18 +493,24 @@ export default function Home() {
           </div>
           <div className="flex flex-col sm:items-end gap-3">
             <div className="flex items-center gap-3">
-              <a href={IG} target="_blank" rel="noreferrer" aria-label="Instagram"
-                className="w-8 h-8 flex items-center justify-center rounded-full border border-h-border hover:border-pink-500/60 hover:text-pink-400 text-h-muted transition-colors">
-                <InstagramIcon className="w-3.5 h-3.5" />
-              </a>
-              <a href={TIKTOK} target="_blank" rel="noreferrer" aria-label="TikTok"
-                className="w-8 h-8 flex items-center justify-center rounded-full border border-h-border hover:border-white/60 hover:text-white text-h-muted transition-colors">
-                <TikTokIcon className="w-3.5 h-3.5" />
-              </a>
-              <a href={WA} target="_blank" rel="noreferrer" aria-label="WhatsApp"
-                className="w-8 h-8 flex items-center justify-center rounded-full border border-h-border hover:border-green-500/60 hover:text-green-400 text-h-muted transition-colors">
-                <WhatsAppIcon className="w-3.5 h-3.5" />
-              </a>
+              {HAS_IG && (
+                <>
+                  <a href={IG} target="_blank" rel="noreferrer" aria-label="Instagram"
+                    className="w-8 h-8 flex items-center justify-center rounded-full border border-h-border hover:border-pink-500/60 hover:text-pink-400 text-h-muted transition-colors">
+                    <InstagramIcon className="w-3.5 h-3.5" />
+                  </a>
+                  <a href={TIKTOK} target="_blank" rel="noreferrer" aria-label="TikTok"
+                    className="w-8 h-8 flex items-center justify-center rounded-full border border-h-border hover:border-white/60 hover:text-white text-h-muted transition-colors">
+                    <TikTokIcon className="w-3.5 h-3.5" />
+                  </a>
+                </>
+              )}
+              {HAS_WA && (
+                <a href={WA} target="_blank" rel="noreferrer" aria-label="WhatsApp"
+                  className="w-8 h-8 flex items-center justify-center rounded-full border border-h-border hover:border-green-500/60 hover:text-green-400 text-h-muted transition-colors">
+                  <WhatsAppIcon className="w-3.5 h-3.5" />
+                </a>
+              )}
             </div>
             <div className="flex items-center gap-5">
               <a href="/menu?table=1" className="text-h-muted hover:text-white text-xs transition-colors">Menu</a>

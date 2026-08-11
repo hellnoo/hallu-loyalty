@@ -1428,7 +1428,7 @@ export default function AdminPage() {
                                 <div key={i} className="flex-1 flex flex-col items-center gap-1">
                                   <div className="w-full flex items-end" style={{ height: '40px' }}>
                                     <div className="w-full rounded-t transition-all"
-                                      style={{ height: `${Math.max(3, Math.round((d.revenue / max) * 40))}px`, background: i === o.daily.length - 1 ? '#7C1515' : '#3a2a28' }}
+                                      style={{ height: `${Math.max(3, Math.round((d.revenue / max) * 40))}px`, background: i === o.daily.length - 1 ? 'var(--brand-primary-hex)' : '#3a2a28' }}
                                       title={`${fmtDay(d.date)}: ${formatRp(d.revenue)}`} />
                                   </div>
                                   <div className="text-[7px] text-h-muted">{fmtDay(d.date).split(' ')[1]}</div>
