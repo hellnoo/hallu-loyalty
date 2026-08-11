@@ -129,7 +129,11 @@ begin
     -- setelan itu boleh DIMATIKAN (rekomendasi Supabase) — tabel app tetap
     -- jalan, dan tabel sensitif yang dibuat belakangan tidak ikut ter-expose
     -- otomatis. Akses sebenarnya tetap dijaga RLS policy di atas.
-    execute format('grant select, insert, update, delete on %I to anon, authenticated', t);
+    -- service_role WAJIB ikut: dipakai server route /api/secure & /api/central/*
+    -- (kelola outlet dari Admin Pusat). Kalau auto-expose OFF dan service_role
+    -- tidak di-grant, hasilnya "permission denied for table ..." padahal
+    -- kuncinya sudah benar.
+    execute format('grant select, insert, update, delete on %I to anon, authenticated, service_role', t);
   end loop;
 end $$;
 
