@@ -85,6 +85,8 @@ export default function AdminPage() {
   const [addOutletError, setAddOutletError] = useState<string | null>(null)
   const [newOutletModel, setNewOutletModel] = useState<'schema' | 'separate'>('schema')
   const [newOutlet, setNewOutlet] = useState({ name: '', schema: '', url: '', anon: '', serviceRole: '' })
+  // Outlet ini sudah menjalankan migrasi password (supabase-outlet-password.sql)?
+  const [outletSupportsPassword, setOutletSupportsPassword] = useState(false)
 
   // Sesi lama (login sebelum fitur lintas-outlet ada) cuma simpan flag 'ok'
   // tanpa password — padahal /api/central/* butuh password utk verifikasi.
@@ -189,6 +191,7 @@ export default function AdminPage() {
       const s = { ...DEFAULT_SETTINGS, ...(json.data as StoreSettings) }
       if (!Array.isArray(s.employees) || s.employees.length === 0) s.employees = DEFAULT_SETTINGS.employees
       setSettings(s)
+      setOutletSupportsPassword(!!json.supportsPassword)
     } catch (err) {
       setSettings(DEFAULT_SETTINGS)
       setOutletError(err instanceof Error ? err.message : 'Gagal muat pengaturan outlet')
@@ -1545,7 +1548,20 @@ export default function AdminPage() {
                 {/* Password outlet — hanya saat kelola outlet LAIN dari Admin Pusat.
                     Password outlet sendiri tetap di env (bootstrap, biar tidak
                     bisa mengunci diri sendiri). */}
-                {!isSelf && (
+                {!isSelf && !outletSupportsPassword && (
+                  <div className="border-t border-h-border pt-5">
+                    <div className="text-xs text-h-muted font-bold uppercase tracking-wide mb-1.5">
+                      Password {activeOutlet?.name}
+                    </div>
+                    <div className="bg-h-dark border border-h-border rounded-xl p-3.5 text-[11px] text-h-muted leading-relaxed">
+                      Outlet ini belum disiapkan untuk atur password dari sini.
+                      Jalankan sekali file <code className="text-h-cream">supabase-outlet-password.sql</code> di
+                      SQL Editor database outlet ini, lalu buka ulang halaman.
+                      <br />Sementara itu, password outlet ini masih yang diset di Vercel.
+                    </div>
+                  </div>
+                )}
+                {!isSelf && outletSupportsPassword && (
                   <div className="border-t border-h-border pt-5">
                     <div className="text-xs text-h-muted font-bold uppercase tracking-wide mb-1.5">
                       Password {activeOutlet?.name}
