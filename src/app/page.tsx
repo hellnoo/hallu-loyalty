@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { MenuItem, StoreSettings } from '@/types'
-import { STORE_SETTINGS_PUBLIC_COLS } from '@/types'
+import { bacaStoreSettings } from '@/lib/store-settings'
 import { formatRp } from '@/lib/format'
 import { calcIsOpen } from '@/lib/store-hours'
 import {
@@ -11,22 +11,18 @@ import {
 } from '@/components/icons'
 import { BRAND, BRAND_NICE, BRAND_FULL, WA_LINK, WA_DISPLAY, HAS_WA, HAS_IG, HAS_ADDRESS, HAS_MAP } from '@/lib/brand'
 
-const WA = WA_LINK
-const IG = `https://instagram.com/${BRAND.ig}`
-const TIKTOK = `https://tiktok.com/@${BRAND.ig}`
-const IG_HANDLE = `@${BRAND.ig}`
+// Semua dibaca SAAT RENDER (bukan saat import) supaya ikut identitas dari DB
+const wa = () => WA_LINK
+const ig = () => `https://instagram.com/${BRAND.ig}`
+const tiktok = () => `https://tiktok.com/@${BRAND.ig}`
+const igHandle = () => `@${BRAND.ig}`
 
 // ── Lokasi kedai ──────────────────────────────────────────
 // Titik Taman Fitness Sunyie Parade / Cafe Taman Fitness (Google Maps, plus code Q9VP+C69)
-const LOC = {
-  lat: BRAND.lat,
-  lng: BRAND.lng,
-  label: BRAND_FULL,
-  address: BRAND.address,
-}
-const mapsEmbed = `https://maps.google.com/maps?q=${LOC.lat},${LOC.lng}&z=17&output=embed`
-const mapsDirections = `https://www.google.com/maps/dir/?api=1&destination=${LOC.lat},${LOC.lng}`
-const mapsView = `https://www.google.com/maps/search/?api=1&query=${LOC.lat},${LOC.lng}`
+const loc = () => ({ lat: BRAND.lat, lng: BRAND.lng, label: BRAND_FULL, address: BRAND.address })
+const mapsEmbed = () => `https://maps.google.com/maps?q=${BRAND.lat},${BRAND.lng}&z=17&output=embed`
+const mapsDirections = () => `https://www.google.com/maps/dir/?api=1&destination=${BRAND.lat},${BRAND.lng}`
+const mapsView = () => `https://www.google.com/maps/search/?api=1&query=${BRAND.lat},${BRAND.lng}`
 
 
 const CAT_ICONS: Record<string, string> = {
@@ -128,8 +124,7 @@ export default function Home() {
   useEffect(() => {
     supabase.from('menu_items').select('*').eq('available', true).order('category').order('name').limit(12)
       .then(({ data }) => { if (data) setMenuItems(data as MenuItem[]) })
-    supabase.from('store_settings').select(STORE_SETTINGS_PUBLIC_COLS).eq('id', 1).single()
-      .then(({ data }) => { if (data) setStoreSettings(data as StoreSettings) })
+    bacaStoreSettings(supabase).then((data) => { if (data) setStoreSettings(data) })
   }, [])
 
   useEffect(() => {
@@ -151,12 +146,12 @@ export default function Home() {
           <div className="flex items-center gap-2">
             {HAS_IG && (
               <>
-                <a href={IG} target="_blank" rel="noreferrer" aria-label={`Instagram ${BRAND_NICE}`}
+                <a href={ig()} target="_blank" rel="noreferrer" aria-label={`Instagram ${BRAND_NICE}`}
                   title="Follow di Instagram"
                   className="w-9 h-9 flex items-center justify-center rounded-full border border-h-border hover:border-pink-500/60 hover:text-pink-400 text-white/70 transition-colors">
                   <InstagramIcon />
                 </a>
-                <a href={TIKTOK} target="_blank" rel="noreferrer" aria-label={`TikTok ${BRAND_NICE}`}
+                <a href={tiktok()} target="_blank" rel="noreferrer" aria-label={`TikTok ${BRAND_NICE}`}
                   title="Follow di TikTok"
                   className="w-9 h-9 flex items-center justify-center rounded-full border border-h-border hover:border-white/60 hover:text-white text-white/70 transition-colors">
                   <TikTokIcon />
@@ -164,7 +159,7 @@ export default function Home() {
               </>
             )}
             {HAS_WA && (
-              <a href={WA} target="_blank" rel="noreferrer"
+              <a href={wa()} target="_blank" rel="noreferrer"
                 className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full text-xs font-bold transition-colors">
                 <WhatsAppIcon className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">WhatsApp</span>
@@ -227,7 +222,7 @@ export default function Home() {
               <CoffeeIcon className="w-4 h-4" /> Lihat Menu
             </a>
             {HAS_WA && (
-              <a href={WA} target="_blank" rel="noreferrer"
+              <a href={wa()} target="_blank" rel="noreferrer"
                 className="flex items-center justify-center gap-2 border border-h-border hover:border-white/30 text-white/70 hover:text-white px-8 py-3.5 rounded-full font-bold text-sm uppercase tracking-[0.15em] transition-colors">
                 <WhatsAppIcon className="w-4 h-4 text-green-400" />
                 Order via WA
@@ -312,27 +307,27 @@ export default function Home() {
           <div className="text-center mb-8">
             <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Lokasi</div>
             <h2 className="font-sans font-black text-white text-3xl uppercase tracking-wider mb-2">Mampir Yuk</h2>
-            {HAS_ADDRESS && <p className="text-h-muted text-sm">{LOC.address}</p>}
+            {HAS_ADDRESS && <p className="text-h-muted text-sm">{loc().address}</p>}
           </div>
 
           <div className="grid lg:grid-cols-5 gap-6">
             {/* Map embed */}
             {HAS_MAP && (
-            <a href={mapsView} target="_blank" rel="noreferrer"
+            <a href={mapsView()} target="_blank" rel="noreferrer"
               className="lg:col-span-3 rounded-2xl overflow-hidden border border-h-border h-[340px] relative block group">
               {/* Fallback bg di belakang iframe — tampil kalau map belum/ tidak load */}
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-h-card text-center px-6 z-0">
                 <div className="w-12 h-12 rounded-full bg-h-red/10 border border-h-red/25 flex items-center justify-center text-h-cream mb-4">
                   <MapPinIcon className="w-6 h-6" />
                 </div>
-                <div className="text-white font-bold text-sm">{LOC.label}</div>
-                <div className="text-h-muted text-xs mt-1">{LOC.address}</div>
+                <div className="text-white font-bold text-sm">{loc().label}</div>
+                <div className="text-h-muted text-xs mt-1">{loc().address}</div>
                 <div className="flex items-center gap-1.5 text-h-cream text-xs font-bold mt-3 uppercase tracking-wider">
                   Buka peta <ArrowIcon className="w-3.5 h-3.5" />
                 </div>
               </div>
               <iframe
-                src={mapsEmbed}
+                src={mapsEmbed()}
                 title={`Lokasi ${BRAND_NICE}`}
                 className="w-full h-full relative z-10"
                 style={{ border: 0 }}
@@ -351,8 +346,8 @@ export default function Home() {
                       <MapPinIcon className="w-5 h-5" />
                     </div>
                     <div>
-                      <div className="font-bold text-white text-sm">{LOC.label}</div>
-                      <div className="text-h-muted text-xs mt-0.5 leading-relaxed">{LOC.address}</div>
+                      <div className="font-bold text-white text-sm">{loc().label}</div>
+                      <div className="text-h-muted text-xs mt-0.5 leading-relaxed">{loc().address}</div>
                     </div>
                   </div>
                 )}
@@ -377,7 +372,7 @@ export default function Home() {
                       <div className="font-bold text-white text-sm">Kontak</div>
                       {/* Dulu nomornya ditulis literal di sini — outlet lain jadi
                           menampilkan nomor Hallu. Sekarang ikut BRAND.wa. */}
-                      <a href={WA} target="_blank" rel="noreferrer" className="text-h-cream text-xs mt-0.5 hover:underline">{WA_DISPLAY}</a>
+                      <a href={wa()} target="_blank" rel="noreferrer" className="text-h-cream text-xs mt-0.5 hover:underline">{WA_DISPLAY}</a>
                     </div>
                   </div>
                 )}
@@ -386,11 +381,11 @@ export default function Home() {
               {/* Directions button */}
               {HAS_MAP && (
                 <>
-                  <a href={mapsDirections} target="_blank" rel="noreferrer"
+                  <a href={mapsDirections()} target="_blank" rel="noreferrer"
                     className="flex items-center justify-center gap-2 bg-h-red hover:bg-h-red-d text-white px-6 py-4 rounded-2xl font-bold text-sm uppercase tracking-[0.15em] transition-colors">
                     <NavigationIcon className="w-4 h-4" /> Petunjuk Arah
                   </a>
-                  <a href={mapsView} target="_blank" rel="noreferrer"
+                  <a href={mapsView()} target="_blank" rel="noreferrer"
                     className="flex items-center justify-center gap-2 border border-h-border hover:border-white/30 text-white/70 hover:text-white px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-[0.12em] transition-colors">
                     Buka di Google Maps <ArrowIcon className="w-3.5 h-3.5" />
                   </a>
@@ -414,7 +409,7 @@ export default function Home() {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Instagram */}
-            <a href={IG} target="_blank" rel="noreferrer"
+            <a href={ig()} target="_blank" rel="noreferrer"
               className="group relative overflow-hidden rounded-2xl p-6 border border-h-border hover:border-pink-500/60 transition-all">
               <div className="absolute inset-0 opacity-30 group-hover:opacity-50 transition-opacity"
                 style={{ background: 'linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)' }} />
@@ -424,14 +419,14 @@ export default function Home() {
                 </div>
                 <div className="text-left flex-1">
                   <div className="text-[10px] uppercase tracking-widest text-white/70 font-bold">Instagram</div>
-                  <div className="font-black text-white text-base">{IG_HANDLE}</div>
+                  <div className="font-black text-white text-base">{igHandle()}</div>
                 </div>
                 <ArrowIcon className="w-5 h-5 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
               </div>
             </a>
 
             {/* TikTok */}
-            <a href={TIKTOK} target="_blank" rel="noreferrer"
+            <a href={tiktok()} target="_blank" rel="noreferrer"
               className="group relative overflow-hidden rounded-2xl p-6 border border-h-border hover:border-white/60 transition-all bg-h-card">
               <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-20 group-hover:opacity-40 transition-opacity"
                 style={{ background: 'radial-gradient(circle, #25F4EE 0%, transparent 60%)' }} />
@@ -443,7 +438,7 @@ export default function Home() {
                 </div>
                 <div className="text-left flex-1">
                   <div className="text-[10px] uppercase tracking-widest text-white/70 font-bold">TikTok</div>
-                  <div className="font-black text-white text-base">{IG_HANDLE}</div>
+                  <div className="font-black text-white text-base">{igHandle()}</div>
                 </div>
                 <ArrowIcon className="w-5 h-5 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
               </div>
@@ -467,7 +462,7 @@ export default function Home() {
               <p className="text-h-muted text-sm mb-8 leading-relaxed">
                 Reservasi tempat, pertanyaan menu, atau sekadar menyapa —<br />kami siap membantu lewat WhatsApp.
               </p>
-              <a href={WA} target="_blank" rel="noreferrer"
+              <a href={wa()} target="_blank" rel="noreferrer"
                 className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-full font-bold text-sm uppercase tracking-[0.15em] transition-colors">
                 <WhatsAppIcon className="w-5 h-5" />
                 Chat WhatsApp
@@ -495,18 +490,18 @@ export default function Home() {
             <div className="flex items-center gap-3">
               {HAS_IG && (
                 <>
-                  <a href={IG} target="_blank" rel="noreferrer" aria-label="Instagram"
+                  <a href={ig()} target="_blank" rel="noreferrer" aria-label="Instagram"
                     className="w-8 h-8 flex items-center justify-center rounded-full border border-h-border hover:border-pink-500/60 hover:text-pink-400 text-h-muted transition-colors">
                     <InstagramIcon className="w-3.5 h-3.5" />
                   </a>
-                  <a href={TIKTOK} target="_blank" rel="noreferrer" aria-label="TikTok"
+                  <a href={tiktok()} target="_blank" rel="noreferrer" aria-label="TikTok"
                     className="w-8 h-8 flex items-center justify-center rounded-full border border-h-border hover:border-white/60 hover:text-white text-h-muted transition-colors">
                     <TikTokIcon className="w-3.5 h-3.5" />
                   </a>
                 </>
               )}
               {HAS_WA && (
-                <a href={WA} target="_blank" rel="noreferrer" aria-label="WhatsApp"
+                <a href={wa()} target="_blank" rel="noreferrer" aria-label="WhatsApp"
                   className="w-8 h-8 flex items-center justify-center rounded-full border border-h-border hover:border-green-500/60 hover:text-green-400 text-h-muted transition-colors">
                   <WhatsAppIcon className="w-3.5 h-3.5" />
                 </a>

@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { MenuItem, StoreSettings } from '@/types'
-import { STORE_SETTINGS_PUBLIC_COLS } from '@/types'
+import { bacaStoreSettings } from '@/lib/store-settings'
 import { formatRp } from '@/lib/format'
 import { isStoreOpen } from '@/lib/store-hours'
 import { monthStartWIT, witHour, fmtWITDateTime, fmtWITDateShort, toWITDateString, shiftDay, fmtWITWeekdayDay } from '@/lib/business-day'
@@ -15,7 +15,6 @@ import { secureWrite } from '@/lib/secure-db'
 import { HppCalculator } from '@/components/admin/HppCalculator'
 
 const CATEGORIES = ['Kopi', 'Non-Kopi', 'Makanan', 'Lainnya'] as const
-const OWNER_WA = BRAND.wa
 
 // Identitas outlet "diri sendiri" (deployment yang lagi diakses) — url+schema,
 // karena outlet schema-based (mis. Hallu Brew) berbagi url project dgn pusat.
@@ -87,6 +86,10 @@ export default function AdminPage() {
   const [newOutlet, setNewOutlet] = useState({ name: '', schema: '', url: '', anon: '', serviceRole: '' })
   // Outlet ini sudah menjalankan migrasi password (supabase-outlet-password.sql)?
   const [outletSupportsPassword, setOutletSupportsPassword] = useState(false)
+  // Sudah menjalankan migrasi identitas (supabase-brand.sql)? Kalau belum,
+  // kolom brand_* tidak boleh ikut dikirim saat simpan (bikin error).
+  const [outletSupportsBrand, setOutletSupportsBrand] = useState(false)
+  const BRAND_FIELDS = ['brand_name','brand_tagline','brand_arabic','brand_city','brand_wa','brand_ig','brand_address','brand_lat','brand_lng','brand_logo','brand_color','brand_accent'] as const
 
   // Sesi lama (login sebelum fitur lintas-outlet ada) cuma simpan flag 'ok'
   // tanpa password — padahal /api/central/* butuh password utk verifikasi.
@@ -178,11 +181,12 @@ export default function AdminPage() {
     setOutletError(null)
     if (isSelf) {
       // Outlet sendiri pakai kunci publik → kolom password sengaja tidak boleh dibaca
-      const { data } = await supabase.from('store_settings').select(STORE_SETTINGS_PUBLIC_COLS).eq('id', 1).single()
+      const data = await bacaStoreSettings(supabase)
       if (data) {
         const s = data as StoreSettings
         if (!Array.isArray(s.employees) || s.employees.length === 0) s.employees = DEFAULT_SETTINGS.employees
         setSettings(s)
+        setOutletSupportsBrand(Object.prototype.hasOwnProperty.call(data, 'brand_name'))
       }
       return
     }
@@ -192,6 +196,7 @@ export default function AdminPage() {
       if (!Array.isArray(s.employees) || s.employees.length === 0) s.employees = DEFAULT_SETTINGS.employees
       setSettings(s)
       setOutletSupportsPassword(!!json.supportsPassword)
+      setOutletSupportsBrand(Object.prototype.hasOwnProperty.call(json.data || {}, 'brand_name'))
     } catch (err) {
       setSettings(DEFAULT_SETTINGS)
       setOutletError(err instanceof Error ? err.message : 'Gagal muat pengaturan outlet')
@@ -278,7 +283,7 @@ export default function AdminPage() {
       '',
       '_Setelah backup diterima, data mentah baru akan dihapus dari sistem._',
     ].join('\n')
-    window.open(`https://wa.me/${OWNER_WA}?text=${encodeURIComponent(waText)}`, '_blank')
+    window.open(`https://wa.me/${BRAND.wa}?text=${encodeURIComponent(waText)}`, '_blank')
     setBackupReady(true)
     setCleanupResult(`✅ Backup siap: ${rows.length} order. CSV terdownload + ringkasan dikirim ke WA owner. Tombol Hapus sekarang aktif.`)
   }
@@ -305,26 +310,39 @@ export default function AdminPage() {
     setOrders([])
   }
 
+  // Buang kolom brand_* kalau DB outlet ini belum menjalankan supabase-brand.sql
+  // (kalau dikirim, PostgREST menolak: kolom tidak dikenal)
+  const tanpaBrandKalauBelumSiap = (v: Record<string, unknown>) => {
+    if (outletSupportsBrand) return v
+    const out = { ...v }
+    BRAND_FIELDS.forEach(k => delete out[k])
+    return out
+  }
+
   const saveSettings = async () => {
     setSettingsSaving(true); setOutletError(null)
     try {
       if (isSelf) {
-        await secureWrite({
-          scope: 'admin', table: 'store_settings', op: 'upsert', values: settings,
-          fallback: async () => { const r = await supabase.from('store_settings').upsert(settings); return { error: r.error } },
+        const values = tanpaBrandKalauBelumSiap({ ...settings })
+        const res = await secureWrite({
+          scope: 'admin', table: 'store_settings', op: 'upsert', values,
+          fallback: async () => { const r = await supabase.from('store_settings').upsert(values); return { error: r.error } },
         })
+        if (res.error) throw res.error
       } else {
         // Password kosong = "jangan diubah" (sesuai keterangan di form),
         // jadi field-nya dibuang supaya tidak menimpa nilai lama jadi kosong.
-        const values: Record<string, unknown> = { ...settings }
+        const values = tanpaBrandKalauBelumSiap({ ...settings }) as Record<string, unknown>
         if (!String(values.admin_password || '').trim()) delete values.admin_password
         if (!String(values.kasir_password || '').trim()) delete values.kasir_password
         await centralSettings('save', values)
       }
       setSettingsSaved(true)
       setTimeout(() => setSettingsSaved(false), 2500)
+      // Identitas/warna ikut berubah → muat ulang supaya tampilannya sinkron
+      if (isSelf) setTimeout(() => window.location.reload(), 600)
     } catch (err) {
-      setOutletError(err instanceof Error ? err.message : 'Gagal simpan pengaturan')
+      setOutletError(errText(err, 'Gagal simpan pengaturan'))
     }
     setSettingsSaving(false)
   }
@@ -1567,6 +1585,77 @@ export default function AdminPage() {
                     </button>
                   </div>
                   <p className="text-[10px] text-h-muted mt-1.5">Nama-nama ini muncul di kasir saat mulai jaga / ganti shift. Jangan lupa klik Simpan.</p>
+                </div>
+
+                {/* ── Identitas outlet — diatur DI SINI, tidak perlu buka Vercel ── */}
+                <div className="border-t border-h-border pt-5">
+                  <div className="text-xs text-h-muted font-bold uppercase tracking-wide mb-1.5">
+                    Identitas {isSelf ? 'Outlet Ini' : activeOutlet?.name}
+                  </div>
+                  <p className="text-[10px] text-h-muted mb-3">
+                    Tampil ke pelanggan di beranda, menu, dan struk. Yang dikosongkan
+                    otomatis <strong className="text-white">disembunyikan</strong> —
+                    tidak akan menampilkan data outlet lain.
+                  </p>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {([
+                      ['brand_name', 'Nama Kafe', 'Contoh: BASECAMP'],
+                      ['brand_tagline', 'Tagline', 'Contoh: Coffee & Roastery'],
+                      ['brand_wa', 'No. WhatsApp', '62812xxxxxxx'],
+                      ['brand_ig', 'Instagram (tanpa @)', 'basecamp.kopi'],
+                      ['brand_city', 'Kota', 'Ternate'],
+                      ['brand_logo', 'URL Logo (opsional)', 'https://...'],
+                    ] as const).map(([key, label, ph]) => (
+                      <div key={key}>
+                        <label className="text-[10px] text-h-muted uppercase tracking-wide block mb-1">{label}</label>
+                        <input type="text" value={(settings[key] as string) || ''}
+                          onChange={e => setSettings(s => ({ ...s, [key]: e.target.value }))}
+                          placeholder={ph}
+                          className="w-full bg-h-dark border border-h-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-h-red text-white placeholder-h-muted transition-colors" />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3">
+                    <label className="text-[10px] text-h-muted uppercase tracking-wide block mb-1">Alamat</label>
+                    <input type="text" value={settings.brand_address || ''}
+                      onChange={e => setSettings(s => ({ ...s, brand_address: e.target.value }))}
+                      placeholder="Alamat lengkap outlet ini"
+                      className="w-full bg-h-dark border border-h-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-h-red text-white placeholder-h-muted transition-colors" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mt-3">
+                    {([['brand_lat', 'Latitude', '0.7935511'], ['brand_lng', 'Longitude', '127.3855782']] as const).map(([key, label, ph]) => (
+                      <div key={key}>
+                        <label className="text-[10px] text-h-muted uppercase tracking-wide block mb-1">{label}</label>
+                        <input type="text" inputMode="decimal" value={settings[key] ?? ''}
+                          onChange={e => setSettings(s => ({ ...s, [key]: e.target.value === '' ? null : Number(e.target.value) }))}
+                          placeholder={ph}
+                          className="w-full bg-h-dark border border-h-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-h-red text-white placeholder-h-muted transition-colors" />
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-h-muted mt-1.5">
+                    Koordinat buat peta & petunjuk arah — ambil dari Google Maps (klik kanan lokasi → angka pertama = latitude).
+                    Kosongkan kalau belum ada, petanya otomatis disembunyikan.
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 mt-3">
+                    {([['brand_color', 'Warna Utama', '#7C1515'], ['brand_accent', 'Warna Aksen', '#D4B896']] as const).map(([key, label, ph]) => (
+                      <div key={key}>
+                        <label className="text-[10px] text-h-muted uppercase tracking-wide block mb-1">{label}</label>
+                        <div className="flex gap-2">
+                          <input type="color" value={(settings[key] as string) || ph}
+                            onChange={e => setSettings(s => ({ ...s, [key]: e.target.value }))}
+                            className="w-11 h-[42px] bg-h-dark border border-h-border rounded-xl cursor-pointer p-1" />
+                          <input type="text" value={(settings[key] as string) || ''}
+                            onChange={e => setSettings(s => ({ ...s, [key]: e.target.value }))}
+                            placeholder={ph}
+                            className="flex-1 bg-h-dark border border-h-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-h-red text-white placeholder-h-muted transition-colors" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-h-muted mt-1.5">
+                    Warna berlaku ke seluruh tampilan outlet ini. Perubahan tampil dalam ±30 detik setelah Simpan (tanpa deploy ulang).
+                  </p>
                 </div>
 
                 {/* Password outlet — hanya saat kelola outlet LAIN dari Admin Pusat.

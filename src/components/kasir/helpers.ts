@@ -4,7 +4,8 @@ import { formatRp } from '@/lib/format'
 import { BRAND, BRAND_NICE, BRAND_FULL } from '@/lib/brand'
 import { fmtWITTime, fmtWITDateLong, fmtWITDateShort } from '@/lib/business-day'
 
-export const OWNER_WA = BRAND.wa
+// Dibaca saat dipakai (bukan dibekukan saat import) supaya ikut identitas dari DB
+export const ownerWa = () => BRAND.wa
 
 // ═══ OFFLINE / PENDING QUEUE ═══════════════════════════════
 const PENDING_ORDERS_KEY = 'hallu-kasir-pending-orders'

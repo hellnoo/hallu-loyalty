@@ -50,12 +50,28 @@ export type StoreSettings = {
   // nilainya selalu undefined.
   admin_password?: string | null
   kasir_password?: string | null
+  // Identitas outlet — diatur dari Admin Pusat, menimpa env NEXT_PUBLIC_BRAND_*
+  brand_name?: string | null
+  brand_tagline?: string | null
+  brand_arabic?: string | null
+  brand_city?: string | null
+  brand_wa?: string | null
+  brand_ig?: string | null
+  brand_address?: string | null
+  brand_lat?: number | null
+  brand_lng?: number | null
+  brand_logo?: string | null
+  brand_color?: string | null
+  brand_accent?: string | null
 }
 
 // Kolom store_settings yang boleh dibaca kunci publik (tanpa password).
 // Dipakai di semua query client biasa — karena grant per-kolom bikin
 // `select('*')` GAGAL setelah migrasi password.
-export const STORE_SETTINGS_PUBLIC_COLS = 'id, open_time, close_time, open_days, is_manually_closed, employees'
+export const STORE_SETTINGS_PUBLIC_COLS =
+  'id, open_time, close_time, open_days, is_manually_closed, employees, ' +
+  'brand_name, brand_tagline, brand_arabic, brand_city, brand_wa, brand_ig, ' +
+  'brand_address, brand_lat, brand_lng, brand_logo, brand_color, brand_accent'
 
 export type MenuItem = {
   id: string

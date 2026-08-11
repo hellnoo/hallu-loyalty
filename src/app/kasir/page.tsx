@@ -11,7 +11,7 @@ import { EXPENSE_CATEGORIES, expIcon, expLabel, type Expense } from '@/lib/expen
 import { secureWrite } from '@/lib/secure-db'
 import type { PayMethod, PendingOrder } from '@/components/kasir/helpers'
 import {
-  OWNER_WA, orderTotal, buildDailyReport, PAY_OPTS, msgStruk, waLink,
+  ownerWa, orderTotal, buildDailyReport, PAY_OPTS, msgStruk, waLink,
   playNewOrderSound, playAlarmSound, showBrowserNotif, useOnlineStatus,
   loadPendingOrders, savePendingOrders, queuePendingOrder, formatDuration,
 } from '@/components/kasir/helpers'
@@ -896,7 +896,7 @@ export default function KasirPage() {
           : null
         const methodLabels: Record<string, string> = { tunai: '💵 Tunai', qris: '⬛ QRIS', transfer: '🏦 Transfer', lainnya: '💳 Lainnya' }
         const waText = aiReport || buildDailyReport(closeReportOrders, today, closeReportShifts)
-        const waUrl = `https://wa.me/${OWNER_WA}?text=${encodeURIComponent(waText)}`
+        const waUrl = `https://wa.me/${ownerWa()}?text=${encodeURIComponent(waText)}`
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
