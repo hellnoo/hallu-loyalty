@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import { supabase, DB_SCHEMA } from '@/lib/supabase'
 import { subscribePush, sendPush } from '@/lib/push'
 import type { MenuItem, StoreSettings } from '@/types'
+import { STORE_SETTINGS_PUBLIC_COLS } from '@/types'
 import { formatRp } from '@/lib/format'
 import { calcIsOpen } from '@/lib/store-hours'
 import { BRAND, BRAND_NICE } from '@/lib/brand'
@@ -97,7 +98,7 @@ function MenuContent() {
   useEffect(() => {
     supabase.from('menu_items').select('*').eq('available', true).order('name')
       .then(({ data }) => { if (data) setItems(data); setLoading(false) })
-    supabase.from('store_settings').select('*').eq('id', 1).single()
+    supabase.from('store_settings').select(STORE_SETTINGS_PUBLIC_COLS).eq('id', 1).single()
       .then(({ data }) => { if (data) setStoreSettings(data as StoreSettings) })
   }, [])
 

@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { MenuItem, StoreSettings } from '@/types'
+import { STORE_SETTINGS_PUBLIC_COLS } from '@/types'
 import { formatRp } from '@/lib/format'
 import { calcIsOpen } from '@/lib/store-hours'
 import {
@@ -127,7 +128,7 @@ export default function Home() {
   useEffect(() => {
     supabase.from('menu_items').select('*').eq('available', true).order('category').order('name').limit(12)
       .then(({ data }) => { if (data) setMenuItems(data as MenuItem[]) })
-    supabase.from('store_settings').select('*').eq('id', 1).single()
+    supabase.from('store_settings').select(STORE_SETTINGS_PUBLIC_COLS).eq('id', 1).single()
       .then(({ data }) => { if (data) setStoreSettings(data as StoreSettings) })
   }, [])
 
