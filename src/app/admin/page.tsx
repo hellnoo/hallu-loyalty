@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { MenuItem, StoreSettings } from '@/types'
-import { bacaStoreSettings } from '@/lib/store-settings'
+import { bacaStoreSettings, simpanStoreSettings } from '@/lib/store-settings'
 import { formatRp } from '@/lib/format'
 import { isStoreOpen } from '@/lib/store-hours'
 import { monthStartWIT, witHour, fmtWITDateTime, fmtWITDateShort, toWITDateString, shiftDay, fmtWITWeekdayDay } from '@/lib/business-day'
@@ -326,7 +326,7 @@ export default function AdminPage() {
         const values = tanpaBrandKalauBelumSiap({ ...settings })
         const res = await secureWrite({
           scope: 'admin', table: 'store_settings', op: 'upsert', values,
-          fallback: async () => { const r = await supabase.from('store_settings').upsert(values); return { error: r.error } },
+          fallback: async () => simpanStoreSettings(supabase, values),
         })
         if (res.error) throw res.error
       } else {
