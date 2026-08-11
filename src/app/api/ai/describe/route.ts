@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { aiComplete, aiEnabled, aiErrorDetails } from '@/lib/ai'
+import { muatKunciAi } from '@/lib/ai-key'
 
 export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
+  await muatKunciAi()
   if (!aiEnabled()) {
     return NextResponse.json({ error: aiErrorDetails() }, { status: 503 })
   }

@@ -18,8 +18,12 @@ alter table public.store_settings add column if not exists brand_logo    text;
 alter table public.store_settings add column if not exists brand_color   text;
 alter table public.store_settings add column if not exists brand_accent  text;
 
+-- Kunci AI (opsional) — RAHASIA, jadi TIDAK ikut di-grant ke anon di bawah.
+-- Hanya server (service_role) yang boleh membacanya.
+alter table public.store_settings add column if not exists ai_api_key text;
+
 -- Identitas TIDAK rahasia (memang tampil ke pelanggan) → boleh dibaca publik.
--- Password tetap tidak ikut (lihat supabase-outlet-password.sql).
+-- Password & kunci AI tetap tidak ikut (lihat supabase-outlet-password.sql).
 revoke select on public.store_settings from anon, authenticated;
 grant select (
   id, open_time, close_time, open_days, is_manually_closed, employees,
