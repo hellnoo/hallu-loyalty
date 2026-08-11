@@ -45,7 +45,17 @@ export type StoreSettings = {
   open_days: string        // "Senin – Minggu"
   is_manually_closed: boolean
   employees: string[]      // daftar nama kasir/penjaga — diatur per outlet dari Admin → Pengaturan
+  // Password outlet — HANYA terisi lewat Admin Pusat (service_role). Kunci
+  // publik sengaja tidak diberi izin baca kolom ini, jadi di client biasa
+  // nilainya selalu undefined.
+  admin_password?: string | null
+  kasir_password?: string | null
 }
+
+// Kolom store_settings yang boleh dibaca kunci publik (tanpa password).
+// Dipakai di semua query client biasa — karena grant per-kolom bikin
+// `select('*')` GAGAL setelah migrasi password.
+export const STORE_SETTINGS_PUBLIC_COLS = 'id, open_time, close_time, open_days, is_manually_closed, employees'
 
 export type MenuItem = {
   id: string

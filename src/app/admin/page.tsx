@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { MenuItem, StoreSettings } from '@/types'
+import { STORE_SETTINGS_PUBLIC_COLS } from '@/types'
 import { formatRp } from '@/lib/format'
 import { isStoreOpen } from '@/lib/store-hours'
 import { monthStartWIT, witHour, fmtWITDateTime, fmtWITDateShort, toWITDateString, shiftDay, fmtWITWeekdayDay } from '@/lib/business-day'
@@ -174,7 +175,8 @@ export default function AdminPage() {
   const loadSettings = async () => {
     setOutletError(null)
     if (isSelf) {
-      const { data } = await supabase.from('store_settings').select('*').eq('id', 1).single()
+      // Outlet sendiri pakai kunci publik → kolom password sengaja tidak boleh dibaca
+      const { data } = await supabase.from('store_settings').select(STORE_SETTINGS_PUBLIC_COLS).eq('id', 1).single()
       if (data) {
         const s = data as StoreSettings
         if (!Array.isArray(s.employees) || s.employees.length === 0) s.employees = DEFAULT_SETTINGS.employees
@@ -309,7 +311,12 @@ export default function AdminPage() {
           fallback: async () => { const r = await supabase.from('store_settings').upsert(settings); return { error: r.error } },
         })
       } else {
-        await centralSettings('save', settings)
+        // Password kosong = "jangan diubah" (sesuai keterangan di form),
+        // jadi field-nya dibuang supaya tidak menimpa nilai lama jadi kosong.
+        const values: Record<string, unknown> = { ...settings }
+        if (!String(values.admin_password || '').trim()) delete values.admin_password
+        if (!String(values.kasir_password || '').trim()) delete values.kasir_password
+        await centralSettings('save', values)
       }
       setSettingsSaved(true)
       setTimeout(() => setSettingsSaved(false), 2500)
@@ -1534,6 +1541,41 @@ export default function AdminPage() {
                   </div>
                   <p className="text-[10px] text-h-muted mt-1.5">Nama-nama ini muncul di kasir saat mulai jaga / ganti shift. Jangan lupa klik Simpan.</p>
                 </div>
+
+                {/* Password outlet — hanya saat kelola outlet LAIN dari Admin Pusat.
+                    Password outlet sendiri tetap di env (bootstrap, biar tidak
+                    bisa mengunci diri sendiri). */}
+                {!isSelf && (
+                  <div className="border-t border-h-border pt-5">
+                    <div className="text-xs text-h-muted font-bold uppercase tracking-wide mb-1.5">
+                      Password {activeOutlet?.name}
+                    </div>
+                    <p className="text-[10px] text-h-muted mb-3">
+                      Diisi/diganti dari sini — tidak perlu buka Vercel. Kosongkan kalau tidak mau diubah.
+                      Password lama di Vercel tetap berlaku sebagai cadangan.
+                    </p>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[10px] text-h-muted uppercase tracking-wide block mb-1">Admin</label>
+                        <input type="text" value={settings.admin_password || ''}
+                          onChange={e => setSettings(s => ({ ...s, admin_password: e.target.value }))}
+                          placeholder="(belum diatur)"
+                          className="w-full bg-h-dark border border-h-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-h-red text-white placeholder-h-muted transition-colors" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-h-muted uppercase tracking-wide block mb-1">Kasir</label>
+                        <input type="text" value={settings.kasir_password || ''}
+                          onChange={e => setSettings(s => ({ ...s, kasir_password: e.target.value }))}
+                          placeholder="(belum diatur)"
+                          className="w-full bg-h-dark border border-h-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-h-red text-white placeholder-h-muted transition-colors" />
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-yellow-500/80 mt-2">
+                      ⚠️ Sengaja ditampilkan terang supaya bisa kamu catat. Halaman ini cuma
+                      terbuka dengan password Admin Pusat.
+                    </p>
+                  </div>
+                )}
 
                 <button
                   onClick={saveSettings}
