@@ -367,10 +367,19 @@ export default function AdminPage() {
     setMonthLoading(false)
   }
 
+  // Ubah error apa pun jadi teks yang bisa ditampilkan (jangan ditelan diam-diam:
+  // dulu kegagalan di outlet sendiri tidak muncul sama sekali, jadi tombol
+  // seolah tidak berfungsi tanpa penjelasan)
+  const errText = (e: unknown, fallback: string) =>
+    e instanceof Error ? e.message
+      : (e && typeof e === 'object' && 'message' in e) ? String((e as { message: unknown }).message)
+      : typeof e === 'string' ? e : fallback
+
   const loadItems = async () => {
     setLoading(true); setOutletError(null)
     if (isSelf) {
-      const { data } = await supabase.from('menu_items').select('*').order('category').order('name')
+      const { data, error } = await supabase.from('menu_items').select('*').order('category').order('name')
+      if (error) setOutletError(errText(error, 'Gagal memuat menu'))
       if (data) setItems(data as MenuItem[])
       setLoading(false)
       return
@@ -403,10 +412,12 @@ export default function AdminPage() {
   // atau lewat /api/central/menu (outlet lain, dipilih dari dropdown Kelola Outlet).
   const menuUpdate = async (id: string, values: Record<string, unknown>) => {
     if (isSelf) {
-      return secureWrite({
+      const res = await secureWrite({
         scope: 'admin', table: 'menu_items', op: 'update', matchId: id, values,
         fallback: async () => { const r = await supabase.from('menu_items').update(values).eq('id', id); return { error: r.error } },
       })
+      if (res.error) setOutletError(errText(res.error, 'Gagal simpan perubahan'))
+      return res
     }
     try { await centralMenu('update', { matchId: id, values }); return { error: null } }
     catch (err) { setOutletError(err instanceof Error ? err.message : 'Gagal simpan'); return { error: err } }
@@ -417,28 +428,41 @@ export default function AdminPage() {
     if (editing) {
       await menuUpdate(editing.id, form)
     } else if (isSelf) {
-      await secureWrite({
+      const res = await secureWrite({
         scope: 'admin', table: 'menu_items', op: 'insert', values: form,
         fallback: async () => { const r = await supabase.from('menu_items').insert(form); return { error: r.error } },
       })
+      if (res.error) {
+        setOutletError(errText(res.error, 'Gagal tambah item'))
+        setSaving(false)
+        return // jangan tutup form — biar isian tidak hilang & user lihat pesannya
+      }
     } else {
       try { await centralMenu('insert', { values: form }) }
-      catch (err) { setOutletError(err instanceof Error ? err.message : 'Gagal tambah item') }
+      catch (err) {
+        setOutletError(errText(err, 'Gagal tambah item'))
+        setSaving(false)
+        return
+      }
     }
     await loadItems(); setShowForm(false); setSaving(false)
   }
 
   const handleDelete = async (id: string) => {
+    let gagal = false
     if (isSelf) {
-      await secureWrite({
+      const res = await secureWrite({
         scope: 'admin', table: 'menu_items', op: 'delete', matchId: id,
         fallback: async () => { const r = await supabase.from('menu_items').delete().eq('id', id); return { error: r.error } },
       })
+      if (res.error) { setOutletError(errText(res.error, 'Gagal hapus item')); gagal = true }
     } else {
       try { await centralMenu('delete', { matchId: id }) }
-      catch (err) { setOutletError(err instanceof Error ? err.message : 'Gagal hapus item') }
+      catch (err) { setOutletError(errText(err, 'Gagal hapus item')); gagal = true }
     }
-    setItems(prev => prev.filter(i => i.id !== id))
+    // Jangan hilangkan dari daftar kalau hapusnya gagal (dulu tetap hilang di
+    // layar padahal datanya masih ada — menyesatkan)
+    if (!gagal) setItems(prev => prev.filter(i => i.id !== id))
     setConfirmDeleteId(null)
   }
 
