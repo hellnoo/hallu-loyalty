@@ -140,6 +140,8 @@ export default function AdminPage() {
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'gagal')
       loadOutlets()
+      setSummary(null)          // paksa muat ulang data Pantau Outlet
+      if (tab === 'outlet') loadSummary()
       setShowAddOutlet(false)
       setNewOutlet({ name: '', schema: '', url: '', anon: '', serviceRole: '' })
     } catch (err) {
@@ -1764,6 +1766,11 @@ export default function AdminPage() {
                     <textarea value={newOutlet.anon} onChange={e => setNewOutlet(o => ({ ...o, anon: e.target.value.trim() }))}
                       placeholder="eyJ..." rows={3}
                       className="w-full bg-h-dark border border-h-border rounded-xl px-3.5 py-2.5 text-xs font-mono resize-none focus:outline-none focus:border-h-red text-white placeholder-h-muted transition-colors" />
+                    <p className="text-[10px] text-yellow-500/80 mt-1.5">
+                      ⚠️ Harus kunci <strong>khusus schema ini</strong> (role <code>{newOutlet.schema.trim() || '<schema>'}_anon</code>) — yaitu isi
+                      <code> NEXT_PUBLIC_SUPABASE_ANON_KEY</code> di Vercel project outlet itu.
+                      Kalau pakai anon key Pusat, hasilnya <em>&quot;permission denied for schema&quot;</em>.
+                    </p>
                   </div>
                 </>
               ) : (
