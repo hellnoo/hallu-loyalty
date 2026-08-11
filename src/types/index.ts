@@ -63,6 +63,8 @@ export type StoreSettings = {
   brand_logo?: string | null
   brand_color?: string | null
   brand_accent?: string | null
+  // Kunci AI — rahasia, tidak ikut kolom publik
+  ai_api_key?: string | null
 }
 
 // Kolom store_settings yang boleh dibaca kunci publik (tanpa password).

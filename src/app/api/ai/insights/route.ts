@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { aiComplete, aiEnabled, aiErrorDetails } from '@/lib/ai'
+import { muatKunciAi } from '@/lib/ai-key'
 import { BRAND_NICE, BRAND_FULL } from '@/lib/brand'
 
 export const runtime = 'nodejs'
@@ -17,6 +18,7 @@ type InsightsInput = {
 }
 
 export async function POST(req: NextRequest) {
+  await muatKunciAi()
   if (!aiEnabled()) {
     return NextResponse.json({ error: aiErrorDetails() }, { status: 503 })
   }

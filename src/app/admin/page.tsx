@@ -89,7 +89,7 @@ export default function AdminPage() {
   // Sudah menjalankan migrasi identitas (supabase-brand.sql)? Kalau belum,
   // kolom brand_* tidak boleh ikut dikirim saat simpan (bikin error).
   const [outletSupportsBrand, setOutletSupportsBrand] = useState(false)
-  const BRAND_FIELDS = ['brand_name','brand_tagline','brand_arabic','brand_city','brand_wa','brand_ig','brand_address','brand_lat','brand_lng','brand_logo','brand_color','brand_accent'] as const
+  const BRAND_FIELDS = ['brand_name','brand_tagline','brand_arabic','brand_city','brand_wa','brand_ig','brand_address','brand_lat','brand_lng','brand_logo','brand_color','brand_accent','ai_api_key'] as const
 
   // Sesi lama (login sebelum fitur lintas-outlet ada) cuma simpan flag 'ok'
   // tanpa password — padahal /api/central/* butuh password utk verifikasi.
@@ -1656,6 +1656,19 @@ export default function AdminPage() {
                   <p className="text-[10px] text-h-muted mt-1.5">
                     Warna berlaku ke seluruh tampilan outlet ini. Perubahan tampil dalam ±30 detik setelah Simpan (tanpa deploy ulang).
                   </p>
+
+                  {/* Kunci AI — opsional, mengaktifkan chatbot barista & laporan AI */}
+                  <div className="mt-4">
+                    <label className="text-[10px] text-h-muted uppercase tracking-wide block mb-1">Kunci AI (opsional)</label>
+                    <input type="text" value={settings.ai_api_key || ''}
+                      onChange={e => setSettings(s => ({ ...s, ai_api_key: e.target.value }))}
+                      placeholder="gsk_... (Groq) atau AIza... (Gemini)"
+                      className="w-full bg-h-dark border border-h-border rounded-xl px-3.5 py-2.5 text-sm font-mono focus:outline-none focus:border-h-red text-white placeholder-h-muted transition-colors" />
+                    <p className="text-[10px] text-h-muted mt-1.5">
+                      Mengaktifkan chatbot barista & laporan AI. Kunci gratis bisa diambil di
+                      console.groq.com atau aistudio.google.com. Kosongkan = fitur AI mati.
+                    </p>
+                  </div>
                 </div>
 
                 {/* Password outlet — hanya saat kelola outlet LAIN dari Admin Pusat.

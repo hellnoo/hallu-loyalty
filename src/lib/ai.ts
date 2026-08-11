@@ -3,8 +3,15 @@ import Anthropic from '@anthropic-ai/sdk'
 export type ChatMsg = { role: 'user' | 'assistant'; content: string }
 
 const ANTHROPIC_KEY = (process.env.ANTHROPIC_API_KEY || '').trim()
-const FREE_KEY = (process.env.AI_API_KEY || '').trim()
 const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514'
+
+// Kunci AI bisa datang dari DATABASE (diatur di Admin Pusat) atau env.
+// DB menang supaya pemilik tidak perlu buka Vercel.
+let FREE_KEY = (process.env.AI_API_KEY || '').trim()
+export function setAiKey(key: string | null | undefined) {
+  const k = (key || '').trim()
+  if (k) FREE_KEY = k
+}
 
 // Deteksi provider gratis dari format key (semua OpenAI-compatible):
 // Groq (gsk_...), Google Gemini (AIza...), OpenRouter (sk-or-...)
@@ -31,7 +38,7 @@ export function aiErrorDetails(): string {
     return 'ANTHROPIC_API_KEY format salah — harus mulai dengan "sk-ant-".'
   if (FREE_KEY && !freeProvider())
     return 'AI_API_KEY tidak dikenali. Pakai key Groq (gsk_...), Gemini (AIza...), OpenRouter (sk-or-...), atau set AI_BASE_URL + AI_MODEL manual.'
-  return 'AI belum aktif. Set AI_API_KEY (gratis: Groq/Gemini) atau ANTHROPIC_API_KEY di Vercel env, lalu Redeploy.'
+  return 'AI belum aktif. Buka Admin → Pengaturan → "Kunci AI", tempel kunci gratis dari Groq (gsk_...) atau Google Gemini (AIza...), lalu Simpan.'
 }
 
 export async function aiComplete(opts: {
