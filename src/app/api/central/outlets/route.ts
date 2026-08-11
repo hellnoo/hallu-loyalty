@@ -34,8 +34,8 @@ export async function POST(req: Request) {
       if (!outlet?.name || !outlet?.url || !outlet?.anon) {
         return NextResponse.json({ error: 'Nama, URL, dan anon key wajib diisi' }, { status: 400 })
       }
-      await addOutletToDb(outlet)
-      return NextResponse.json({ ok: true })
+      const mode = await addOutletToDb(outlet)
+      return NextResponse.json({ ok: true, mode })
     }
     if (op === 'remove') {
       if (!url) return NextResponse.json({ error: 'url wajib diisi' }, { status: 400 })
