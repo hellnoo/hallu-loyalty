@@ -38,7 +38,7 @@ function Sparkline({ daily }: { daily: Daily[] }) {
             <div className="w-full rounded-t transition-all"
               style={{
                 height: `${Math.max(3, Math.round((d.revenue / max) * 40))}px`,
-                background: i === daily.length - 1 ? '#7C1515' : '#3a2a28',
+                background: i === daily.length - 1 ? 'var(--brand-primary-hex)' : '#3a2a28',
               }}
               title={`${fmtDay(d.date)}: ${formatRp(d.revenue)}`} />
           </div>

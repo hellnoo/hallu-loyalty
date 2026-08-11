@@ -1,7 +1,12 @@
 import type { Metadata, Viewport } from 'next'
 import { DM_Sans, Playfair_Display } from 'next/font/google'
 import './globals.css'
-import { BRAND, BRAND_NICE, BRAND_FULL } from '@/lib/brand'
+import { BRAND, BRAND_NICE, BRAND_FULL, BRAND_RGB, BRAND_RGB_PRIMARY_DARK } from '@/lib/brand'
+
+// Warna brand per outlet → CSS variable, dibaca Tailwind (h-red/h-red-d/h-cream)
+const rgbKeHex = (rgb: string) =>
+  '#' + rgb.split(' ').map(v => Number(v).toString(16).padStart(2, '0')).join('')
+const BRAND_HEX = rgbKeHex(BRAND_RGB.primary)
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -43,16 +48,18 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#7C1515',
+  themeColor: BRAND_HEX,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id">
       <head>
-        <meta name="theme-color" content="#7C1515" />
+        <meta name="theme-color" content={BRAND_HEX} />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon.svg" />
+        {/* Warna brand per outlet — set sekali di sini, dipakai Tailwind & style inline */}
+        <style dangerouslySetInnerHTML={{ __html: `:root{--brand-primary:${BRAND_RGB.primary};--brand-primary-dark:${BRAND_RGB_PRIMARY_DARK};--brand-accent:${BRAND_RGB.accent};--brand-primary-hex:${BRAND_HEX};}` }} />
       </head>
       <body className={`${dmSans.variable} ${playfair.variable} font-sans`}>
         {children}
