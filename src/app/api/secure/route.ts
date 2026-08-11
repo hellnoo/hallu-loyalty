@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getServiceClient } from '@/lib/supabase-admin'
+import { cekPasswordOutlet } from '@/lib/outlet-auth'
 
 export const runtime = 'nodejs'
 
@@ -17,9 +18,19 @@ const ALLOWED: Record<string, Record<string, string[]>> = {
   },
 }
 
-function checkPassword(scope: string, password: string): boolean {
-  if (scope === 'admin') return !!process.env.ADMIN_PASSWORD && password === process.env.ADMIN_PASSWORD
-  if (scope === 'kasir') return !!process.env.KASIR_PASSWORD && password === process.env.KASIR_PASSWORD
+// Pakai pengecek yang SAMA dengan /api/admin-auth & /api/kasir-auth: env ATAU
+// database. Dulu di sini cuma cek env — akibatnya kalau password diganti lewat
+// Admin Pusat (tersimpan di DB), user bisa LOGIN tapi semua simpan ditolak
+// "Password salah / sesi kadaluarsa".
+async function checkPassword(scope: string, password: string): Promise<boolean> {
+  if (scope === 'admin') return cekPasswordOutlet('admin', password)
+  if (scope === 'kasir') {
+    if (await cekPasswordOutlet('kasir', password)) return true
+    // Sama seperti /api/kasir-auth: kalau password kasir belum diatur,
+    // password admin juga diterima.
+    const kasirDiaturDiEnv = !!process.env.KASIR_PASSWORD
+    return !kasirDiaturDiEnv && cekPasswordOutlet('admin', password)
+  }
   return false
 }
 
@@ -29,7 +40,7 @@ export async function POST(req: Request) {
 
   if (!scope || !table || !op) return NextResponse.json({ error: 'permintaan tidak lengkap' }, { status: 400 })
   if (!ALLOWED[scope]?.[table]?.includes(op)) return NextResponse.json({ error: 'operasi tidak diizinkan' }, { status: 403 })
-  if (!checkPassword(scope, password)) return NextResponse.json({ error: 'Password salah / sesi kadaluarsa' }, { status: 401 })
+  if (!(await checkPassword(scope, password))) return NextResponse.json({ error: 'Password salah / sesi kadaluarsa' }, { status: 401 })
 
   const sb = getServiceClient()
   // 501: service_role belum diset → client fallback ke anon (jendela transisi, tanpa downtime)
