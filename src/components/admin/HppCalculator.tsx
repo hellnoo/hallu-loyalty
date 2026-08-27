@@ -1,6 +1,8 @@
 'use client'
+import { useState } from 'react'
 import { formatRp } from '@/lib/format'
 import { type HppComponent, hppCompBiaya, hppTotal, HPP_UNITS } from '@/types'
+import { type Bahan, type BahanBaru, ringkasBahan, sudahAdaDiDaftar } from '@/lib/bahan'
 
 // Kalkulator HPP berbasis bahan: owner isi "beli sekemasan berapa, kepakai berapa
 // per porsi" → biaya per porsi dihitung otomatis. Tetap dukung mode manual (isi Rp
@@ -20,11 +22,19 @@ const PACK_PRESETS: { label: string; isi: number; satuan: string }[] = [
 export function HppCalculator({
   value,
   onChange,
+  bahanList = [],
+  onSimpanBahan,
 }: {
   value: HppComponent[]
   onChange: (comps: HppComponent[], total: number) => void
+  // Master bahan — harga & takaran kemasan yang sudah pernah diisi, biar tidak
+  // mengetik ulang tiap menu. Kosong = outlet belum jalankan supabase-bahan.sql.
+  bahanList?: Bahan[]
+  onSimpanBahan?: (b: BahanBaru) => Promise<{ error?: unknown }>
 }) {
   const comps = value || []
+  const [menyimpan, setMenyimpan] = useState<number | null>(null)
+  const [gagalSimpan, setGagalSimpan] = useState<string | null>(null)
 
   const push = (next: HppComponent[]) => {
     // sinkronkan biaya tiap komponen = hasil hitung, lalu total
@@ -47,6 +57,27 @@ export function HppCalculator({
     return isNaN(n) ? undefined : n
   }
 
+  // Ambil bahan dari master → harga & takaran langsung terisi, tinggal isi "pakai"
+  const ambilDariDaftar = (id: string) => {
+    const b = bahanList.find((x) => x.id === id)
+    if (!b) return
+    push([...comps, { nama: b.nama, biaya: 0, hargaBeli: b.harga_beli, isi: b.isi, satuan: b.satuan }])
+  }
+
+  // Simpan bahan yang baru diketik ke master, biar menu berikutnya tinggal pilih
+  const simpanKeDaftar = async (i: number) => {
+    const c = comps[i]
+    if (!onSimpanBahan || !c.nama?.trim() || !c.hargaBeli || !c.isi) return
+    setMenyimpan(i); setGagalSimpan(null)
+    const res = await onSimpanBahan({
+      nama: c.nama.trim(), harga_beli: c.hargaBeli, isi: c.isi, satuan: c.satuan || 'g',
+    })
+    if (res?.error) {
+      setGagalSimpan(res.error instanceof Error ? res.error.message : 'Gagal simpan ke daftar bahan')
+    }
+    setMenyimpan(null)
+  }
+
   const total = hppTotal(comps)
 
   return (
@@ -65,9 +96,28 @@ export function HppCalculator({
         </div>
       </div>
 
+      {/* Ambil dari master bahan — tidak perlu ketik harga & takaran lagi */}
+      {bahanList.length > 0 && (
+        <select
+          value=""
+          onChange={(e) => { ambilDariDaftar(e.target.value); e.currentTarget.value = '' }}
+          className="w-full bg-h-card border border-h-red/40 rounded-lg px-3 py-2 text-xs text-h-cream focus:outline-none focus:border-h-red transition-colors">
+          <option value="">📋 Ambil dari daftar bahan ({bahanList.length})…</option>
+          {bahanList.map((b) => (
+            <option key={b.id} value={b.id}>{b.nama} — {ringkasBahan(b)}</option>
+          ))}
+        </select>
+      )}
+
+      {gagalSimpan && (
+        <p className="text-[10px] text-red-400">{gagalSimpan}</p>
+      )}
+
       {comps.length === 0 && (
         <p className="text-xs text-h-border text-center py-2">
-          Klik <span className="text-h-cream">+ Bahan</span> — isi harga beli & takaran, biaya per porsi dihitung otomatis.
+          {bahanList.length > 0
+            ? <>Pilih dari <span className="text-h-cream">daftar bahan</span> di atas, atau klik <span className="text-h-cream">+ Bahan</span> untuk bahan baru.</>
+            : <>Klik <span className="text-h-cream">+ Bahan</span> — isi harga beli &amp; takaran, biaya per porsi dihitung otomatis.</>}
         </p>
       )}
 
@@ -131,8 +181,21 @@ export function HppCalculator({
                   </div>
                   {/* Hasil */}
                   <div className="flex items-center justify-between pt-1.5 border-t border-h-border">
-                    <button type="button" onClick={() => toManual(i)}
-                      className="text-[10px] text-h-muted hover:text-h-cream underline transition-colors">isi Rp manual</button>
+                    <div className="flex items-center gap-2.5">
+                      <button type="button" onClick={() => toManual(i)}
+                        className="text-[10px] text-h-muted hover:text-h-cream underline transition-colors">isi Rp manual</button>
+                      {/* Tawarkan simpan ke master hanya kalau memang bahan baru & datanya lengkap */}
+                      {onSimpanBahan && c.nama?.trim() && !!c.hargaBeli && !!c.isi && (
+                        sudahAdaDiDaftar(bahanList, c.nama) ? (
+                          <span className="text-[10px] text-h-border">✓ ada di daftar</span>
+                        ) : (
+                          <button type="button" onClick={() => simpanKeDaftar(i)} disabled={menyimpan === i}
+                            className="text-[10px] text-h-cream hover:text-white underline transition-colors disabled:opacity-50">
+                            {menyimpan === i ? 'menyimpan…' : '+ simpan ke daftar'}
+                          </button>
+                        )
+                      )}
+                    </div>
                     <div className="text-xs">
                       {c.hargaBeli && c.isi && c.pakai ? (
                         <span className="text-h-cream font-bold">= {formatRp(biaya)} <span className="text-h-muted font-normal">/ porsi</span></span>

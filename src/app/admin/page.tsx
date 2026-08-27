@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import type { MenuItem, StoreSettings } from '@/types'
 import { bacaStoreSettings, simpanStoreSettings } from '@/lib/store-settings'
 import { hitungBahanTerpakai, fmtJumlah } from '@/lib/bahan-terpakai'
+import { bacaBahan, ringkasBahan, type Bahan, type BahanBaru } from '@/lib/bahan'
 import { formatRp } from '@/lib/format'
 import { isStoreOpen } from '@/lib/store-hours'
 import { monthStartWIT, witHour, fmtWITDateTime, fmtWITDateShort, toWITDateString, shiftDay, fmtWITWeekdayDay } from '@/lib/business-day'
@@ -47,6 +48,8 @@ export default function AdminPage() {
   const [monthPrevOrders, setMonthPrevOrders] = useState<OrderRow[]>([])
   const [monthExpenses, setMonthExpenses] = useState<Expense[]>([])
   const [monthLoading, setMonthLoading] = useState(false)
+  // Master bahan baku — dipakai ulang saat mengisi HPP menu mana pun
+  const [bahanList, setBahanList] = useState<Bahan[]>([])
   const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS)
   const [newEmployee, setNewEmployee] = useState('')
   const [settingsSaving, setSettingsSaving] = useState(false)
@@ -102,6 +105,7 @@ export default function AdminPage() {
     setPwError('Sesi lama — silakan masukkan password sekali lagi untuk mengaktifkan fitur multi-outlet.')
   }, [])
   useEffect(() => { if (authed) { loadItems(); loadSettings() } }, [authed, activeOutletKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (authed && isSelf) loadBahan() }, [authed, isSelf]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (authed && isSelf && tab === 'analitik' && orders.length === 0) loadOrders() }, [authed, tab, isSelf]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (authed && isSelf && tab === 'analitik') loadMonth(monthValue) }, [authed, tab, monthValue, isSelf]) // eslint-disable-line react-hooks/exhaustive-deps
   // Daftar outlet buat dropdown "Kelola Outlet" — dijaga password admin pusat
@@ -202,6 +206,30 @@ export default function AdminPage() {
       setSettings(DEFAULT_SETTINGS)
       setOutletError(err instanceof Error ? err.message : 'Gagal muat pengaturan outlet')
     }
+  }
+
+  // ── Master bahan baku: harga & takaran kemasan cukup diisi sekali ──
+  // Outlet yang belum menjalankan supabase-bahan.sql dapat daftar kosong —
+  // kalkulator HPP tetap jalan seperti sebelumnya, cuma tanpa pilihan cepat.
+  const loadBahan = async () => { setBahanList(await bacaBahan(supabase)) }
+
+  const simpanBahan = async (b: BahanBaru): Promise<{ error?: unknown }> => {
+    const res = await secureWrite({
+      scope: 'admin', table: 'bahan', op: 'insert', values: b,
+      fallback: async () => { const r = await supabase.from('bahan').insert(b); return { error: r.error } },
+    })
+    if (res.error) return { error: new Error(errText(res.error, 'Gagal simpan bahan')) }
+    await loadBahan()
+    return {}
+  }
+
+  const hapusBahan = async (id: string) => {
+    const res = await secureWrite({
+      scope: 'admin', table: 'bahan', op: 'delete', matchId: id,
+      fallback: async () => { const r = await supabase.from('bahan').delete().eq('id', id); return { error: r.error } },
+    })
+    if (res.error) { setOutletError(errText(res.error, 'Gagal hapus bahan')); return }
+    await loadBahan()
   }
 
   const generateAiDescription = async () => {
@@ -854,6 +882,35 @@ export default function AdminPage() {
                     <div className="text-xs text-h-muted mt-1">{s.label}</div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* ── Daftar bahan: harga & takaran cukup diisi sekali, dipakai ulang ── */}
+            {isSelf && bahanList.length > 0 && (
+              <div className="bg-h-card border border-h-border rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-1">
+                  <h2 className="text-xs font-black text-h-muted uppercase tracking-widest">Daftar Bahan</h2>
+                  <span className="text-xs text-h-muted">{bahanList.length} bahan</span>
+                </div>
+                <p className="text-[10px] text-h-muted mb-3">
+                  Dipakai ulang waktu mengisi HPP menu mana pun — tidak perlu ketik harga &amp; takaran lagi.
+                  Menambah bahan dilakukan dari kalkulator HPP (tombol <span className="text-h-cream">+ simpan ke daftar</span>).
+                </p>
+                <div className="bg-h-dark border border-h-border rounded-xl divide-y divide-h-border text-xs">
+                  {bahanList.map(b => (
+                    <div key={b.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                      <span className="text-white truncate">{b.nama}</span>
+                      <span className="flex items-center gap-3 shrink-0">
+                        <span className="text-h-muted tabular-nums">{ringkasBahan(b)}</span>
+                        <button type="button" onClick={() => hapusBahan(b.id)}
+                          className="text-h-muted hover:text-red-400 text-base leading-none transition-colors" title="Hapus dari daftar">×</button>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] text-h-muted mt-2">
+                  Menghapus bahan di sini <span className="text-white">tidak mengubah HPP menu</span> yang sudah terisi — resep tiap menu disimpan tersendiri.
+                </p>
               </div>
             )}
 
@@ -1890,6 +1947,8 @@ export default function AdminPage() {
               </div>
               {/* ── Kalkulator HPP (berbasis bahan) ── */}
               <HppCalculator
+                bahanList={isSelf ? bahanList : []}
+                onSimpanBahan={isSelf ? simpanBahan : undefined}
                 value={form.hpp_components || []}
                 onChange={(comps, total) => setForm(f => ({ ...f, hpp_components: comps, hpp: total }))}
               />
