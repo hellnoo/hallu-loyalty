@@ -11,6 +11,7 @@ const ALLOWED: Record<string, Record<string, string[]>> = {
   admin: {
     menu_items: ['insert', 'update', 'delete'],
     store_settings: ['upsert'],
+    bahan: ['insert', 'update', 'delete'],
     orders: ['deleteOld'],
   },
   kasir: {
