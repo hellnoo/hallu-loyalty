@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { MenuItem, StoreSettings } from '@/types'
 import { bacaStoreSettings, simpanStoreSettings } from '@/lib/store-settings'
+import { hitungBahanTerpakai, fmtJumlah } from '@/lib/bahan-terpakai'
 import { formatRp } from '@/lib/format'
 import { isStoreOpen } from '@/lib/store-hours'
 import { monthStartWIT, witHour, fmtWITDateTime, fmtWITDateShort, toWITDateString, shiftDay, fmtWITWeekdayDay } from '@/lib/business-day'
@@ -1143,6 +1144,62 @@ export default function AdminPage() {
                               💡 HPP menu masih 0 — isi HPP di tab &quot;HPP &amp; Margin&quot; supaya laba kotor akurat.
                             </div>
                           )}
+
+                          {/* ── Bahan baku terpakai: dihitung dari resep HPP × qty terjual ── */}
+                          {(() => {
+                            const rekap = hitungBahanTerpakai(monthOrders, items)
+                            if (rekap.bahan.length === 0) return null
+                            const belanja = expByCat['bahan'] || 0
+                            const terpakai = Math.round(rekap.totalBiaya)
+                            const selisih = belanja - terpakai
+                            const cakupan = rekap.qtyTotal > 0
+                              ? Math.round((rekap.qtyTerinci / rekap.qtyTotal) * 100) : 100
+                            return (
+                              <div className="mt-6">
+                                <h3 className="text-xs font-black text-h-muted uppercase tracking-widest">Bahan Baku Terpakai</h3>
+                                <p className="text-[10px] text-h-muted mt-1 mb-2">
+                                  Dihitung otomatis dari resep HPP × jumlah terjual — bukan input manual.
+                                  {cakupan < 100 && (
+                                    <span className="text-yellow-500/80"> Baru ≈{cakupan}% porsi punya rincian bahan, sisanya belum terhitung.</span>
+                                  )}
+                                </p>
+                                <div className="bg-h-dark border border-h-border rounded-xl divide-y divide-h-border text-xs">
+                                  {rekap.bahan.map(b => (
+                                    <div key={b.nama + '|' + b.satuan} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                                      <span className="text-white truncate">{b.nama}</span>
+                                      <span className="flex items-center gap-4 shrink-0">
+                                        <span className="text-h-cream font-bold tabular-nums">{fmtJumlah(b.jumlah, b.satuan)}</span>
+                                        <span className="text-h-muted font-bold tabular-nums w-24 text-right">{formatRp(Math.round(b.biaya))}</span>
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                {belanja > 0 && (
+                                  <>
+                                    <div className="bg-h-dark border border-h-border rounded-xl divide-y divide-h-border text-xs mt-3">
+                                      <div className="flex justify-between px-4 py-2.5">
+                                        <span className="text-h-muted">📦 Belanja bahan (dicatat kasir)</span>
+                                        <span className="font-bold text-white">{formatRp(belanja)}</span>
+                                      </div>
+                                      <div className="flex justify-between px-4 py-2.5">
+                                        <span className="text-h-muted">Nilai bahan terpakai (dari penjualan)</span>
+                                        <span className="font-bold text-white">{formatRp(terpakai)}</span>
+                                      </div>
+                                      <div className={`flex justify-between px-4 py-3 ${selisih > 0 ? 'text-yellow-400' : 'text-green-400'}`}>
+                                        <span className="font-black uppercase tracking-wide">Selisih</span>
+                                        <span className="font-black">{formatRp(selisih)}</span>
+                                      </div>
+                                    </div>
+                                    <p className="text-[10px] text-h-muted mt-2">
+                                      Selisih bukan otomatis berarti boros: belanja bulan ini bisa jadi stok untuk bulan depan.
+                                      Yang perlu dicurigai kalau selisihnya besar dan terus berulang tiap bulan.
+                                    </p>
+                                  </>
+                                )}
+                              </div>
+                            )
+                          })()}
                         </div>
                       </>
                     )}
