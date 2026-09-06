@@ -16,7 +16,7 @@ import { DM_Sans, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import { BRAND, BRAND_NICE, BRAND_FULL, BRAND_RGB, BRAND_RGB_PRIMARY_DARK, BRAND_HEX, BRAND_GLOBAL, applyBrand } from '@/lib/brand'
 import { loadBrandFromDb } from '@/lib/brand-server'
-import { themeCss } from '@/lib/themes'
+import { themeCss, getTheme, warnaTerbaca } from '@/lib/themes'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -71,7 +71,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const bootScript = `window.${BRAND_GLOBAL}=${JSON.stringify(BRAND)};`
   // Warna brand + token tema (permukaan & sudut). Keduanya dikirim sebagai CSS
   // variable supaya ganti tema dari Admin langsung tampil tanpa deploy ulang.
-  const cssVars = `:root{--brand-primary:${BRAND_RGB.primary};--brand-primary-dark:${BRAND_RGB_PRIMARY_DARK};--brand-accent:${BRAND_RGB.accent};--brand-primary-hex:${BRAND_HEX};${themeCss(BRAND.theme)}}`
+  // Di tema terang, warna brand yang terang (hijau stabilo, kuning, cyan) tidak
+  // terbaca di atas latar putih/krem — dan juga tidak layak jadi latar tombol
+  // berteks putih. Dipekatkan secukupnya; ronanya tetap. Tema gelap tidak
+  // disentuh, warna terang justru bagus di sana.
+  const tema = getTheme(BRAND.theme)
+  const brandUtama = tema.terang
+    ? warnaTerbaca(BRAND_RGB.primary, tema.vars['--surface-bg'])
+    : BRAND_RGB.primary
+  const cssVars = `:root{--brand-primary:${brandUtama};--brand-ink:${brandUtama};--brand-primary-dark:${BRAND_RGB_PRIMARY_DARK};--brand-accent:${BRAND_RGB.accent};--brand-primary-hex:${BRAND_HEX};${themeCss(BRAND.theme)}}`
 
   return (
     <html lang="id">
