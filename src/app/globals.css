@@ -6,8 +6,12 @@
   html {
     -webkit-text-size-adjust: 100%;
   }
-  body {
-    @apply antialiased;
+  /* Latar WAJIB eksplisit. Tanpa ini html/body transparan, dan area di luar
+     kontainer halaman (overscroll, konten lebih pendek dari layar) menampilkan
+     kanvas browser — dulu tak terlihat karena kebetulan sama-sama gelap, tapi
+     langsung terlihat sebagai pita gelap begitu tema terang dipakai. */
+  html, body {
+    @apply antialiased bg-h-bg text-h-fg;
   }
 }
 

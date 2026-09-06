@@ -19,6 +19,7 @@ export type BrandData = {
   wa: string; ig: string; address: string
   lat: number; lng: number
   logo: string; color: string; accent: string
+  theme: string   // kunci tema tampilan (lihat lib/themes.ts); '' = bawaan 'gelap'
 }
 
 const envName = (process.env.NEXT_PUBLIC_BRAND_NAME || '').trim()
@@ -56,6 +57,7 @@ function dariEnv(): BrandData {
     logo: (process.env.NEXT_PUBLIC_BRAND_LOGO || '').trim(),
     color: (process.env.NEXT_PUBLIC_BRAND_COLOR || '').trim(),
     accent: (process.env.NEXT_PUBLIC_BRAND_ACCENT || '').trim(),
+    theme: (process.env.NEXT_PUBLIC_BRAND_THEME || '').trim(),
   }
 }
 

@@ -87,13 +87,13 @@ export function ItemCard({
           {formatRp(item.price)}
         </div>
         {/* Showcase hint */}
-        <div className="absolute top-2.5 left-3 text-white/40 text-[9px] font-bold uppercase tracking-widest">
+        <div className="absolute top-2.5 left-3 text-h-fg/40 text-[9px] font-bold uppercase tracking-widest">
           Tap untuk detail
         </div>
       </div>
       <div className="p-4 flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0" onClick={onShowcase}>
-          <div className="font-semibold text-white text-[0.92rem]">{item.name}</div>
+          <div className="font-semibold text-h-fg text-[0.92rem]">{item.name}</div>
           {item.description && (
             <div className="text-h-muted text-xs mt-0.5 leading-relaxed line-clamp-2">
               {item.description}
@@ -105,14 +105,14 @@ export function ItemCard({
             <>
               <button
                 onClick={e => { e.stopPropagation(); onRemove() }}
-                className="w-8 h-8 rounded-full border border-h-border flex items-center justify-center text-white font-bold text-lg leading-none hover:border-white/40 transition-colors active:scale-90"
+                className="w-8 h-8 rounded-full border border-h-border flex items-center justify-center text-h-fg font-bold text-lg leading-none hover:border-white/40 transition-colors active:scale-90"
               >−</button>
-              <span className="w-5 text-center font-bold text-white text-sm">{qty}</span>
+              <span className="w-5 text-center font-bold text-h-fg text-sm">{qty}</span>
             </>
           )}
           <button
             onClick={e => { e.stopPropagation(); onAdd() }}
-            className="w-8 h-8 rounded-full bg-h-red hover:bg-h-red-d flex items-center justify-center text-white font-bold text-lg leading-none transition-all active:scale-90"
+            className="w-8 h-8 rounded-full bg-h-red hover:bg-h-red-d flex items-center justify-center text-h-onbrand font-bold text-lg leading-none transition-all active:scale-90"
           >+</button>
         </div>
       </div>

@@ -150,7 +150,7 @@ export function ShowcaseModal({ item, qty, onAdd, onRemove, onClose }: {
 
       {/* Close button */}
       <button onClick={onClose}
-        className="absolute top-16 sm:top-20 left-4 z-40 flex items-center gap-1.5 text-white/60 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors">
+        className="absolute top-16 sm:top-20 left-4 z-40 flex items-center gap-1.5 text-h-fg/60 hover:text-h-fg text-xs font-bold uppercase tracking-widest transition-colors">
         <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current" strokeWidth={2}><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         Menu
       </button>
@@ -264,7 +264,7 @@ export function ShowcaseModal({ item, qty, onAdd, onRemove, onClose }: {
       </div>
 
       {/* Tilt hint */}
-      <div className="absolute bottom-32 left-1/2 -translate-x-1/2 text-white/30 text-[10px] uppercase tracking-[3px] font-bold pointer-events-none z-20 animate-info-slide-up">
+      <div className="absolute bottom-32 left-1/2 -translate-x-1/2 text-h-fg/30 text-[10px] uppercase tracking-[3px] font-bold pointer-events-none z-20 animate-info-slide-up">
         {item.model_3d_url
           ? '🖱 Drag untuk putar · scroll untuk zoom'
           : gyroPermission === 'granted' ? '↕ Miringkan HP' : '↔ Drag untuk putar'}
@@ -277,29 +277,29 @@ export function ShowcaseModal({ item, qty, onAdd, onRemove, onClose }: {
         <div className="text-xs font-black uppercase tracking-[4px] mb-1.5 animate-title-reveal" style={{ color: atm.accent }}>
           {formatRp(item.price)}
         </div>
-        <h2 className="font-sans font-black text-white text-2xl sm:text-3xl leading-tight mb-2 animate-title-reveal" style={{ animationDelay: '0.65s' }}>
+        <h2 className="font-sans font-black text-h-fg text-2xl sm:text-3xl leading-tight mb-2 animate-title-reveal" style={{ animationDelay: '0.65s' }}>
           {item.name}
         </h2>
         {item.description && (
-          <p className="text-white/55 text-sm leading-relaxed mb-5 italic">"{item.description}"</p>
+          <p className="text-h-fg/55 text-sm leading-relaxed mb-5 italic">"{item.description}"</p>
         )}
         <div className="flex items-center justify-between gap-4">
           <div>
             {qty > 0 && (
-              <div className="text-xs text-white/40 font-bold">{qty}× di keranjang · {formatRp(item.price * qty)}</div>
+              <div className="text-xs text-h-fg/40 font-bold">{qty}× di keranjang · {formatRp(item.price * qty)}</div>
             )}
           </div>
           <div className="flex items-center gap-3">
             {qty > 0 && (
               <>
                 <button onClick={onRemove}
-                  className="w-11 h-11 rounded-full border flex items-center justify-center text-white font-bold text-xl leading-none transition-all active:scale-90 hover:scale-105"
+                  className="w-11 h-11 rounded-full border flex items-center justify-center text-h-fg font-bold text-xl leading-none transition-all active:scale-90 hover:scale-105"
                   style={{ borderColor: atm.ring, background: 'rgba(0,0,0,0.4)' }}>−</button>
-                <span className="font-black text-white text-lg w-5 text-center">{qty}</span>
+                <span className="font-black text-h-fg text-lg w-5 text-center">{qty}</span>
               </>
             )}
             <button onClick={onAdd}
-              className="h-11 px-6 rounded-full font-black text-sm uppercase tracking-wider text-white transition-all active:scale-90 hover:scale-105"
+              className="h-11 px-6 rounded-full font-black text-sm uppercase tracking-wider text-h-fg transition-all active:scale-90 hover:scale-105"
               style={{
                 background: `linear-gradient(135deg, ${atm.accent} 0%, ${atm.ring} 100%)`,
                 boxShadow: `0 8px 24px ${atm.glow}`,

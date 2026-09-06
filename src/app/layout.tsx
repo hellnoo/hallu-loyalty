@@ -3,6 +3,7 @@ import { DM_Sans, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import { BRAND, BRAND_NICE, BRAND_FULL, BRAND_RGB, BRAND_RGB_PRIMARY_DARK, BRAND_HEX, BRAND_GLOBAL, applyBrand } from '@/lib/brand'
 import { loadBrandFromDb } from '@/lib/brand-server'
+import { themeCss } from '@/lib/themes'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -55,7 +56,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Disuntik ke browser sebelum bundle jalan → modul brand.ts di client
   // langsung memakai nilai yang sama (tidak ada beda server vs client).
   const bootScript = `window.${BRAND_GLOBAL}=${JSON.stringify(BRAND)};`
-  const cssVars = `:root{--brand-primary:${BRAND_RGB.primary};--brand-primary-dark:${BRAND_RGB_PRIMARY_DARK};--brand-accent:${BRAND_RGB.accent};--brand-primary-hex:${BRAND_HEX};}`
+  // Warna brand + token tema (permukaan & sudut). Keduanya dikirim sebagai CSS
+  // variable supaya ganti tema dari Admin langsung tampil tanpa deploy ulang.
+  const cssVars = `:root{--brand-primary:${BRAND_RGB.primary};--brand-primary-dark:${BRAND_RGB_PRIMARY_DARK};--brand-accent:${BRAND_RGB.accent};--brand-primary-hex:${BRAND_HEX};${themeCss(BRAND.theme)}}`
 
   return (
     <html lang="id">
