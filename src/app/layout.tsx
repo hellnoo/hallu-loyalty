@@ -1,4 +1,17 @@
 import type { Metadata, Viewport } from 'next'
+
+// PENTING: tanpa ini halaman di-prerender saat build, sehingga identitas, warna,
+// dan tema hanya dibaca SEKALI waktu deploy — mengubahnya dari Admin tidak akan
+// pernah tampil sampai deploy berikutnya. (Terbukti: warna tersimpan sebelum
+// deploy tampil, tema yang dipilih sesudahnya tidak.)
+//
+// `dynamic = 'force-dynamic'` di src/app/menu/page.tsx TIDAK berlaku karena file
+// itu 'use client' — penanda segmen rute di file client diabaikan. Jadi harus
+// dipasang di sini, di layout yang memang server component.
+//
+// Dipakai revalidate (bukan force-dynamic) supaya halaman tetap di-cache CDN —
+// penting karena menu dibuka pakai kuota pelanggan di HP mereka.
+export const revalidate = 30
 import { DM_Sans, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import { BRAND, BRAND_NICE, BRAND_FULL, BRAND_RGB, BRAND_RGB_PRIMARY_DARK, BRAND_HEX, BRAND_GLOBAL, applyBrand } from '@/lib/brand'
