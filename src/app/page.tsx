@@ -91,9 +91,9 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
         <span className="absolute top-2.5 left-3 text-lg">{CAT_ICONS[item.category] || '☕'}</span>
       </div>
       <div className="p-3.5">
-        <div className="font-bold text-white text-sm leading-tight">{item.name}</div>
+        <div className="font-bold text-h-fg text-sm leading-tight">{item.name}</div>
         {item.description && <div className="text-h-muted text-[11px] mt-1 line-clamp-1">{item.description}</div>}
-        <div className="text-h-cream font-black text-sm mt-2">{formatRp(item.price)}</div>
+        <div className="text-h-accent font-black text-sm mt-2">{formatRp(item.price)}</div>
       </div>
     </div>
   )
@@ -134,33 +134,33 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-h-bg text-white overflow-x-hidden">
+    <div className="min-h-screen bg-h-bg text-h-fg overflow-x-hidden">
 
       {/* ── Sticky Nav ── */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navScrolled ? 'bg-h-dark/90 backdrop-blur-md border-b border-h-border' : ''}`}>
         <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
           <div>
-            <div className="font-sans font-black text-white tracking-widest text-lg uppercase leading-none">{BRAND.name}</div>
-            <div className="text-h-cream text-[0.45rem] tracking-[3px] uppercase font-semibold mt-0.5">{BRAND.tagline}</div>
+            <div className="font-sans font-black text-h-fg tracking-widest text-lg uppercase leading-none">{BRAND.name}</div>
+            <div className="text-h-accent text-[0.45rem] tracking-[3px] uppercase font-semibold mt-0.5">{BRAND.tagline}</div>
           </div>
           <div className="flex items-center gap-2">
             {HAS_IG && (
               <>
                 <a href={ig()} target="_blank" rel="noreferrer" aria-label={`Instagram ${BRAND_NICE}`}
                   title="Follow di Instagram"
-                  className="w-9 h-9 flex items-center justify-center rounded-full border border-h-border hover:border-pink-500/60 hover:text-pink-400 text-white/70 transition-colors">
+                  className="w-9 h-9 flex items-center justify-center rounded-full border border-h-border hover:border-pink-500/60 hover:text-pink-400 text-h-fg/70 transition-colors">
                   <InstagramIcon />
                 </a>
                 <a href={tiktok()} target="_blank" rel="noreferrer" aria-label={`TikTok ${BRAND_NICE}`}
                   title="Follow di TikTok"
-                  className="w-9 h-9 flex items-center justify-center rounded-full border border-h-border hover:border-white/60 hover:text-white text-white/70 transition-colors">
+                  className="w-9 h-9 flex items-center justify-center rounded-full border border-h-border hover:border-white/60 hover:text-h-fg text-h-fg/70 transition-colors">
                   <TikTokIcon />
                 </a>
               </>
             )}
             {HAS_WA && (
               <a href={wa()} target="_blank" rel="noreferrer"
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full text-xs font-bold transition-colors">
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-h-fg px-4 py-2 rounded-full text-xs font-bold transition-colors">
                 <WhatsAppIcon className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">WhatsApp</span>
               </a>
@@ -183,21 +183,21 @@ export default function Home() {
         <div className="relative z-10 max-w-lg">
           {/* Arabic */}
           {BRAND.arabic && <div className="font-serif text-7xl md:text-8xl font-black mb-2 leading-none"
-            style={{ fontFamily: 'var(--font-playfair)', color: 'rgb(var(--brand-accent))' }}>
+            style={{ fontFamily: 'var(--font-playfair)', color: 'rgb(var(--accent-ink, var(--brand-accent)))' }}>
             {BRAND.arabic}
           </div>}
           {/* Brand */}
-          <div className="font-sans font-black text-h-cream text-4xl md:text-5xl tracking-[0.25em] uppercase mb-3">
+          <div className="font-sans font-black text-h-accent text-4xl md:text-5xl tracking-[0.25em] uppercase mb-3">
             {BRAND.name}
           </div>
           {/* Divider */}
           <div className="flex items-center gap-3 justify-center mb-4">
             <div className="h-px flex-1 max-w-[60px]" style={{ background: 'linear-gradient(to right, transparent, var(--brand-primary-hex))' }} />
-            <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold">{BRAND.tagline}</div>
+            <div className="text-h-accent text-[0.55rem] tracking-[4px] uppercase font-semibold">{BRAND.tagline}</div>
             <div className="h-px flex-1 max-w-[60px]" style={{ background: 'linear-gradient(to left, transparent, var(--brand-primary-hex))' }} />
           </div>
           {/* Tagline */}
-          <p className="text-white/45 text-sm leading-relaxed max-w-sm mx-auto mt-3 mb-6">
+          <p className="text-h-fg/45 text-sm leading-relaxed max-w-sm mx-auto mt-3 mb-6">
             Specialty coffee dan ruang sosial untuk menemani momen terbaikmu di {BRAND.city}.
           </p>
           {/* Jam operasional */}
@@ -205,11 +205,11 @@ export default function Home() {
             const open = calcIsOpen(storeSettings)
             return (
               <div className="flex items-center justify-center gap-3 mb-8">
-                <span className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full ${open ? 'bg-green-500/15 text-green-400 border border-green-500/30' : 'bg-h-red/15 text-h-cream border border-h-red/30'}`}>
+                <span className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full ${open ? 'bg-green-500/15 text-green-400 border border-green-500/30' : 'bg-h-red/15 text-h-accent border border-h-red/30'}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${open ? 'bg-green-400 animate-pulse' : 'bg-h-red'}`} />
                   {open ? 'Buka Sekarang' : 'Sedang Tutup'}
                 </span>
-                <span className="text-white/30 text-xs">
+                <span className="text-h-fg/30 text-xs">
                   {storeSettings.open_days} · {storeSettings.open_time}–{storeSettings.close_time}
                 </span>
               </div>
@@ -218,12 +218,12 @@ export default function Home() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href="/menu?table=1"
-              className="flex items-center justify-center gap-2 bg-h-red hover:bg-h-red-d text-white px-8 py-3.5 rounded-full font-bold text-sm uppercase tracking-[0.15em] transition-colors">
+              className="flex items-center justify-center gap-2 bg-h-red hover:bg-h-red-d text-h-onbrand px-8 py-3.5 rounded-full font-bold text-sm uppercase tracking-[0.15em] transition-colors">
               <CoffeeIcon className="w-4 h-4" /> Lihat Menu
             </a>
             {HAS_WA && (
               <a href={wa()} target="_blank" rel="noreferrer"
-                className="flex items-center justify-center gap-2 border border-h-border hover:border-white/30 text-white/70 hover:text-white px-8 py-3.5 rounded-full font-bold text-sm uppercase tracking-[0.15em] transition-colors">
+                className="flex items-center justify-center gap-2 border border-h-border hover:border-white/30 text-h-fg/70 hover:text-h-fg px-8 py-3.5 rounded-full font-bold text-sm uppercase tracking-[0.15em] transition-colors">
                 <WhatsAppIcon className="w-4 h-4 text-green-400" />
                 Order via WA
               </a>
@@ -234,7 +234,7 @@ export default function Home() {
         {/* Scroll hint */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30">
           <div className="text-[10px] tracking-[3px] uppercase">Scroll</div>
-          <div className="w-px h-8 bg-white/40 animate-pulse" />
+          <div className="w-px h-8 bg-h-fg/40 animate-pulse" />
         </div>
       </section>
 
@@ -243,10 +243,10 @@ export default function Home() {
         <Section className="px-5 max-w-5xl mx-auto mb-8">
           <div className="flex items-end justify-between">
             <div>
-              <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold mb-2">Pilihan Kami</div>
-              <h2 className="font-sans font-black text-white text-3xl uppercase tracking-wider leading-none">Menu</h2>
+              <div className="text-h-accent text-[0.55rem] tracking-[4px] uppercase font-semibold mb-2">Pilihan Kami</div>
+              <h2 className="font-sans font-black text-h-fg text-3xl uppercase tracking-wider leading-none">Menu</h2>
             </div>
-            <a href="/menu?table=1" className="text-h-cream text-xs font-bold hover:underline tracking-wider uppercase">
+            <a href="/menu?table=1" className="text-h-accent text-xs font-bold hover:underline tracking-wider uppercase">
               Lihat Semua →
             </a>
           </div>
@@ -266,13 +266,13 @@ export default function Home() {
       {/* ── About Us ── */}
       <section className="py-20 px-5">
         <Section className="max-w-3xl mx-auto text-center">
-          <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Tentang Kami</div>
-          <h2 className="font-sans font-black text-white text-3xl uppercase tracking-wider mb-6">Halo, kami {BRAND_NICE}</h2>
-          <p className="text-white/60 text-base leading-relaxed mb-4">
+          <div className="text-h-accent text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Tentang Kami</div>
+          <h2 className="font-sans font-black text-h-fg text-3xl uppercase tracking-wider mb-6">Halo, kami {BRAND_NICE}</h2>
+          <p className="text-h-fg/60 text-base leading-relaxed mb-4">
             {BRAND_NICE}{BRAND.arabic ? <> ({BRAND.arabic} · &quot;halo&quot; dalam bahasa Arab)</> : null} lahir dari satu ide sederhana —
-            tempat di mana semua orang merasa <em className="text-h-cream not-italic font-semibold">disambut</em>.
+            tempat di mana semua orang merasa <em className="text-h-accent not-italic font-semibold">disambut</em>.
           </p>
-          <p className="text-white/50 text-sm leading-relaxed">
+          <p className="text-h-fg/50 text-sm leading-relaxed">
             Specialty coffee kami diracik dari biji pilihan, dipadukan dengan suasana
             yang hangat untuk ngobrol, bekerja, atau sekadar menikmati waktu sendiri.
             Bagi kami, secangkir kopi yang baik adalah tentang momen — bukan sekadar rasa.
@@ -289,10 +289,10 @@ export default function Home() {
             { Icon: QrIcon, title: 'Order Mudah', desc: 'Scan QR di meja, pesan dari ponsel, pesanan langsung masuk ke dapur.' },
           ].map(({ Icon, title, desc }) => (
             <Section key={title} className="bg-h-card border border-h-border rounded-2xl p-7 hover:border-white/15 transition-colors">
-              <div className="w-11 h-11 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-cream mb-5">
+              <div className="w-11 h-11 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-accent mb-5">
                 <Icon className="w-5 h-5" />
               </div>
-              <div className="font-bold text-white text-base mb-2">{title}</div>
+              <div className="font-bold text-h-fg text-base mb-2">{title}</div>
               <div className="text-h-muted text-sm leading-relaxed">{desc}</div>
             </Section>
           ))}
@@ -305,8 +305,8 @@ export default function Home() {
       <section className="py-20 px-5">
         <Section className="max-w-5xl mx-auto">
           <div className="text-center mb-8">
-            <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Lokasi</div>
-            <h2 className="font-sans font-black text-white text-3xl uppercase tracking-wider mb-2">Mampir Yuk</h2>
+            <div className="text-h-accent text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Lokasi</div>
+            <h2 className="font-sans font-black text-h-fg text-3xl uppercase tracking-wider mb-2">Mampir Yuk</h2>
             {HAS_ADDRESS && <p className="text-h-muted text-sm">{loc().address}</p>}
           </div>
 
@@ -317,12 +317,12 @@ export default function Home() {
               className="lg:col-span-3 rounded-2xl overflow-hidden border border-h-border h-[340px] relative block group">
               {/* Fallback bg di belakang iframe — tampil kalau map belum/ tidak load */}
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-h-card text-center px-6 z-0">
-                <div className="w-12 h-12 rounded-full bg-h-red/10 border border-h-red/25 flex items-center justify-center text-h-cream mb-4">
+                <div className="w-12 h-12 rounded-full bg-h-red/10 border border-h-red/25 flex items-center justify-center text-h-accent mb-4">
                   <MapPinIcon className="w-6 h-6" />
                 </div>
-                <div className="text-white font-bold text-sm">{loc().label}</div>
+                <div className="text-h-fg font-bold text-sm">{loc().label}</div>
                 <div className="text-h-muted text-xs mt-1">{loc().address}</div>
-                <div className="flex items-center gap-1.5 text-h-cream text-xs font-bold mt-3 uppercase tracking-wider">
+                <div className="flex items-center gap-1.5 text-h-accent text-xs font-bold mt-3 uppercase tracking-wider">
                   Buka peta <ArrowIcon className="w-3.5 h-3.5" />
                 </div>
               </div>
@@ -342,22 +342,22 @@ export default function Home() {
               <div className="bg-h-card border border-h-border rounded-2xl p-6 flex-1 space-y-5">
                 {HAS_ADDRESS && (
                   <div className="flex items-start gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-cream flex-shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-accent flex-shrink-0">
                       <MapPinIcon className="w-5 h-5" />
                     </div>
                     <div>
-                      <div className="font-bold text-white text-sm">{loc().label}</div>
+                      <div className="font-bold text-h-fg text-sm">{loc().label}</div>
                       <div className="text-h-muted text-xs mt-0.5 leading-relaxed">{loc().address}</div>
                     </div>
                   </div>
                 )}
                 {storeSettings && (
                   <div className="flex items-start gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-cream flex-shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-accent flex-shrink-0">
                       <ClockIcon className="w-5 h-5" />
                     </div>
                     <div>
-                      <div className="font-bold text-white text-sm">Jam Buka</div>
+                      <div className="font-bold text-h-fg text-sm">Jam Buka</div>
                       <div className="text-h-muted text-xs mt-0.5">{storeSettings.open_days}</div>
                       <div className="text-h-muted text-xs">{storeSettings.open_time}–{storeSettings.close_time} WIT</div>
                     </div>
@@ -365,14 +365,14 @@ export default function Home() {
                 )}
                 {HAS_WA && (
                   <div className="flex items-start gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-cream flex-shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-h-red/10 border border-h-red/20 flex items-center justify-center text-h-accent flex-shrink-0">
                       <PhoneIcon className="w-5 h-5" />
                     </div>
                     <div>
-                      <div className="font-bold text-white text-sm">Kontak</div>
+                      <div className="font-bold text-h-fg text-sm">Kontak</div>
                       {/* Dulu nomornya ditulis literal di sini — outlet lain jadi
                           menampilkan nomor Hallu. Sekarang ikut BRAND.wa. */}
-                      <a href={wa()} target="_blank" rel="noreferrer" className="text-h-cream text-xs mt-0.5 hover:underline">{WA_DISPLAY}</a>
+                      <a href={wa()} target="_blank" rel="noreferrer" className="text-h-accent text-xs mt-0.5 hover:underline">{WA_DISPLAY}</a>
                     </div>
                   </div>
                 )}
@@ -382,11 +382,11 @@ export default function Home() {
               {HAS_MAP && (
                 <>
                   <a href={mapsDirections()} target="_blank" rel="noreferrer"
-                    className="flex items-center justify-center gap-2 bg-h-red hover:bg-h-red-d text-white px-6 py-4 rounded-2xl font-bold text-sm uppercase tracking-[0.15em] transition-colors">
+                    className="flex items-center justify-center gap-2 bg-h-red hover:bg-h-red-d text-h-onbrand px-6 py-4 rounded-2xl font-bold text-sm uppercase tracking-[0.15em] transition-colors">
                     <NavigationIcon className="w-4 h-4" /> Petunjuk Arah
                   </a>
                   <a href={mapsView()} target="_blank" rel="noreferrer"
-                    className="flex items-center justify-center gap-2 border border-h-border hover:border-white/30 text-white/70 hover:text-white px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-[0.12em] transition-colors">
+                    className="flex items-center justify-center gap-2 border border-h-border hover:border-white/30 text-h-fg/70 hover:text-h-fg px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-[0.12em] transition-colors">
                     Buka di Google Maps <ArrowIcon className="w-3.5 h-3.5" />
                   </a>
                 </>
@@ -402,8 +402,8 @@ export default function Home() {
       {HAS_IG && (
       <section className="py-16 px-5">
         <Section className="max-w-3xl mx-auto text-center">
-          <div className="text-h-cream text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Follow Kami</div>
-          <h2 className="font-sans font-black text-white text-2xl uppercase tracking-wider mb-2">Jangan ketinggalan</h2>
+          <div className="text-h-accent text-[0.55rem] tracking-[4px] uppercase font-semibold mb-3">Follow Kami</div>
+          <h2 className="font-sans font-black text-h-fg text-2xl uppercase tracking-wider mb-2">Jangan ketinggalan</h2>
           <p className="text-h-muted text-sm mb-8 leading-relaxed">
             Menu baru, event, dan keseruan kafe — kami posting tiap hari.
           </p>
@@ -414,14 +414,14 @@ export default function Home() {
               <div className="absolute inset-0 opacity-30 group-hover:opacity-50 transition-opacity"
                 style={{ background: 'linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)' }} />
               <div className="relative flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-black/40 backdrop-blur-sm flex items-center justify-center text-white">
+                <div className="w-14 h-14 rounded-2xl bg-black/40 backdrop-blur-sm flex items-center justify-center text-h-onbrand">
                   <InstagramIcon className="w-7 h-7" />
                 </div>
                 <div className="text-left flex-1">
-                  <div className="text-[10px] uppercase tracking-widest text-white/70 font-bold">Instagram</div>
-                  <div className="font-black text-white text-base">{igHandle()}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-h-fg/70 font-bold">Instagram</div>
+                  <div className="font-black text-h-fg text-base">{igHandle()}</div>
                 </div>
-                <ArrowIcon className="w-5 h-5 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                <ArrowIcon className="w-5 h-5 text-h-fg/60 group-hover:text-h-fg group-hover:translate-x-1 transition-all" />
               </div>
             </a>
 
@@ -433,14 +433,14 @@ export default function Home() {
               <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full opacity-20 group-hover:opacity-40 transition-opacity"
                 style={{ background: 'radial-gradient(circle, #FE2C55 0%, transparent 60%)' }} />
               <div className="relative flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center text-white">
+                <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center text-h-onbrand">
                   <TikTokIcon className="w-7 h-7" />
                 </div>
                 <div className="text-left flex-1">
-                  <div className="text-[10px] uppercase tracking-widest text-white/70 font-bold">TikTok</div>
-                  <div className="font-black text-white text-base">{igHandle()}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-h-fg/70 font-bold">TikTok</div>
+                  <div className="font-black text-h-fg text-base">{igHandle()}</div>
                 </div>
-                <ArrowIcon className="w-5 h-5 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                <ArrowIcon className="w-5 h-5 text-h-fg/60 group-hover:text-h-fg group-hover:translate-x-1 transition-all" />
               </div>
             </a>
           </div>
@@ -457,13 +457,13 @@ export default function Home() {
             <div className="absolute inset-0 pointer-events-none"
               style={{ background: 'radial-gradient(ellipse at 50% 120%, rgba(124,21,21,0.4) 0%, transparent 65%)' }} />
             <div className="relative z-10">
-              {BRAND.arabic && <div className="font-serif text-5xl mb-3" style={{ color: 'rgb(var(--brand-accent))', fontFamily: 'var(--font-playfair)' }}>{BRAND.arabic}</div>}
-              <h3 className="font-sans font-black text-white text-xl uppercase tracking-wider mb-2">Ada yang bisa kami bantu?</h3>
+              {BRAND.arabic && <div className="font-serif text-5xl mb-3" style={{ color: 'rgb(var(--accent-ink, var(--brand-accent)))', fontFamily: 'var(--font-playfair)' }}>{BRAND.arabic}</div>}
+              <h3 className="font-sans font-black text-h-fg text-xl uppercase tracking-wider mb-2">Ada yang bisa kami bantu?</h3>
               <p className="text-h-muted text-sm mb-8 leading-relaxed">
                 Reservasi tempat, pertanyaan menu, atau sekadar menyapa —<br />kami siap membantu lewat WhatsApp.
               </p>
               <a href={wa()} target="_blank" rel="noreferrer"
-                className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-full font-bold text-sm uppercase tracking-[0.15em] transition-colors">
+                className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 text-h-fg px-8 py-4 rounded-full font-bold text-sm uppercase tracking-[0.15em] transition-colors">
                 <WhatsAppIcon className="w-5 h-5" />
                 Chat WhatsApp
               </a>
@@ -478,7 +478,7 @@ export default function Home() {
       <footer className="border-t border-h-border py-10 px-5">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-center sm:text-left">
-            <div className="font-sans font-black text-white tracking-widest text-sm uppercase">{BRAND.name}</div>
+            <div className="font-sans font-black text-h-fg tracking-widest text-sm uppercase">{BRAND.name}</div>
             <div className="text-h-muted text-xs mt-0.5">{BRAND.tagline} · {BRAND.city}, Indonesia</div>
             {storeSettings && (
               <div className="text-h-muted text-xs mt-1">
@@ -495,7 +495,7 @@ export default function Home() {
                     <InstagramIcon className="w-3.5 h-3.5" />
                   </a>
                   <a href={tiktok()} target="_blank" rel="noreferrer" aria-label="TikTok"
-                    className="w-8 h-8 flex items-center justify-center rounded-full border border-h-border hover:border-white/60 hover:text-white text-h-muted transition-colors">
+                    className="w-8 h-8 flex items-center justify-center rounded-full border border-h-border hover:border-white/60 hover:text-h-fg text-h-muted transition-colors">
                     <TikTokIcon className="w-3.5 h-3.5" />
                   </a>
                 </>
@@ -508,13 +508,13 @@ export default function Home() {
               )}
             </div>
             <div className="flex items-center gap-5">
-              <a href="/menu?table=1" className="text-h-muted hover:text-white text-xs transition-colors">Menu</a>
-              <a href="/kasir" className="text-h-muted hover:text-white text-xs transition-colors">Kasir</a>
-              <a href="/admin" className="text-h-muted hover:text-white text-xs transition-colors">Admin</a>
+              <a href="/menu?table=1" className="text-h-muted hover:text-h-fg text-xs transition-colors">Menu</a>
+              <a href="/kasir" className="text-h-muted hover:text-h-fg text-xs transition-colors">Kasir</a>
+              <a href="/admin" className="text-h-muted hover:text-h-fg text-xs transition-colors">Admin</a>
             </div>
           </div>
         </div>
-        <div className="text-center mt-8 text-white/10 text-[10px] tracking-widest uppercase">
+        <div className="text-center mt-8 text-h-fg/10 text-[10px] tracking-widest uppercase">
           © 2025 {BRAND_NICE} · All rights reserved
         </div>
       </footer>

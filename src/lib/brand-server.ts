@@ -5,7 +5,7 @@ import type { BrandData } from './brand'
 // Dipakai layout (server) supaya HTML yang dikirim ke browser SUDAH memakai
 // identitas outlet — tidak ada kedipan "Hallu" dulu baru berubah.
 export const BRAND_COLS =
-  'brand_name, brand_tagline, brand_arabic, brand_city, brand_wa, brand_ig, brand_address, brand_lat, brand_lng, brand_logo, brand_color, brand_accent'
+  'brand_name, brand_tagline, brand_arabic, brand_city, brand_wa, brand_ig, brand_address, brand_lat, brand_lng, brand_logo, brand_color, brand_accent, brand_theme'
 
 type Row = Record<string, string | number | null>
 
@@ -18,6 +18,7 @@ export function rowKeBrand(row: Row | null | undefined): Partial<BrandData> {
     city: s(row.brand_city), wa: s(row.brand_wa), ig: s(row.brand_ig),
     address: s(row.brand_address), lat: n(row.brand_lat), lng: n(row.brand_lng),
     logo: s(row.brand_logo), color: s(row.brand_color), accent: s(row.brand_accent),
+    theme: s(row.brand_theme),
   }
 }
 

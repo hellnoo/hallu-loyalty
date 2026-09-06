@@ -63,6 +63,7 @@ export type StoreSettings = {
   brand_logo?: string | null
   brand_color?: string | null
   brand_accent?: string | null
+  brand_theme?: string | null
   // Kunci AI — rahasia, tidak ikut kolom publik
   ai_api_key?: string | null
 }
@@ -73,7 +74,7 @@ export type StoreSettings = {
 export const STORE_SETTINGS_PUBLIC_COLS =
   'id, open_time, close_time, open_days, is_manually_closed, employees, ' +
   'brand_name, brand_tagline, brand_arabic, brand_city, brand_wa, brand_ig, ' +
-  'brand_address, brand_lat, brand_lng, brand_logo, brand_color, brand_accent'
+  'brand_address, brand_lat, brand_lng, brand_logo, brand_color, brand_accent, brand_theme'
 
 export type MenuItem = {
   id: string

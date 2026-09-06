@@ -201,7 +201,7 @@ function MenuContent() {
   if (restoring) return (
     <div className="min-h-screen bg-h-bg flex items-center justify-center">
       <div className="text-center">
-        <div className="font-sans font-black text-white tracking-widest text-xl uppercase mb-2">{BRAND.name}</div>
+        <div className="font-sans font-black text-h-fg tracking-widest text-xl uppercase mb-2">{BRAND.name}</div>
         <div className="text-h-muted text-xs animate-pulse">Memuat...</div>
       </div>
     </div>
@@ -220,7 +220,7 @@ function MenuContent() {
             <div className="w-20 h-20 rounded-full border-2 border-h-border flex items-center justify-center mb-5">
               <span className="text-4xl">✕</span>
             </div>
-            <h1 className="font-sans text-2xl font-black text-white uppercase tracking-wider mb-1">Dibatalkan</h1>
+            <h1 className="font-sans text-2xl font-black text-h-fg uppercase tracking-wider mb-1">Dibatalkan</h1>
             <p className="text-h-muted text-xs mt-3 max-w-xs">Pesananmu dibatalkan oleh kasir. Silakan order ulang atau tanya langsung ke kasir.</p>
           </>
         ) : isReady ? (
@@ -228,23 +228,23 @@ function MenuContent() {
             <div className="w-24 h-24 rounded-full bg-h-red/10 border-2 border-h-red flex items-center justify-center mb-5 animate-pulse">
               <span className="text-5xl">🔔</span>
             </div>
-            <h1 className="font-sans text-2xl font-black text-white uppercase tracking-wider mb-1">Pesanan Siap!</h1>
-            <p className="text-h-cream text-sm font-bold">{tableName}</p>
-            <p className="text-white/70 text-sm mt-3 max-w-xs leading-relaxed">Silakan ke kasir untuk ambil pesananmu dan konfirmasi pembayaran.</p>
+            <h1 className="font-sans text-2xl font-black text-h-fg uppercase tracking-wider mb-1">Pesanan Siap!</h1>
+            <p className="text-h-accent text-sm font-bold">{tableName}</p>
+            <p className="text-h-fg/70 text-sm mt-3 max-w-xs leading-relaxed">Silakan ke kasir untuk ambil pesananmu dan konfirmasi pembayaran.</p>
           </>
         ) : isDone ? (
           <>
             <div className="w-20 h-20 rounded-full border-2 border-h-red flex items-center justify-center mb-5">
-              <svg className="w-10 h-10 text-h-cream" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <svg className="w-10 h-10 text-h-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="font-sans text-2xl font-black text-white uppercase tracking-wider mb-1">Selesai!</h1>
+            <h1 className="font-sans text-2xl font-black text-h-fg uppercase tracking-wider mb-1">Selesai!</h1>
             <p className="text-h-muted text-xs mt-3 max-w-xs">Terima kasih sudah mampir ke {BRAND_NICE} ☕</p>
             {/* Rating */}
             {!rated ? (
               <div className="mt-8 bg-h-card border border-h-border rounded-2xl px-8 py-6 text-center max-w-xs w-full">
-                <p className="text-white text-sm font-bold mb-1">Gimana pesanannya?</p>
+                <p className="text-h-fg text-sm font-bold mb-1">Gimana pesanannya?</p>
                 <p className="text-h-muted text-xs mb-4">Tap bintang buat kasih rating</p>
                 <div className="flex justify-center gap-2 mb-2">
                   {[1,2,3,4,5].map(s => (
@@ -273,7 +273,7 @@ function MenuContent() {
             <div className="w-20 h-20 rounded-full border-2 border-yellow-500 flex items-center justify-center mb-5">
               <span className="text-4xl">👨‍🍳</span>
             </div>
-            <h1 className="font-sans text-2xl font-black text-white uppercase tracking-wider mb-1">Sedang Disiapkan</h1>
+            <h1 className="font-sans text-2xl font-black text-h-fg uppercase tracking-wider mb-1">Sedang Disiapkan</h1>
             <p className="text-yellow-400 text-sm font-semibold">{tableName}</p>
             <p className="text-h-muted text-xs mt-3 max-w-xs leading-relaxed">Pesananmu sedang dibuat oleh barista kami. Sebentar lagi siap! ☕</p>
           </>
@@ -282,8 +282,8 @@ function MenuContent() {
             <div className="w-20 h-20 rounded-full border-2 border-h-border flex items-center justify-center mb-5">
               <span className="text-4xl animate-spin" style={{ animationDuration: '3s' }}>⏳</span>
             </div>
-            <h1 className="font-sans text-2xl font-black text-white uppercase tracking-wider mb-1">Pesanan Diterima!</h1>
-            <p className="text-h-cream text-sm font-semibold">{tableName}</p>
+            <h1 className="font-sans text-2xl font-black text-h-fg uppercase tracking-wider mb-1">Pesanan Diterima!</h1>
+            <p className="text-h-accent text-sm font-semibold">{tableName}</p>
             <p className="text-h-muted text-xs mt-3 max-w-xs leading-relaxed">Pesananmu sedang diproses. Halaman ini otomatis update saat pesanan siap — tetap buka ya!</p>
           </>
         )}
@@ -293,7 +293,7 @@ function MenuContent() {
           {[['Diterima', true], ['Disiapkan', isPreparing || isReady || isDone], ['Siap Diambil', isReady || isDone]].map(([label, done], i, arr) => (
             <div key={i} className="flex items-center gap-2">
               <div className="flex flex-col items-center gap-1">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black transition-colors ${done ? 'bg-h-red text-white' : 'bg-h-border text-h-muted'}`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black transition-colors ${done ? 'bg-h-red text-h-onbrand' : 'bg-h-border text-h-muted'}`}>
                   {done ? '✓' : i + 1}
                 </div>
                 <span className="text-[9px] text-h-muted whitespace-nowrap">{label as string}</span>
@@ -308,14 +308,14 @@ function MenuContent() {
           {!isDone && !isCancelled && (
             <button
               onClick={() => setSubmitted(false)}
-              className="text-h-muted hover:text-white text-xs font-bold uppercase tracking-wider border border-h-border hover:border-white/30 px-6 py-2.5 rounded-full transition-colors"
+              className="text-h-muted hover:text-h-fg text-xs font-bold uppercase tracking-wider border border-h-border hover:border-white/30 px-6 py-2.5 rounded-full transition-colors"
             >← Kembali ke Menu</button>
           )}
           {/* Pesan lagi — hanya saat done/cancelled */}
           {(isCancelled || isDone) && (
             <button
               onClick={() => { setCart({}); setNote(''); setCustomerName(''); setPhone(''); setPayMethod(''); setSubmitted(false); setOrderId(null); clearActiveOrder(tableNum); localStorage.removeItem(`hallu-cart-${tableNum}`) }}
-              className="bg-h-red hover:bg-h-red-d text-white px-7 py-3 rounded-full font-semibold transition-colors text-sm"
+              className="bg-h-red hover:bg-h-red-d text-h-onbrand px-7 py-3 rounded-full font-semibold transition-colors text-sm"
             >Pesan Lagi</button>
           )}
         </div>
@@ -328,13 +328,13 @@ function MenuContent() {
       <header className={`bg-h-dark border-b border-h-border sticky z-40 ${orderId && !submitted ? 'top-[42px]' : 'top-0'}`}>
         <div className="max-w-[480px] mx-auto px-5 py-3.5 flex items-center justify-between">
           <div>
-            <div className="font-sans text-lg font-black text-white tracking-widest uppercase leading-none">{BRAND.name}</div>
+            <div className="font-sans text-lg font-black text-h-fg tracking-widest uppercase leading-none">{BRAND.name}</div>
             <div className="flex items-center gap-2 mt-0.5">
-              <div className="text-h-cream text-[0.5rem] tracking-[3px] uppercase font-semibold">{BRAND.tagline}</div>
+              <div className="text-h-accent text-[0.5rem] tracking-[3px] uppercase font-semibold">{BRAND.tagline}</div>
               {storeSettings && (() => {
                 const open = calcIsOpen(storeSettings)
                 return (
-                  <span className={`text-[0.5rem] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider ${open ? 'bg-green-500/20 text-green-400' : 'bg-h-red/20 text-h-cream'}`}>
+                  <span className={`text-[0.5rem] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider ${open ? 'bg-green-500/20 text-green-400' : 'bg-h-red/20 text-h-accent'}`}>
                     {open ? '● Buka' : '● Tutup'}
                   </span>
                 )
@@ -347,7 +347,7 @@ function MenuContent() {
                 Buka {storeSettings.open_time}
               </div>
             )}
-            <div className="border border-h-red text-h-cream rounded px-3 py-1 text-xs font-bold tracking-wider uppercase">
+            <div className="border border-h-red text-h-accent rounded px-3 py-1 text-xs font-bold tracking-wider uppercase">
               {tableName}
             </div>
           </div>
@@ -357,7 +357,7 @@ function MenuContent() {
           <div className="max-w-[480px] mx-auto flex overflow-x-auto scrollbar-hide border-t border-h-border/50 px-2">
             {Object.keys(grouped).map(cat => (
               <button key={cat} onClick={() => scrollToCategory(cat)}
-                className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${activeCategory === cat ? 'text-h-cream border-h-red' : 'text-h-muted border-transparent hover:text-white'}`}>
+                className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${activeCategory === cat ? 'text-h-accent border-h-red' : 'text-h-muted border-transparent hover:text-h-fg'}`}>
                 <span>{CAT_ICONS[cat]}</span>{cat}
               </button>
             ))}
@@ -374,7 +374,7 @@ function MenuContent() {
           Object.entries(grouped).map(([cat, catItems]) => (
             <section key={cat} className="mb-7" data-cat={cat}
               ref={el => { sectionRefs.current[cat] = el }}>
-              <h2 className="text-sm font-bold text-white mb-3 px-1 flex items-center gap-2 uppercase tracking-wider">
+              <h2 className="text-sm font-bold text-h-fg mb-3 px-1 flex items-center gap-2 uppercase tracking-wider">
                 <span className="w-1 h-4 bg-h-red rounded-full inline-block" />
                 {CAT_ICONS[cat]} {cat}
               </h2>
@@ -417,7 +417,7 @@ function MenuContent() {
           <div className="max-w-[480px] mx-auto px-4 py-3 bg-h-dark border-t border-h-border">
             <button
               onClick={() => setShowCart(true)}
-              className="w-full bg-h-red hover:bg-h-red-d text-white rounded-xl py-3.5 flex items-center justify-between px-5 transition-colors"
+              className="w-full bg-h-red hover:bg-h-red-d text-h-onbrand rounded-xl py-3.5 flex items-center justify-between px-5 transition-colors"
             >
               <div className="bg-black/30 rounded px-2 py-0.5 text-xs font-bold">{totalItems}</div>
               <span className="font-bold text-sm uppercase tracking-wide">Lihat Pesanan</span>
@@ -435,20 +435,20 @@ function MenuContent() {
               <div className="w-10 h-1 bg-h-border rounded-full" />
             </div>
             <div className="px-5 pt-2 pb-3 flex items-center justify-between border-b border-h-border">
-              <h2 className="font-sans text-base font-black text-white uppercase tracking-wider">Pesanan Kamu</h2>
-              <button onClick={() => setShowCart(false)} className="text-h-muted hover:text-white text-2xl leading-none">×</button>
+              <h2 className="font-sans text-base font-black text-h-fg uppercase tracking-wider">Pesanan Kamu</h2>
+              <button onClick={() => setShowCart(false)} className="text-h-muted hover:text-h-fg text-2xl leading-none">×</button>
             </div>
             <div className="overflow-y-auto flex-1 px-5 py-4 space-y-3">
               {items.filter(i => cart[i.id]).map(item => (
                 <div key={item.id} className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm text-white truncate">{item.name}</div>
-                    <div className="text-h-cream text-xs mt-0.5">{formatRp(item.price * cart[item.id])}</div>
+                    <div className="font-medium text-sm text-h-fg truncate">{item.name}</div>
+                    <div className="text-h-accent text-xs mt-0.5">{formatRp(item.price * cart[item.id])}</div>
                   </div>
                   <div className="flex items-center gap-2.5 ml-4">
-                    <button onClick={() => removeItem(item.id)} className="w-7 h-7 rounded-full border border-h-border flex items-center justify-center text-white font-bold">−</button>
-                    <span className="w-4 text-center font-bold text-sm text-white">{cart[item.id]}</span>
-                    <button onClick={() => addItem(item.id)} className="w-7 h-7 rounded-full bg-h-red flex items-center justify-center text-white font-bold">+</button>
+                    <button onClick={() => removeItem(item.id)} className="w-7 h-7 rounded-full border border-h-border flex items-center justify-center text-h-fg font-bold">−</button>
+                    <span className="w-4 text-center font-bold text-sm text-h-fg">{cart[item.id]}</span>
+                    <button onClick={() => addItem(item.id)} className="w-7 h-7 rounded-full bg-h-red flex items-center justify-center text-h-onbrand font-bold">+</button>
                   </div>
                 </div>
               ))}
@@ -456,7 +456,7 @@ function MenuContent() {
             {/* ── AI Recommendations ── */}
             {(aiRecsLoading || aiRecs.length > 0) && (
               <div className="px-5 py-3 border-t border-h-border bg-gradient-to-br from-h-red/5 to-transparent">
-                <div className="text-[10px] uppercase tracking-widest font-black text-h-cream mb-2 flex items-center gap-1.5">
+                <div className="text-[10px] uppercase tracking-widest font-black text-h-accent mb-2 flex items-center gap-1.5">
                   ✨ Mungkin Cocok
                   {aiRecsLoading && <span className="text-h-muted animate-pulse">memilih...</span>}
                 </div>
@@ -471,12 +471,12 @@ function MenuContent() {
                             <img src={item.image_url || generatePlaceholder(item)} alt={item.name} className="w-full h-full object-cover" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-bold text-white text-sm truncate">{item.name}</div>
+                            <div className="font-bold text-h-fg text-sm truncate">{item.name}</div>
                             <div className="text-h-muted text-[11px] leading-snug line-clamp-2 italic">"{rec.reason}"</div>
-                            <div className="text-h-cream text-xs font-black mt-0.5">{formatRp(item.price)}</div>
+                            <div className="text-h-accent text-xs font-black mt-0.5">{formatRp(item.price)}</div>
                           </div>
                           <button onClick={() => addItem(item.id)}
-                            className="w-9 h-9 rounded-full bg-h-red hover:bg-h-red-d flex items-center justify-center text-white font-bold text-lg leading-none transition-all active:scale-90 flex-shrink-0">+</button>
+                            className="w-9 h-9 rounded-full bg-h-red hover:bg-h-red-d flex items-center justify-center text-h-onbrand font-bold text-lg leading-none transition-all active:scale-90 flex-shrink-0">+</button>
                         </div>
                       )
                     })}
@@ -486,23 +486,23 @@ function MenuContent() {
             )}
 
             <div className="px-5 pt-3 pb-2 border-t border-h-border">
-              <label className="text-xs text-h-muted block mb-1.5">Nama Pemesan <span className="text-h-cream">*</span></label>
+              <label className="text-xs text-h-muted block mb-1.5">Nama Pemesan <span className="text-h-accent">*</span></label>
               <input
                 value={customerName} onChange={e => setCustomerName(e.target.value)}
                 placeholder="Contoh: Andi"
-                className="w-full bg-h-card border border-h-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-h-red transition-colors text-white placeholder-h-muted mb-3"
+                className="w-full bg-h-card border border-h-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-h-red transition-colors text-h-fg placeholder-h-muted mb-3"
               />
               <label className="text-xs text-h-muted block mb-1.5">No. WhatsApp <span className="text-h-muted">(opsional · untuk notifikasi)</span></label>
               <input
                 type="tel" value={phone} onChange={e => setPhone(e.target.value)}
                 placeholder="Contoh: 08123456789"
-                className="w-full bg-h-card border border-h-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-h-red transition-colors text-white placeholder-h-muted mb-3"
+                className="w-full bg-h-card border border-h-border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-h-red transition-colors text-h-fg placeholder-h-muted mb-3"
               />
-              <label className="text-xs text-h-muted block mb-1.5">Metode Bayar <span className="text-h-cream">*</span></label>
+              <label className="text-xs text-h-muted block mb-1.5">Metode Bayar <span className="text-h-accent">*</span></label>
               <div className="flex gap-2 mb-3">
                 {([['tunai', '💵 Tunai'], ['qris', '⬛ QRIS']] as const).map(([val, label]) => (
                   <button key={val} type="button" onClick={() => setPayMethod(val)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors border ${payMethod === val ? 'bg-h-red border-h-red text-white' : 'bg-h-card border-h-border text-h-muted hover:text-white'}`}>
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors border ${payMethod === val ? 'bg-h-red border-h-red text-h-onbrand' : 'bg-h-card border-h-border text-h-muted hover:text-h-onbrand'}`}>
                     {label}
                   </button>
                 ))}
@@ -511,30 +511,30 @@ function MenuContent() {
               <textarea
                 value={note} onChange={e => setNote(e.target.value)}
                 placeholder="Contoh: tanpa es, gula sedikit..."
-                className="w-full bg-h-card border border-h-border rounded-xl px-3.5 py-2.5 text-sm resize-none focus:outline-none focus:border-h-red transition-colors text-white placeholder-h-muted"
+                className="w-full bg-h-card border border-h-border rounded-xl px-3.5 py-2.5 text-sm resize-none focus:outline-none focus:border-h-red transition-colors text-h-fg placeholder-h-muted"
                 rows={2}
               />
             </div>
             <div className="px-5 pt-2 pb-8">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-h-muted text-sm">Total</span>
-                <span className="text-xl font-black text-white">{formatRp(totalPrice)}</span>
+                <span className="text-xl font-black text-h-fg">{formatRp(totalPrice)}</span>
               </div>
               {submitError && <p className="text-red-400 text-xs mb-3 text-center">{submitError}</p>}
               {/* Block order baru kalau masih ada order aktif */}
               {orderId && !['done', 'cancelled'].includes(orderStatus) ? (
                 <div className="bg-h-card border border-h-border rounded-xl p-4 text-center">
-                  <div className="text-sm font-bold text-white mb-1">Ada pesanan yang sedang berjalan</div>
+                  <div className="text-sm font-bold text-h-fg mb-1">Ada pesanan yang sedang berjalan</div>
                   <div className="text-xs text-h-muted mb-3">Selesaikan atau tunggu pesananmu dulu sebelum order lagi.</div>
                   <button onClick={() => { setShowCart(false); setSubmitted(true) }}
-                    className="w-full bg-h-red hover:bg-h-red-d text-white py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-colors">
+                    className="w-full bg-h-red hover:bg-h-red-d text-h-onbrand py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-colors">
                     Lihat Status Pesanan →
                   </button>
                 </div>
               ) : (
                 <button
                   onClick={handleSubmit} disabled={submitting || !customerName.trim() || !payMethod}
-                  className="w-full bg-h-red hover:bg-h-red-d disabled:opacity-60 text-white py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-colors"
+                  className="w-full bg-h-red hover:bg-h-red-d disabled:opacity-60 text-h-onbrand py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-colors"
                 >{submitting ? 'Mengirim...' : 'Pesan Sekarang'}</button>
               )}
             </div>

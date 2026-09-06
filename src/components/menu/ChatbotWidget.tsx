@@ -72,11 +72,11 @@ export function ChatbotWidget({ items }: { items: MenuItem[] }) {
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-h-red flex items-center justify-center text-lg">🤖</div>
                 <div>
-                  <div className="font-black text-white text-sm">Barista AI</div>
+                  <div className="font-black text-h-fg text-sm">Barista AI</div>
                   <div className="text-[10px] text-green-400 flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />Online</div>
                 </div>
               </div>
-              <button onClick={() => setOpen(false)} className="text-h-muted hover:text-white text-2xl leading-none">×</button>
+              <button onClick={() => setOpen(false)} className="text-h-muted hover:text-h-fg text-2xl leading-none">×</button>
             </div>
 
             {/* Messages */}
@@ -85,8 +85,8 @@ export function ChatbotWidget({ items }: { items: MenuItem[] }) {
                 <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                     m.role === 'user'
-                      ? 'bg-h-red text-white rounded-br-md'
-                      : 'bg-h-card border border-h-border text-white/90 rounded-bl-md'
+                      ? 'bg-h-red text-h-onbrand rounded-br-md'
+                      : 'bg-h-card border border-h-border text-h-fg/90 rounded-bl-md'
                   }`}>
                     {m.content.split('\n').map((line, j) => (
                       <div key={j}>{line.replace(/\*([^*]+)\*/g, '$1')}</div>
@@ -110,7 +110,7 @@ export function ChatbotWidget({ items }: { items: MenuItem[] }) {
               <div className="px-4 pb-2 flex gap-2 overflow-x-auto scrollbar-hide">
                 {quickPrompts.map(q => (
                   <button key={q} onClick={() => send(q)}
-                    className="flex-shrink-0 text-xs text-h-cream border border-h-red/30 hover:bg-h-red/10 px-3 py-1.5 rounded-full transition-colors whitespace-nowrap font-bold">
+                    className="flex-shrink-0 text-xs text-h-accent border border-h-red/30 hover:bg-h-red/10 px-3 py-1.5 rounded-full transition-colors whitespace-nowrap font-bold">
                     {q}
                   </button>
                 ))}
@@ -124,9 +124,9 @@ export function ChatbotWidget({ items }: { items: MenuItem[] }) {
                 value={input} onChange={e => setInput(e.target.value)}
                 placeholder="Tanya barista..."
                 disabled={loading}
-                className="flex-1 bg-h-card border border-h-border rounded-full px-4 py-2.5 text-sm text-white placeholder-h-muted focus:outline-none focus:border-h-red transition-colors" />
+                className="flex-1 bg-h-card border border-h-border rounded-full px-4 py-2.5 text-sm text-h-fg placeholder-h-muted focus:outline-none focus:border-h-red transition-colors" />
               <button type="submit" disabled={loading || !input.trim()}
-                className="w-11 h-11 rounded-full bg-h-red hover:bg-h-red-d disabled:opacity-40 flex items-center justify-center text-white transition-colors flex-shrink-0">
+                className="w-11 h-11 rounded-full bg-h-red hover:bg-h-red-d disabled:opacity-40 flex items-center justify-center text-h-onbrand transition-colors flex-shrink-0">
                 <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
               </button>
             </form>

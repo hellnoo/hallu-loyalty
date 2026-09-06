@@ -6,6 +6,7 @@ import type { MenuItem, StoreSettings } from '@/types'
 import { bacaStoreSettings, simpanStoreSettings } from '@/lib/store-settings'
 import { hitungBahanTerpakai, fmtJumlah } from '@/lib/bahan-terpakai'
 import { bacaBahan, ringkasBahan, type Bahan, type BahanBaru } from '@/lib/bahan'
+import { THEMES, THEME_DEFAULT } from '@/lib/themes'
 import { formatRp } from '@/lib/format'
 import { isStoreOpen } from '@/lib/store-hours'
 import { monthStartWIT, witHour, fmtWITDateTime, fmtWITDateShort, toWITDateString, shiftDay, fmtWITWeekdayDay } from '@/lib/business-day'
@@ -93,7 +94,7 @@ export default function AdminPage() {
   // Sudah menjalankan migrasi identitas (supabase-brand.sql)? Kalau belum,
   // kolom brand_* tidak boleh ikut dikirim saat simpan (bikin error).
   const [outletSupportsBrand, setOutletSupportsBrand] = useState(false)
-  const BRAND_FIELDS = ['brand_name','brand_tagline','brand_arabic','brand_city','brand_wa','brand_ig','brand_address','brand_lat','brand_lng','brand_logo','brand_color','brand_accent','ai_api_key'] as const
+  const BRAND_FIELDS = ['brand_name','brand_tagline','brand_arabic','brand_city','brand_wa','brand_ig','brand_address','brand_lat','brand_lng','brand_logo','brand_color','brand_accent','brand_theme','ai_api_key'] as const
 
   // Sesi lama (login sebelum fitur lintas-outlet ada) cuma simpan flag 'ok'
   // tanpa password — padahal /api/central/* butuh password utk verifikasi.
@@ -1770,6 +1771,36 @@ export default function AdminPage() {
                   <p className="text-[10px] text-h-muted mt-1.5">
                     Warna berlaku ke seluruh tampilan outlet ini. Perubahan tampil dalam ±30 detik setelah Simpan (tanpa deploy ulang).
                   </p>
+
+                  {/* Tema tampilan halaman menu */}
+                  <div className="mt-4">
+                    <label className="text-[10px] text-h-muted uppercase tracking-wide block mb-1.5">Tema Halaman Menu</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {THEMES.map(t => {
+                        const aktif = (settings.brand_theme || THEME_DEFAULT) === t.key
+                        return (
+                          <button
+                            key={t.key}
+                            type="button"
+                            onClick={() => setSettings(s => ({ ...s, brand_theme: t.key }))}
+                            className={`text-left rounded-xl border p-3 transition-colors ${aktif ? 'border-h-red bg-h-red/10' : 'border-h-border hover:border-h-red/40'}`}>
+                            <div className="flex items-center gap-2">
+                              <span
+                                aria-hidden="true"
+                                className="w-5 h-5 rounded-md border border-white/15 flex-shrink-0"
+                                style={{ background: `rgb(${t.vars['--surface-bg']})` }} />
+                              <span className="text-xs font-bold text-white">{t.nama}</span>
+                              {aktif && <span className="text-[9px] text-h-red font-black ml-auto">DIPAKAI</span>}
+                            </div>
+                            <p className="text-[10px] text-h-muted mt-1.5 leading-relaxed">{t.untuk}</p>
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <p className="text-[10px] text-h-muted mt-1.5">
+                      Tema mengubah warna latar dan bentuk sudut di halaman menu pelanggan. Warna brand di atas tetap dipakai untuk tombol dan aksen.
+                    </p>
+                  </div>
 
                   {/* Kunci AI — opsional, mengaktifkan chatbot barista & laporan AI */}
                   <div className="mt-4">
