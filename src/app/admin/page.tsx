@@ -628,7 +628,7 @@ export default function AdminPage() {
   })()
 
   if (!authed) return (
-    <div className="min-h-screen bg-h-bg flex items-center justify-center p-6">
+    <div className="tema-staf min-h-screen bg-h-bg flex items-center justify-center p-6">
       <div className="bg-h-card border border-h-border rounded-2xl p-8 w-full max-w-sm">
         <div className="text-center mb-8">
           <a href="/" title="Kembali ke beranda" className="inline-block">
@@ -658,7 +658,7 @@ export default function AdminPage() {
   )
 
   return (
-    <div className="min-h-screen bg-h-bg">
+    <div className="tema-staf min-h-screen bg-h-bg">
       <header className="bg-h-dark border-b border-h-border">
         <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
           <a href="/" title="Kembali ke beranda" className="group">
