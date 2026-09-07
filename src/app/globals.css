@@ -15,6 +15,35 @@
   }
 }
 
+/* ── Panel staf: SELALU gelap, tidak ikut tema outlet ───────── */
+/* Tema itu wajah untuk PELANGGAN. Admin & kasir adalah alat kerja: di sana ada
+   ratusan teks putih yang tidak ditema, jadi begitu outlet memilih tema terang
+   judul dan label ikut hilang. Kelas ini mengembalikan token ke nilai tema
+   Gelap khusus untuk halaman staf. */
+.tema-staf {
+  --surface-bg: 12 10 9;
+  --surface-dark: 20 16 16;
+  --surface-card: 27 22 20;
+  --surface-border: 44 36 34;
+  --surface-muted: 138 128 122;
+  --surface-fg: 255 255 255;
+  --accent-ink: var(--brand-accent);
+  /* warna brand dikembalikan ke aslinya — pemekatan hanya perlu di tema terang */
+  --brand-primary: var(--brand-raw, var(--brand-primary));
+  --r-lg: 0.5rem;
+  --r-xl: 0.75rem;
+  --r-2xl: 1rem;
+  background: rgb(var(--surface-bg));
+  color: rgb(var(--surface-fg));
+}
+
+/* Ikutkan kanvas di belakangnya, supaya tidak ada pita terang saat overscroll
+   di halaman staf ketika outlet memakai tema terang. */
+html:has(.tema-staf),
+body:has(.tema-staf) {
+  background: rgb(12 10 9);
+}
+
 /* ── Menu item photo animations ───────────────────────────── */
 
 /* 1. Ken Burns — cinematic slow zoom + drift */

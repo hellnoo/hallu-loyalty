@@ -79,7 +79,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const brandUtama = tema.terang
     ? warnaTerbaca(BRAND_RGB.primary, tema.vars['--surface-bg'])
     : BRAND_RGB.primary
-  const cssVars = `:root{--brand-primary:${brandUtama};--brand-ink:${brandUtama};--brand-primary-dark:${BRAND_RGB_PRIMARY_DARK};--brand-accent:${BRAND_RGB.accent};--brand-primary-hex:${BRAND_HEX};${themeCss(BRAND.theme)}}`
+  const cssVars = `:root{--brand-primary:${brandUtama};--brand-raw:${BRAND_RGB.primary};--brand-ink:${brandUtama};--brand-primary-dark:${BRAND_RGB_PRIMARY_DARK};--brand-accent:${BRAND_RGB.accent};--brand-primary-hex:${BRAND_HEX};${themeCss(BRAND.theme)}}`
 
   return (
     <html lang="id">

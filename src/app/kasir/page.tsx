@@ -492,7 +492,7 @@ export default function KasirPage() {
   }, [doneOrders])
 
   if (!authed) return (
-    <div className="min-h-screen bg-h-bg flex items-center justify-center p-6">
+    <div className="tema-staf min-h-screen bg-h-bg flex items-center justify-center p-6">
       <div className="bg-h-card border border-h-border rounded-2xl p-8 w-full max-w-sm">
         <div className="text-center mb-8">
           <a href="/" title="Kembali ke beranda" className="inline-block">
@@ -528,7 +528,7 @@ export default function KasirPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-h-bg" onClick={resetIdle}>
+    <div className="tema-staf min-h-screen bg-h-bg" onClick={resetIdle}>
       {/* Screensaver */}
       {isIdle && (
         <div
