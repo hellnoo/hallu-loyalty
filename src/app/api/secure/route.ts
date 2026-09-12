@@ -15,7 +15,7 @@ const ALLOWED: Record<string, Record<string, string[]>> = {
     orders: ['deleteOld'],
   },
   kasir: {
-    expenses: ['insert', 'delete'],
+    expenses: ['insert', 'update', 'delete'],
   },
 }
 

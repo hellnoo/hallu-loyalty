@@ -46,6 +46,8 @@ export default function KasirPage() {
   const [expDesc, setExpDesc] = useState('')
   const [expAmount, setExpAmount] = useState('')
   const [expSaving, setExpSaving] = useState(false)
+  const [expError, setExpError] = useState('')
+  const [expEditId, setExpEditId] = useState<string | null>(null)
   // ── Shift state ──────────────────────────────────────────
   const isOnline = useOnlineStatus()
   const [pendingCount, setPendingCount] = useState(0)
@@ -101,28 +103,67 @@ export default function KasirPage() {
       .eq('expense_date', date || rekapDate).order('created_at', { ascending: false })
     if (data) setExpenses(data as Expense[])
   }
+  // Pesan error dari server/DB — jangan pernah gagal diam-diam.
+  const pesanGagal = (err: unknown, bawaan: string): string => {
+    const m = err instanceof Error ? err.message
+      : (err && typeof err === 'object' && 'message' in err) ? String((err as { message: unknown }).message) : ''
+    return m || bawaan
+  }
+  // Password tersimpan sudah basi (mis. password kasir diganti) → paksa login
+  // ulang, biar tidak kelihatan "tersimpan" padahal ditolak server.
+  const cekSesiKadaluarsa = (err: unknown): boolean => {
+    if (!/sesi kadaluarsa|password salah/i.test(pesanGagal(err, ''))) return false
+    localStorage.removeItem('hallu-kasir'); localStorage.removeItem('hallu-kasir-pw')
+    setAuthed(false)
+    setPwError('Sesi kadaluarsa — masuk lagi dengan password kasir terbaru')
+    return true
+  }
+  const resetExpForm = () => { setExpEditId(null); setExpDesc(''); setExpAmount(''); setExpError('') }
+
   const addExpense = async () => {
     const amount = Math.round(Number(expAmount.replace(/[^\d]/g, '')))
     if (!amount || amount <= 0) return
-    setExpSaving(true)
+    setExpSaving(true); setExpError('')
     const values = { category: expCat, description: expDesc.trim() || null, amount, expense_date: rekapDate }
+
+    if (expEditId) {
+      const { error } = await secureWrite({
+        scope: 'kasir', table: 'expenses', op: 'update', matchId: expEditId, values,
+        fallback: async () => { const r = await supabase.from('expenses').update(values).eq('id', expEditId); return { error: r.error } },
+      })
+      if (error) { if (!cekSesiKadaluarsa(error)) setExpError(pesanGagal(error, 'Gagal simpan perubahan')) }
+      else { setExpenses(prev => prev.map(e => e.id === expEditId ? { ...e, ...values } : e)); resetExpForm() }
+      setExpSaving(false)
+      return
+    }
+
     const { error, data } = await secureWrite({
       scope: 'kasir', table: 'expenses', op: 'insert', values,
       fallback: async () => { const r = await supabase.from('expenses').insert(values).select('*'); return { error: r.error, data: r.data } },
     })
     const row = Array.isArray(data) ? (data as Expense[])[0] : null
-    if (!error && row) {
-      setExpenses(prev => [row, ...prev])
-      setExpDesc(''); setExpAmount('')
-    }
+    if (error) { if (!cekSesiKadaluarsa(error)) setExpError(pesanGagal(error, 'Gagal simpan pengeluaran')) }
+    else if (row) { setExpenses(prev => [row, ...prev]); resetExpForm() }
+    else { await loadExpenses(rekapDate); resetExpForm() }
     setExpSaving(false)
   }
+
+  const editExpense = (e: Expense) => {
+    setExpEditId(e.id); setExpCat(e.category)
+    setExpDesc(e.description || ''); setExpAmount(String(e.amount)); setExpError('')
+  }
+
+  // Baru hilang dari layar SETELAH server mengonfirmasi — dulu dihapus duluan,
+  // jadi baris yang gagal dihapus muncul lagi saat halaman dimuat ulang.
   const deleteExpense = async (id: string) => {
-    setExpenses(prev => prev.filter(e => e.id !== id))
-    await secureWrite({
+    setExpError('')
+    const { error } = await secureWrite({
       scope: 'kasir', table: 'expenses', op: 'delete', matchId: id,
       fallback: async () => { const r = await supabase.from('expenses').delete().eq('id', id); return { error: r.error } },
     })
+    if (error) { if (!cekSesiKadaluarsa(error)) setExpError(pesanGagal(error, 'Gagal hapus pengeluaran')); return }
+    setExpenses(prev => prev.filter(e => e.id !== id))
+    if (expEditId === id) resetExpForm()
   }
 
   useEffect(() => {
@@ -724,7 +765,13 @@ export default function KasirPage() {
 
             {/* Form input pengeluaran */}
             <form onSubmit={e => { e.preventDefault(); addExpense() }} className="bg-h-card border border-h-border rounded-2xl p-4 space-y-3">
-              <div className="text-xs font-bold text-white uppercase tracking-wider">Catat Pengeluaran</div>
+              <div className="flex items-center gap-2">
+                <div className="text-xs font-bold text-white uppercase tracking-wider">{expEditId ? 'Ubah Pengeluaran' : 'Catat Pengeluaran'}</div>
+                {expEditId && (
+                  <button type="button" onClick={resetExpForm}
+                    className="ml-auto text-xs text-h-muted hover:text-white underline">Batal</button>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 {EXPENSE_CATEGORIES.map(c => (
                   <button key={c.value} type="button" onClick={() => setExpCat(c.value)}
@@ -743,9 +790,14 @@ export default function KasirPage() {
                 </div>
                 <button type="submit" disabled={expSaving || !expAmount}
                   className="bg-h-red hover:bg-h-red-d disabled:opacity-40 text-white px-6 py-2.5 rounded-xl font-black text-sm uppercase tracking-wider transition-colors whitespace-nowrap">
-                  {expSaving ? '...' : '+ Simpan'}
+                  {expSaving ? '...' : expEditId ? 'Simpan' : '+ Simpan'}
                 </button>
               </div>
+              {expError && (
+                <div className="bg-h-red/15 border border-h-red/40 text-h-cream text-xs rounded-xl px-3 py-2">
+                  {expError}
+                </div>
+              )}
             </form>
 
             {/* List pengeluaran hari ini */}
@@ -761,6 +813,8 @@ export default function KasirPage() {
                       {e.description && <div className="text-xs text-h-muted truncate">{e.description}</div>}
                     </div>
                     <span className="text-sm font-bold text-white whitespace-nowrap">{formatRp(e.amount)}</span>
+                    <button onClick={() => editExpense(e)} title="Ubah"
+                      className="text-h-muted hover:text-h-cream text-sm leading-none px-1 transition-colors">✎</button>
                     <button onClick={() => deleteExpense(e.id)} title="Hapus"
                       className="text-h-muted hover:text-red-400 text-lg leading-none px-1 transition-colors">×</button>
                   </div>
